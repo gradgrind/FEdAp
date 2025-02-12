@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-QWidget *loadUiFile(QWidget *parent);
+QWidget *loadUiFile(QString uifile, QWidget *parent = nullptr);
 
 class Widget : public QWidget
 {

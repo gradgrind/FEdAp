@@ -2,9 +2,9 @@
 #include <QtUiTools>
 
 QWidget *loadUiFile(
-    QWidget *parent)
+    QString uifile, QWidget *parent)
 {
-    QFile file("courses.ui");
+    QFile file("ui/" + uifile);
     file.open(QIODevice::ReadOnly);
 
     QUiLoader loader;
