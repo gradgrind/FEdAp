@@ -1,5 +1,6 @@
 #include "callback.h"
 #include <QApplication>
+#include "messages.h"
 #include <iostream>
 
 // The input reader runs in a separate thread, continually reading
@@ -74,6 +75,7 @@ void CallBackManager::handleError(
     const QString text)
 {
     qDebug() << text;
+    IgnoreError("INVALID INPUT", text);
 }
 
 void CallBackManager::closing()
