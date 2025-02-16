@@ -65,47 +65,79 @@ BackEnd::BackEnd()
     //arguments << "source_file";
     //ODOT
 
-    //void QProcess::readyReadStandardOutput()
-    //void QProcess::readyReadStandardError()
     //QProcess::setReadChannel(QProcess::ProcessChannel channel)
     // -- QProcess::StandardOutput  QProcess::StandardError
+    process = new QProcess(this);
 
-    connect(&workerThread,
-            &ReadInput::received_input,
+    connect(process,
+            &QProcess::readyReadStandardOutput,
             this,
-            &BackEnd::handleResult);
-    connect(&workerThread,
-            &ReadInput::received_invalid,
+            &BackEnd::handleBackendOutput);
+
+    connect(process,
+            &QProcess::readyReadStandardError,
             this,
-            &BackEnd::handleError);
+            &BackEnd::handleBackendError);
+
+    connect(process, &QProcess::finished, this, &BackEnd::finished);
 
     connect(qApp, &QApplication::lastWindowClosed, this, &BackEnd::closing);
 
-    workerThread.process = new QProcess(this);
-
-    connect(workerThread.process, &QProcess::finished, this, &BackEnd::finished);
-
-    workerThread.start();
-    workerThread.process->start(program, arguments);
+    process->start(program, arguments);
 }
 
-void BackEnd::handleResult(
-    const QJsonObject jobj)
+void BackEnd::handleBackendOutput()
 {
-    qDebug() << jobj;
+    QJsonParseError jerr;
+    char ch;
+    while (process->getChar(&ch)) {
+        if (ch == '\n') {
+            QJsonDocument jin = QJsonDocument::fromJson(linebuffer, &jerr);
+            if (jerr.error == QJsonParseError::NoError) {
+                if (jin.isObject()) {
+                    linebuffer.clear();
+                    auto jobj = jin.object();
+                    received_input(jobj);
+                    continue;
+                }
+                received_invalid(
+                    QString("CALLBACK ERROR, not object\n:: " + linebuffer));
+                linebuffer.clear();
+                continue;
+            }
+            // else: JSON parse failed
+            auto s = QString(linebuffer);
+            auto st = s.trimmed();
+            linebuffer.clear();
+            if (st.size() == 0) {
+                //TODO: Ignore this?
+                qDebug() << "CALLBACK EMPTY";
+            } else {
+                received_invalid(QString("CALLBACK ERROR: ")
+                                 + jerr.errorString() + "\n:: " + s);
+            }
+            continue;
+        }
+
+        // Not newline, add to linebuffer
+        linebuffer.append(ch);
+    }
 }
 
-void BackEnd::handleError(
-    const QString text)
+void BackEnd::received_input(
+    QJsonObject jobj)
+{}
+
+void BackEnd::received_invalid(
+    QString text)
 {
-    qDebug() << text;
     IgnoreError("INVALID INPUT", text);
 }
 
-void BackEnd::closing()
+void BackEnd::handleBackendError()
 {
-    qDebug() << "Closing";
-    workerThread.terminate();
+    auto bytes = process->readAllStandardError();
+    IgnoreError("BACKEND ERROR", QString(bytes));
 }
 
 void BackEnd::finished()

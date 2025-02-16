@@ -24,17 +24,24 @@ signals:
 class BackEnd : public QObject
 {
     Q_OBJECT
-    ReadInput workerThread;
+
+    void received_input(QJsonObject);
+    void received_invalid(QString);
 
 public:
     BackEnd();
 
     void call_backend(const QJsonObject);
 
+    QProcess* process;
+    QByteArray linebuffer;
+
 private slots:
-    void handleResult(const QJsonObject);
-    void handleError(const QString);
-    void closing();
+    void handleBackendOutput();
+    void handleBackendError();
+
+    //void handleResult(const QJsonObject);
+    //void handleError(const QString);
     void finished();
 };
 

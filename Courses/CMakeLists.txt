@@ -25,6 +25,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../ui/courses.ui
         messages.h messages.cpp
         backend.h backend.cpp
+        mainwindow.h mainwindow.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Courses APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
