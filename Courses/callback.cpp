@@ -3,6 +3,20 @@
 #include "messages.h"
 #include <iostream>
 
+/* For reference:
+    QFile _file;
+    _file.open(stdin, QIODevice::ReadOnly);
+    // or _file.open(stdin, QIODevice::ReadOnly | QIODevice::Text);
+    QByteArray line;
+    forever {
+        line = _file.readLine();
+        qDebug() << "GOT:" << line << QString(line);
+        if (line[0] == '\n') {
+            break;
+        }
+    } 
+*/
+
 // The input reader runs in a separate thread, continually reading
 // lines from standard input.
 // Currently a line is expected to be a complete JSON object, but if

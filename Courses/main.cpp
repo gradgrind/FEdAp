@@ -1,7 +1,10 @@
+#include "backend.h"
 #include "callback.h"
 #include "widget.h"
 
 #include <QApplication>
+
+#include <QFile>
 
 const char *testcmd = R"(
 {
@@ -25,7 +28,8 @@ int main(
 {
     QApplication a(argc, argv);
 
-    CallBackManager cbman;
+    BackEnd cbman;
+    //CallBackManager cbman;
 
     QJsonParseError jerr;
     QJsonDocument jcmd = QJsonDocument::fromJson(testcmd, &jerr);
