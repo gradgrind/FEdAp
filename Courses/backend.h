@@ -10,7 +10,6 @@ class BackEnd : public QObject
 {
     Q_OBJECT
 
-    //void received_input(QJsonObject);
     void received_invalid(QString);
 
     MainWindow* mainwindow;
@@ -25,10 +24,6 @@ public:
 private slots:
     void handleBackendOutput();
     void handleBackendError();
-
-    //void handleResult(const QJsonObject);
-    //void handleError(const QString);
-    void finished();
 };
 
 extern BackEnd* backend;

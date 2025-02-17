@@ -45,6 +45,8 @@ void TestIo::received_input(
     QJsonObject jobj)
 {
     qDebug() << "TestIo received:" << jobj;
+
+    MainWindow::received_input(jobj);
     receiver->appendPlainText("----------------------\n");
     receiver->appendPlainText(QJsonDocument(jobj).toJson());
 }

@@ -10,8 +10,6 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
-	fmt.Fprintln(writer, "Enter JSON:")
-	writer.Flush() // Don't forget to flush!
 
 	for {
 		message, _ := reader.ReadString('\n')
@@ -25,11 +23,17 @@ func main() {
 			odata = map[string]any{
 				"ERROR": e,
 			}
+		} else if n, ok := idata["QUIT"]; ok {
+			nn := int(n.(float64))
+			if nn == 0 {
+				odata = idata
+			} else {
+				os.Exit(nn)
+			}
 		} else {
 			odata = map[string]any{
 				"GOT": idata,
 			}
-
 		}
 
 		jsonData, err := json.Marshal(odata)
@@ -39,9 +43,5 @@ func main() {
 
 		fmt.Fprintln(writer, string(jsonData))
 		writer.Flush() // Don't forget to flush!
-
-		if n, ok := idata["QUIT"]; ok {
-			os.Exit(int(n.(float64)))
-		}
 	}
 }

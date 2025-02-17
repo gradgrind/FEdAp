@@ -4,5 +4,6 @@
 #include <QMessageBox>
 
 bool IgnoreError(QString text, QString info = "", QString details = "");
+int TidyOnExit(QString info = "", QString details = "");
 
 #endif // MESSAGES_H

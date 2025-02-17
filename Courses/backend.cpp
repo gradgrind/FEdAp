@@ -43,9 +43,14 @@ BackEnd::BackEnd(
             this,
             &BackEnd::handleBackendError);
 
-    connect(process, &QProcess::finished, this, &BackEnd::finished);
-
-    //connect(qApp, &QApplication::lastWindowClosed, this, &BackEnd::closing);
+    connect(process,
+            &QProcess::started,
+            mainwindow,
+            &MainWindow::backend_started);
+    connect(process,
+            &QProcess::finished,
+            mainwindow,
+            &MainWindow::backend_finished);
 
     process->start(program, arguments);
 
@@ -100,12 +105,6 @@ void BackEnd::handleBackendError()
 {
     auto bytes = process->readAllStandardError();
     IgnoreError("BACKEND ERROR", QString(bytes));
-}
-
-void BackEnd::finished()
-{
-    qDebug() << "Backend finished";
-    //TODO: close window? or otherwise wind up ...
 }
 
 void BackEnd::call_backend(
