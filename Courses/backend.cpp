@@ -1,62 +1,26 @@
 #include "backend.h"
 
 #include <QApplication>
+#include <QJsonDocument>
 #include "messages.h"
-//#include <iostream>
 
-// The input reader runs in a separate thread, continually reading
-// lines from the back-end process.
-// Currently a line is expected to be a complete JSON object, but if
-// multiline objects should be desired, it could be achieved by
-// accumulating lines until some terminator is encountered, maybe
-// Ctrl-G ("\a", BEL)?
+BackEnd *backend;
+
+// The reader for responses from the back-end runs continuously in the
+// background. It emits a signal when some data has been received.
+// Currently a line (terminated by '\n') is expected to be a complete
+// JSON object, but it should be possible to accept multiline objects,
+// for example by using an alternative terminator (Ctrl-G / "\a" / BEL?).
 // The JSON object is then parsed and made available by means of a
 // "received_input" signal. Invalid input will cause a "received_invalid"
 // signal to be emitted.
 // This continues until the program is closed.
 
-//TODO: Maybe I don't need a thread at all! Use signals for reading input.
-ReadInput::ReadInput()
-    : QThread()
-{}
-
-void ReadInput::run()
-{
-    //std::string instring;
-    QByteArray inbytes;
-    QJsonParseError jerr;
-    forever {
-        inbytes = process->readLine(); //TODO: Does this block???
-        // Actually, to be able to read both stdout and stderr I would
-        // need to use the signals, I guess – it looks like a switch
-        // needs setting to select the read channel.
-
-        QJsonDocument jin = QJsonDocument::fromJson(inbytes, &jerr);
-        if (jerr.error == QJsonParseError::NoError) {
-            if (jin.isObject()) {
-                auto jobj = jin.object();
-                emit received_input(jobj);
-                continue;
-            }
-            emit received_invalid(
-                QString("CALLBACK ERROR, not object\n:: " + inbytes));
-            continue;
-        }
-        auto s = QString(inbytes);
-        auto st = s.trimmed();
-        if (st.size() == 0) {
-            //TODO: Ignore this?
-            qDebug() << "CALLBACK EMPTY";
-        } else {
-            emit received_invalid(QString("CALLBACK ERROR: ")
-                                  + jerr.errorString() + "\n:: " + s);
-        }
-    }
-}
-
 // Manage the back-end process, communicating with its stdio.
-BackEnd::BackEnd()
+BackEnd::BackEnd(
+    MainWindow *window1)
     : QObject()
+    , mainwindow{window1}
 {
     //TODO: This is temporary stuff for testing, for production use
     // it needs some work ...
@@ -81,9 +45,11 @@ BackEnd::BackEnd()
 
     connect(process, &QProcess::finished, this, &BackEnd::finished);
 
-    connect(qApp, &QApplication::lastWindowClosed, this, &BackEnd::closing);
+    //connect(qApp, &QApplication::lastWindowClosed, this, &BackEnd::closing);
 
     process->start(program, arguments);
+
+    backend = this;
 }
 
 void BackEnd::handleBackendOutput()
@@ -97,7 +63,7 @@ void BackEnd::handleBackendOutput()
                 if (jin.isObject()) {
                     linebuffer.clear();
                     auto jobj = jin.object();
-                    received_input(jobj);
+                    mainwindow->received_input(jobj);
                     continue;
                 }
                 received_invalid(
@@ -124,10 +90,6 @@ void BackEnd::handleBackendOutput()
     }
 }
 
-void BackEnd::received_input(
-    QJsonObject jobj)
-{}
-
 void BackEnd::received_invalid(
     QString text)
 {
@@ -151,5 +113,6 @@ void BackEnd::call_backend(
 {
     QJsonDocument jdoc(data);
     QByteArray jbytes = jdoc.toJson(QJsonDocument::Compact) + '\n';
-    workerThread.process->write(jbytes);
+    qDebug() << "Sending:" << QString(jbytes);
+    process->write(jbytes);
 }

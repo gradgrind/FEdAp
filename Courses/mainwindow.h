@@ -8,7 +8,9 @@ class MainWindow : public QWidget
 {
     Q_OBJECT
 public:
-    MainWindow();
+    MainWindow(QString);
+
+    virtual void received_input(QJsonObject);
 
     void closeEvent(QCloseEvent *) override;
 };

@@ -26,7 +26,7 @@ class CallBackManager : public QObject
 public:
     CallBackManager();
 
-    void call_backend(const QJsonObject);
+    static void call_backend(const QJsonObject);
 
 private slots:
     void handleResult(const QJsonObject);

@@ -3,13 +3,15 @@
 #include <QUiLoader>
 #include <QVBoxLayout>
 
-MainWindow::MainWindow()
+#include <QJsonObject>
+
+MainWindow::MainWindow(
+    QString uifile)
     : QWidget()
 {
     QUiLoader loader;
 
-    //TODO: This is probably not really the main window ...
-    QFile file("ui/courses.ui");
+    QFile file(QString("ui/") + uifile);
 
     file.open(QFile::ReadOnly);
     QWidget *w = loader.load(&file, this);
@@ -20,8 +22,16 @@ MainWindow::MainWindow()
     setLayout(layout);
 }
 
+void MainWindow::received_input(
+    QJsonObject jobj)
+{
+    qDebug() << "Received:" << jobj;
+}
+
 void MainWindow::closeEvent(
     QCloseEvent *event)
 {
     event->ignore();
+
+    QJsonObject quitcmd{{"QUIT", 0}};
 }

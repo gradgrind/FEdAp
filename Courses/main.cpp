@@ -1,10 +1,14 @@
 #include "backend.h"
-#include "callback.h"
-#include "widget.h"
+//#include "callback.h"
+//#include "mainwindow.h"
+#include "testio.h"
+//#include "widget.h"
 
 #include <QApplication>
 
 #include <QFile>
+
+#include <QJsonDocument>
 
 const char *testcmd = R"(
 {
@@ -28,14 +32,18 @@ int main(
 {
     QApplication a(argc, argv);
 
-    BackEnd cbman;
+    //MainWindow w("courses.ui");
+    TestIo w;
+
+    BackEnd cbman(&w);
     //CallBackManager cbman;
 
     QJsonParseError jerr;
     QJsonDocument jcmd = QJsonDocument::fromJson(testcmd, &jerr);
-    cbman.call_backend(jcmd.object());
+    backend->call_backend(jcmd.object());
 
-    QWidget *w = loadUiFile("courses.ui");
-    w->show();
+    w.show();
+    //QWidget *w = loadUiFile("courses.ui");
+    //w->show();
     return a.exec();
 }
