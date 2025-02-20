@@ -39,15 +39,6 @@ void MainWindow::received_input(
     QJsonObject jobj)
 {
     qDebug() << "Received:" << jobj;
-    auto jquit = jobj.value("QUIT");
-    qDebug() << "Quit?" << jquit;
-    if (jquit != QJsonValue::Undefined) {
-        int q = TidyOnExit();
-        if (q != 0) {
-            QJsonObject jsave{{"QUIT", q}};
-            backend->call_backend(jsave);
-        }
-    }
 }
 
 void MainWindow::closeEvent(
@@ -55,7 +46,6 @@ void MainWindow::closeEvent(
 {
     if (backend_running) {
         event->ignore();
-        QJsonObject quitcmd{{"QUIT", 0}};
-        backend->call_backend(quitcmd);
+        backend->quit();
     }
 }

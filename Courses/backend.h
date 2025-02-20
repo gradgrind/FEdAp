@@ -23,6 +23,8 @@ public:
 
     void call_backend(const QJsonObject);
     void cancel_current();
+    void quit(bool force = false);
+
     WaitingDialog* waiting_dialog;
 
 private slots:

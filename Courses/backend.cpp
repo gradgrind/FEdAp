@@ -18,6 +18,8 @@
  *   "REPORT" –  the text field with key "TEXT" will be added to the
  *   report widget,
  *   "CANCELLED" – the currently running operation has been cancelled.
+ *   "QUIT_UNSAVED?" – the back-end has unsaved data, request confirmation
+ *   that the changes should be discarded.
  * The whole process is event-driven (using signals and slots), so that
  * the GUI doesn't hang. If operations take longer than a brief time-out
  * interval, a modal pop-up will appear allowing cancellation and showing
@@ -109,6 +111,16 @@ void BackEnd::handleBackendOutput()
                         } else if (rp == "CANCELLED") {
                             waiting_dialog->operation_cancelled();
                             current_operation = QJsonObject();
+                        } else if (rp == "QUIT_UNSAVED?") {
+                            if (QMessageBox ::warning(
+                                    mainwindow,
+                                    "WARNING",
+                                    "LOSE_CHANGES?",
+                                    QMessageBox::StandardButtons(
+                                        QMessageBox::Ok | QMessageBox::Cancel))
+                                == QMessageBox::Ok) {
+                                quit(true);
+                            }
                         } else {
                             QMessageBox::critical(waiting_dialog,
                                                   "BACKEND_ERROR",
@@ -181,8 +193,20 @@ void BackEnd::call_backend(
 void BackEnd::cancel_current()
 {
     qDebug() << "TODO: BackEnd::cancel_current";
-    QJsonObject jobj = {{"DO", "CANCEL"}};
+    QJsonObject jobj{{"DO", "CANCEL"}};
     QJsonDocument jdoc(jobj);
     QByteArray jbytes = jdoc.toJson(QJsonDocument::Compact) + '\n';
     qDebug() << "Sending:" << QString(jbytes);
+    process->write(jbytes);
+}
+
+void BackEnd::quit(
+    bool force)
+{
+    qDebug() << "TODO: BackEnd::quit";
+    QJsonObject jobj{{"DO", "QUIT"}, {"FORCE", force}};
+    QJsonDocument jdoc(jobj);
+    QByteArray jbytes = jdoc.toJson(QJsonDocument::Compact) + '\n';
+    qDebug() << "Sending:" << QString(jbytes);
+    process->write(jbytes);
 }

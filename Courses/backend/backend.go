@@ -4,13 +4,16 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"os"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
-	unsaved := true
+
+	//TODO:
+	unsaved := rand.IntN(3) == 0
 
 	ochan := make(chan map[string]any)
 	go sender(ochan, writer)
@@ -30,23 +33,23 @@ func main() {
 		} else if n, ok := idata["DO"]; ok {
 			if n == "QUIT" {
 				// If there are unsaved changes, respond with "DONE": "QUIT_UNSAVED"
-				if unsaved {
-					if idata["FORCE"] != true {
-						odata = map[string]any{
-							"DONE": "QUIT_UNSAVED",
-						}
-						ochan <- odata
-						continue
+				if unsaved && idata["FORCE"] != true {
+					odata = map[string]any{
+						"DONE":   "",
+						"REPORT": "QUIT_UNSAVED?",
 					}
+					ochan <- odata
+					continue
 				}
 				os.Exit(0)
 			}
 			//TODO...
 
-			odata = map[string]any{
-				"DONE": idata,
-			}
-			ochan <- odata
+			// This one sets up a new goroutine for each command.
+			// That might not be a bad idea, but I should ensure somehow that
+			// only one gets handled at a time ... in which case I could
+			// use just one goroutine with a read loop.
+			go handle_command(ochan, idata)
 			continue
 		}
 		//TODO: No "DO" ...
@@ -59,13 +62,16 @@ func main() {
 	}
 }
 
+// TODO: Maybe this needs the possibility to block sending?
 func sender(ochan chan map[string]any, writer *bufio.Writer) {
-	data := <-ochan
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		panic(fmt.Sprintf("Could not marshal json: %s\n", err))
-	}
+	for {
+		data := <-ochan
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			panic(fmt.Sprintf("Could not marshal json: %s\n", err))
+		}
 
-	fmt.Fprintln(writer, string(jsonData))
-	writer.Flush() // Don't forget to flush!
+		fmt.Fprintln(writer, string(jsonData))
+		writer.Flush() // Don't forget to flush!
+	}
 }
