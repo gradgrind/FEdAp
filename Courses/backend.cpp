@@ -4,6 +4,32 @@
 #include <QJsonDocument>
 #include "messages.h"
 
+/* Messages – commands/requests – are sent to the back-end process as JSON
+ * objects. The key "DO" specifies the operation, its value is a string.
+ * The parameters can take any form.
+ * Also the result is a JSON object, the value with key "DONE" specifying
+ * how it should be handled. Again, the parameters can take any form. The
+ * back-end can, however, also send reports before completion of the
+ * operation. In this case, the "DONE" value should be "" and the value
+ * with key "REPORT" indicates what is to be done with the report.
+ * At present the supported possibilities are:
+ *   "PROGRESS" – the text field with key "TEXT" will be used to set the
+ *   progress widget,
+ *   "REPORT" –  the text field with key "TEXT" will be added to the
+ *   report widget,
+ *   "CANCELLED" – the currently running operation has been cancelled.
+ * The whole process is event-driven (using signals and slots), so that
+ * the GUI doesn't hang. If operations take longer than a brief time-out
+ * interval, a modal pop-up will appear allowing cancellation and showing
+ * feedback from the back-end process.
+ * In general, only one operation may be active at any time. This is
+ * managed in the BackEnd class, which will (normally) not allow an
+ * operation to start until a previous one has completed. There may,
+ * however, be a small number of operations which can be started while
+ * another operation is running. This can be useful for cancelling a
+ * long-running operation, for example.
+ */
+
 BackEnd *backend;
 
 // The reader for responses from the back-end runs continuously in the
@@ -28,6 +54,8 @@ BackEnd::BackEnd(
     QStringList arguments;
     //arguments << "source_file";
     //ODOT
+
+    waiting_dialog = new WaitingDialog(window1);
 
     //QProcess::setReadChannel(QProcess::ProcessChannel channel)
     // -- QProcess::StandardOutput  QProcess::StandardError
@@ -66,8 +94,31 @@ void BackEnd::handleBackendOutput()
             QJsonDocument jin = QJsonDocument::fromJson(linebuffer, &jerr);
             if (jerr.error == QJsonParseError::NoError) {
                 if (jin.isObject()) {
+                    auto lb = linebuffer;
                     linebuffer.clear();
                     auto jobj = jin.object();
+                    auto doneval = jobj.value("DONE").toString();
+                    if (doneval == "") {
+                        auto rp = jobj.value("REPORT").toString();
+                        if (rp == "PROGRESS") {
+                            waiting_dialog->set_progress(
+                                jobj.value("TEXT").toString());
+                        } else if (rp == "REPORT") {
+                            waiting_dialog->add_text(
+                                jobj.value("TEXT").toString());
+                        } else if (rp == "CANCELLED") {
+                            waiting_dialog->operation_cancelled();
+                            current_operation = QJsonObject();
+                        } else {
+                            QMessageBox::critical(waiting_dialog,
+                                                  "BACKEND_ERROR",
+                                                  lb);
+                        }
+                        continue;
+                    } else {
+                        waiting_dialog->done();
+                        current_operation = QJsonObject();
+                    }
                     mainwindow->received_input(jobj);
                     continue;
                 }
@@ -107,11 +158,31 @@ void BackEnd::handleBackendError()
     IgnoreError("BACKEND ERROR", QString(bytes));
 }
 
+// Send a normal command to the back-end, start the dialog with timer.
 void BackEnd::call_backend(
     const QJsonObject data)
 {
+    if (!current_operation.empty()) {
+        //TODO:
+        QMessageBox::critical(waiting_dialog,
+                              "BACKEND_OPERATION",
+                              "STILL_RUNNING");
+        return;
+    }
     QJsonDocument jdoc(data);
     QByteArray jbytes = jdoc.toJson(QJsonDocument::Compact) + '\n';
     qDebug() << "Sending:" << QString(jbytes);
+
+    // Start dialog (with timer)
+    waiting_dialog->start(data.value("DO").toString());
     process->write(jbytes);
+}
+
+void BackEnd::cancel_current()
+{
+    qDebug() << "TODO: BackEnd::cancel_current";
+    QJsonObject jobj = {{"DO", "CANCEL"}};
+    QJsonDocument jdoc(jobj);
+    QByteArray jbytes = jdoc.toJson(QJsonDocument::Compact) + '\n';
+    qDebug() << "Sending:" << QString(jbytes);
 }

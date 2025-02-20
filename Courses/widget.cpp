@@ -11,9 +11,12 @@ QWidget *loadUiFile(
     return loader.load(&file, parent);
 }
 
-Widget::Widget(
-    QWidget *parent)
-    : QWidget(parent)
-{}
+QDialog *loadDialogFile(
+    QString uifile, QWidget *parent)
+{
+    QFile file("ui/" + uifile);
+    file.open(QIODevice::ReadOnly);
 
-Widget::~Widget() {}
+    QUiLoader loader;
+    return (QDialog *) loader.load(&file, parent);
+}

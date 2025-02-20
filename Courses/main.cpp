@@ -10,6 +10,7 @@
 
 #include <QJsonDocument>
 
+//TODO--
 const char *testcmd = R"(
 {
     "FirstName": "John",
@@ -38,9 +39,9 @@ int main(
     BackEnd cbman(&w);
     //CallBackManager cbman;
 
-    QJsonParseError jerr;
-    QJsonDocument jcmd = QJsonDocument::fromJson(testcmd, &jerr);
-    backend->call_backend(jcmd.object());
+    //QJsonParseError jerr;
+    //QJsonDocument jcmd = QJsonDocument::fromJson(testcmd, &jerr);
+    //backend->call_backend(jcmd.object());
 
     w.show();
     //QWidget *w = loadUiFile("courses.ui");

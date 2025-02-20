@@ -10,6 +10,10 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
+	unsaved := true
+
+	ochan := make(chan map[string]any)
+	go sender(ochan, writer)
 
 	for {
 		message, _ := reader.ReadString('\n')
@@ -23,25 +27,45 @@ func main() {
 			odata = map[string]any{
 				"ERROR": e,
 			}
-		} else if n, ok := idata["QUIT"]; ok {
-			nn := int(n.(float64))
-			if nn == 0 {
-				odata = idata
-			} else {
-				os.Exit(nn)
+		} else if n, ok := idata["DO"]; ok {
+			if n == "QUIT" {
+				// If there are unsaved changes, respond with "DONE": "QUIT_UNSAVED"
+				if unsaved {
+					if idata["FORCE"] != true {
+						odata = map[string]any{
+							"DONE": "QUIT_UNSAVED",
+						}
+						ochan <- odata
+						continue
+					}
+				}
+				os.Exit(0)
 			}
-		} else {
+			//TODO...
+
 			odata = map[string]any{
-				"GOT": idata,
+				"DONE": idata,
 			}
+			ochan <- odata
+			continue
 		}
+		//TODO: No "DO" ...
 
-		jsonData, err := json.Marshal(odata)
-		if err != nil {
-			panic(fmt.Sprintf("Could not marshal json: %s\n", err))
+		odata = map[string]any{
+			"DONE": "ERROR",
+			"DATA": idata,
 		}
-
-		fmt.Fprintln(writer, string(jsonData))
-		writer.Flush() // Don't forget to flush!
+		ochan <- odata
 	}
+}
+
+func sender(ochan chan map[string]any, writer *bufio.Writer) {
+	data := <-ochan
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		panic(fmt.Sprintf("Could not marshal json: %s\n", err))
+	}
+
+	fmt.Fprintln(writer, string(jsonData))
+	writer.Flush() // Don't forget to flush!
 }
