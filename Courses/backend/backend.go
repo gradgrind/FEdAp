@@ -75,6 +75,7 @@ func main() {
 				ochan <- odata
 				continue
 			}
+			cancel = false
 			xchan <- idata
 			continue
 		}

@@ -17,7 +17,6 @@
  *   progress widget,
  *   "REPORT" –  the text field with key "TEXT" will be added to the
  *   report widget,
- *   "CANCELLED" – the currently running operation has been cancelled.
  *   "QUIT_UNSAVED?" – the back-end has unsaved data, request confirmation
  *   that the changes should be discarded.
  *   "BACKEND_BUSY" – the operation available via the "DATA" key was
@@ -110,9 +109,6 @@ void BackEnd::handleBackendOutput()
                         } else if (rp == "REPORT") {
                             waiting_dialog->add_text(
                                 jobj.value("TEXT").toString());
-                        } else if (rp == "CANCELLED") { //TODO--?
-                            waiting_dialog->operation_cancelled();
-                            current_operation = QJsonObject();
                         } else if (rp == "QUIT_UNSAVED?") {
                             if (QMessageBox ::warning(
                                     mainwindow,

@@ -94,12 +94,6 @@ void WaitingDialog::closeEvent(
     event->ignore();
 }
 
-void WaitingDialog::operation_cancelled()
-{
-    add_text("OPERATION_CANCELLED");
-    done();
-}
-
 void WaitingDialog::done()
 {
     timeout.stop();

@@ -8,7 +8,6 @@ func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 		var done string
 		xdata := <-xchan
 		running = true
-		cancel = false
 
 		switch cmd := xdata["DO"]; cmd {
 		case "SLEEP": // for testing
