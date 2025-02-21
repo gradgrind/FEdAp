@@ -8,15 +8,30 @@ import (
 	"os"
 )
 
+// It should be possible to cancel long-running operations.
+// However, a goroutine can't be stopped from the outside, so any
+// long-running operation should periodically check whether the [cancel]
+// flag is set (true).
+var cancel bool
+
+// When an operation is running, no new operations can be started, the
+// [running] flag is set (true). It should be regarded as an error if a
+// new comman request arrives while this flag is set. To ensure that
+// the front-end knows when an operation has completed, all completions
+// should send a "DONE" message.
+var running bool
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
 
-	//TODO:
+	//TODO: Maybe unsaved should be a global variable?
 	unsaved := rand.IntN(3) == 0
 
 	ochan := make(chan map[string]any)
 	go sender(ochan, writer)
+	xchan := make(chan map[string]any)
+	go commandHandler(ochan, xchan)
 
 	for {
 		message, _ := reader.ReadString('\n')
@@ -43,13 +58,24 @@ func main() {
 				}
 				os.Exit(0)
 			}
-			//TODO...
-
-			// This one sets up a new goroutine for each command.
-			// That might not be a bad idea, but I should ensure somehow that
-			// only one gets handled at a time ... in which case I could
-			// use just one goroutine with a read loop.
-			go handle_command(ochan, idata)
+			if n == "CANCEL" {
+				if running {
+					cancel = true
+				}
+				continue
+			}
+			// Pass command to handler.
+			// Ensure somehow that only one gets handled at a time.
+			if running {
+				odata = map[string]any{
+					"DONE":   "",
+					"REPORT": "BACKEND_BUSY",
+					"DATA":   idata,
+				}
+				ochan <- odata
+				continue
+			}
+			xchan <- idata
 			continue
 		}
 		//TODO: No "DO" ...

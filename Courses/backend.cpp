@@ -20,6 +20,8 @@
  *   "CANCELLED" – the currently running operation has been cancelled.
  *   "QUIT_UNSAVED?" – the back-end has unsaved data, request confirmation
  *   that the changes should be discarded.
+ *   "BACKEND_BUSY" – the operation available via the "DATA" key was
+ *   received by the backend while it was processing another command.
  * The whole process is event-driven (using signals and slots), so that
  * the GUI doesn't hang. If operations take longer than a brief time-out
  * interval, a modal pop-up will appear allowing cancellation and showing
@@ -108,7 +110,7 @@ void BackEnd::handleBackendOutput()
                         } else if (rp == "REPORT") {
                             waiting_dialog->add_text(
                                 jobj.value("TEXT").toString());
-                        } else if (rp == "CANCELLED") {
+                        } else if (rp == "CANCELLED") { //TODO--?
                             waiting_dialog->operation_cancelled();
                             current_operation = QJsonObject();
                         } else if (rp == "QUIT_UNSAVED?") {
@@ -121,6 +123,10 @@ void BackEnd::handleBackendOutput()
                                 == QMessageBox::Ok) {
                                 quit(true);
                             }
+                        } else if (rp == "BACKEND_BUSY") {
+                            QMessageBox::critical(waiting_dialog,
+                                                  "BACKEND_BUSY",
+                                                  lb);
                         } else {
                             QMessageBox::critical(waiting_dialog,
                                                   "BACKEND_ERROR",
