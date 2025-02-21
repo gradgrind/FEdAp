@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 	for {
@@ -12,7 +15,7 @@ func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 		switch cmd := xdata["DO"]; cmd {
 		case "SLEEP": // for testing
 			tsecs := int(xdata["TIME"].(float64))
-			for range tsecs {
+			for i := range tsecs {
 				if cancel {
 					ochan <- map[string]any{
 						"DONE":   "",
@@ -28,6 +31,11 @@ func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 					"DONE":   "",
 					"REPORT": "REPORT",
 					"TEXT":   "TICK",
+				}
+				ochan <- map[string]any{
+					"DONE":   "",
+					"REPORT": "PROGRESS",
+					"TEXT":   strconv.Itoa(i + 1),
 				}
 			}
 			done = "SLEPT"
