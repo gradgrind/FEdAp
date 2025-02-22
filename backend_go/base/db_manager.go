@@ -1,11 +1,27 @@
 package base
 
 import (
+	"fmt"
 	"slices"
 	"strconv"
 
 	"github.com/gofrs/uuid/v5"
 )
+
+func init() {
+	Tr(map[string]string{
+		"ERROR_INPUT_ID_REUSED":    "[Error] Element Id defined more than once:\n  %s",
+		"ERROR_LUNCH_HOURS_BROKEN": "[Error] Lunch break hours not contiguous",
+		"BUG_FREE_GROUP":           "[Bug] Group not in Class: %s",
+		"ERROR_TAG_REUSED":         "[Error] %s tag <%s> not unique: Element %s changed to <%s>\n",
+		"ERROR_NO_DAYS":            "[Error] Input has no days",
+		"ERROR_NO_HOURS":           "[Error] Input has no hours",
+		"ERROR_NO_TEACHERS":        "[Error] Input has no teachers",
+		"ERROR_NO_SUBJECTS":        "[Error] Input has no subjects",
+		"ERROR_NO_ROOMS":           "[Error] Input has no rooms",
+		"ERROR_NO_CLASSES":         "[Error] Input has no classes",
+	})
+}
 
 func NewDb() *DbTopLevel {
 	db := &DbTopLevel{}
@@ -17,7 +33,7 @@ func (db *DbTopLevel) newId() Ref {
 	// Create a Version 4 UUID.
 	u2, err := uuid.NewV4()
 	if err != nil {
-		Error.Fatalf("Failed to generate UUID: %v", err)
+		panic(fmt.Sprintf("Failed to generate UUID: %v", err))
 	}
 	return Ref(u2.String())
 }
@@ -28,7 +44,8 @@ func (db *DbTopLevel) addElement(ref Ref, element Elem) Ref {
 	}
 	_, nok := db.Elements[ref]
 	if nok {
-		Error.Fatalf("Element Id defined more than once:\n  %s\n", ref)
+		Report("ERROR_INPUT_ID_REUSED", ref)
+		db.SetInvalid()
 	}
 	db.Elements[ref] = element
 	return ref
@@ -136,7 +153,9 @@ func (db *DbTopLevel) PrepareDb() {
 		slices.Sort(db.Info.MiddayBreak)
 		mb := db.Info.MiddayBreak
 		if mb[len(mb)-1]-mb[0] >= len(mb) {
-			Error.Fatalln("MiddayBreak hours not contiguous")
+			Report("ERROR_LUNCH_HOURS_BROKEN")
+			db.SetInvalid()
+			db.Info.MiddayBreak = []int{}
 		}
 	}
 
@@ -170,7 +189,8 @@ func (db *DbTopLevel) PrepareDb() {
 	for _, g := range db.Groups {
 		if g.Class == "" {
 			// This is a loader failure, it should not be possible.
-			Bug.Fatalf("Group not in Class: %s\n", g.Id)
+			Report("BUG_FREE_GROUP", g.Id)
+			panic("Bug")
 		}
 	}
 
@@ -204,8 +224,7 @@ func newtags[T Elem](etype string, elist []T) {
 		}
 		checktags[tag] = true
 		e.setTag(tag)
-		Error.Printf("%s tag <%s> not unique: Element %s changed to <%s>\n",
-			etype, tag0, e.getId(), tag)
+		Report("ERROR_TAG_REUSED", etype, tag0, e.getId(), tag)
 	}
 }
 
@@ -213,22 +232,28 @@ func (db *DbTopLevel) CheckDbBasics() {
 	// This function is provided for use by code which needs the following
 	// Elements to be provided.
 	if len(db.Days) == 0 {
-		Error.Fatalln("No Days")
+		Report("ERROR_NO_DAYS")
+		db.SetInvalid()
 	}
 	if len(db.Hours) == 0 {
-		Error.Fatalln("No Hours")
+		Report("ERROR_NO_HOURS")
+		db.SetInvalid()
 	}
 	if len(db.Teachers) == 0 {
-		Error.Fatalln("No Teachers")
+		Report("ERROR_NO_TEACHERS")
+		db.SetInvalid()
 	}
 	if len(db.Subjects) == 0 {
-		Error.Fatalln("No Subjects")
+		Report("ERROR_NO_SUBJECTS")
+		db.SetInvalid()
 	}
 	if len(db.Rooms) == 0 {
-		Error.Fatalln("No Rooms")
+		Report("ERROR_NO_ROOMS")
+		db.SetInvalid()
 	}
 	if len(db.Classes) == 0 {
-		Error.Fatalln("No Classes")
+		Report("ERROR_NO_CLASSES")
+		db.SetInvalid()
 	}
 }
 

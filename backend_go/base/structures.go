@@ -305,4 +305,10 @@ type DbTopLevel struct {
 
 	// These fields do not belong in the JSON object:
 	Elements map[Ref]Elem `json:"-"`
+	Invalid  bool         `json:"-"`
+	// TODO: Test the Invalid field after loading data!
+}
+
+func (db *DbTopLevel) SetInvalid() {
+	db.Invalid = true
 }

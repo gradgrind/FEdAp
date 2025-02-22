@@ -6,12 +6,12 @@ import (
 	"os"
 )
 
-// TODO: Gradually replace these loggers by ReportError (etc.)
+// TODO: Replace these loggers by [Report], using logbase
 var (
-	Message *log.Logger
-	Warning *log.Logger
-	Error   *log.Logger
-	Bug     *log.Logger
+	//	Message *log.Logger
+	//	Warning *log.Logger
+	//	Error   *log.Logger
+	//	Bug     *log.Logger
 
 	logbase *LogBase
 )
@@ -20,6 +20,13 @@ type LogBase struct {
 	Logger   *log.Logger
 	LangMap  map[string]string
 	Fallback map[string]string
+}
+
+func init() {
+	Tr(map[string]string{
+		"BUG_UNKNOWN_MESSAGE":       "[Bug] Unknown message: %s ::: %+v",
+		"BUG_MESSAGE_DEFINED_TWICE": "[Bug] Message defined twice: %s",
+	})
 }
 
 func OpenLog(logpath string) {
@@ -37,43 +44,41 @@ func OpenLog(logpath string) {
 
 	logbase.Logger = log.New(file, "++", log.Lshortfile)
 
-	Message = log.New(file, "*INFO* ", log.Lshortfile)
-	Warning = log.New(file, "*WARNING* ", log.Lshortfile)
-	Error = log.New(file, "*ERROR* ", log.Lshortfile)
-	Bug = log.New(file, "*BUG* ", log.Lshortfile)
+	//Message = log.New(file, "*INFO* ", log.Lshortfile)
+	//Warning = log.New(file, "*WARNING* ", log.Lshortfile)
+	//Error = log.New(file, "*ERROR* ", log.Lshortfile)
+	//Bug = log.New(file, "*BUG* ", log.Lshortfile)
 }
 
+// I18N looks up a message in the message catalogue, performing value
+// substitutions.
 func I18N(msg string, args ...any) string {
 	// Look up message
 	msgt, ok := logbase.LangMap[msg]
 	if !ok {
 		msgt, ok = logbase.Fallback[msg]
 		if !ok {
-			panic("Unknown message: " + msg)
+			Report("BUG_UNKNOWN_MESSAGE", msg, args)
+			panic("Bug")
 		}
 	}
-	return fmt.Sprintf(msgt+"\n", args...)
+	return fmt.Sprintf(msgt, args...)
 }
 
-// TODO: Change to "Report" and include the report type in the message,
-// e.g. Report("ERROR_SOMETHING_WENT_WRONG?1", "oops!")
-func (logbase *LogBase) ReportError(msg string, args ...string) {
+// Report logs a message. The keys should have a prefix to indicate the
+// type of the error and also the messages themselves should have an
+// appropriate prefix:
+//
+//	"ERROR_"   -> "[Error] ..."
+//	"INFO_"    -> "[Info] ..."
+//	"WARNING_" -> "[Warning] ..."
+//	"BUG_"     -> "[Bug] ..."
+//
+// The message prefixes may be translated.
+func Report(msg string, args ...any) {
 	// Look up message
-	msgt, ok := logbase.LangMap[msg]
-	if !ok {
-		msgt, ok = logbase.Fallback[msg]
-		if !ok {
-			logbase.Logger.Printf("Unknown message: %s ::: %+v\n",
-				msg, args)
-			panic("Unknown message")
-		}
-	}
-
-	vlist := []any{}
-	for _, arg := range args {
-		vlist = append(vlist, arg)
-	}
-	logbase.Logger.Printf(msgt+"\n", vlist...)
+	msgt := I18N(msg, args...)
+	logbase.Logger.Println(msg + "#" + msgt)
 }
 
 // Tr adds message strings to the Fallback map of logbase, initializing
@@ -92,8 +97,8 @@ func Tr(trmap map[string]string) {
 	}
 	for k, v := range trmap {
 		if _, nok := lg.Fallback[k]; nok {
-			fmt.Printf("Message defined twice: %s\n", k)
-			panic("Message defined twice")
+			Report("BUG_MESSAGE_DEFINED_TWICE", k)
+			panic("Bug")
 		}
 		lg.Fallback[k] = v
 	}
