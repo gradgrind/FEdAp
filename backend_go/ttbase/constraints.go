@@ -1,7 +1,7 @@
 package ttbase
 
 import (
-	"W365toFET/base"
+	"gradgrind/backend/base"
 	"slices"
 )
 

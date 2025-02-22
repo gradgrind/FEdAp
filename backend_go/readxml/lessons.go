@@ -1,7 +1,7 @@
 package readxml
 
 import (
-	"W365toFET/base"
+	"gradgrind/backend/base"
 	"log"
 	"slices"
 )

@@ -1,9 +1,9 @@
 package w365tt
 
 import (
-	"W365toFET/base"
-	"W365toFET/ttprint"
 	"encoding/json"
+	"gradgrind/backend/base"
+	"gradgrind/backend/ttprint"
 )
 
 // The structures used for the "database", adapted to read from W365
@@ -207,9 +207,9 @@ type DbTopLevel struct {
 	// SubjectMap is used to check the validity of a subject reference
 	// and to access the subject's tag/shortcut
 	SubjectMap map[Ref]string `json:"-"`
-	// GroupRefMap is used to check the validity os a group reference and to
+	// GroupRefMap is used to check the validity of a group reference and to
 	// replace class references in courses by class-group references
-	GroupRefMap map[Ref]base.Ref `json:"-"`
+	GroupRefMap map[Ref]Ref `json:"-"`
 	// TeacherMap is used to check the validity of a teacher reference
 	TeacherMap map[Ref]bool `json:"-"`
 	CourseMap  map[Ref]bool `json:"-"`

@@ -1,16 +1,16 @@
 package w365tt
 
 import (
-	"W365toFET/base"
 	"fmt"
+	"gradgrind/backend/base"
 	"strconv"
 	"strings"
 )
 
 func (db *DbTopLevel) readRooms(newdb *base.DbTopLevel) {
-	db.RealRooms = map[base.Ref]string{}
-	db.RoomTags = map[string]base.Ref{}
-	db.RoomChoiceNames = map[string]base.Ref{}
+	db.RealRooms = map[Ref]string{}
+	db.RoomTags = map[string]Ref{}
+	db.RoomChoiceNames = map[string]Ref{}
 	for _, e := range db.Rooms {
 		// Perform some checks and add to the RoomTags map.
 		_, nok := db.RoomTags[e.Tag]

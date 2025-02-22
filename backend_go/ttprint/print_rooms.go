@@ -1,13 +1,13 @@
 package ttprint
 
 import (
-	"W365toFET/base"
-	"W365toFET/ttbase"
+	"gradgrind/backend/base"
+	"gradgrind/backend/ttbase"
 )
 
 func getRooms(
 	ttinfo *ttbase.TtInfo,
-	pagemap map[base.Ref][]xPage,
+	pagemap map[Ref][]xPage,
 ) []ttPage {
 	data := getRoomData(ttinfo)
 	pages := []ttPage{}
@@ -28,7 +28,7 @@ func getRooms(
 
 func getOneRoom(
 	ttinfo *ttbase.TtInfo,
-	pagemap map[base.Ref][]xPage,
+	pagemap map[Ref][]xPage,
 	e *base.Room,
 ) []ttPage {
 	data := getRoomData(ttinfo)
@@ -44,13 +44,13 @@ func getOneRoom(
 	return []ttPage{page}
 }
 
-func getRoomData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
+func getRoomData(ttinfo *ttbase.TtInfo) map[Ref][]Tile {
 	db := ttinfo.Db
 	// Generate the tiles.
-	roomTiles := map[base.Ref][]Tile{}
+	roomTiles := map[Ref][]Tile{}
 	type rdata struct { // for SuperCourses
-		groups   map[base.Ref]bool
-		teachers map[base.Ref]bool
+		groups   map[Ref]bool
+		teachers map[Ref]bool
 	}
 
 	for cref, cinfo := range ttinfo.CourseInfo {
@@ -58,11 +58,11 @@ func getRoomData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 		// For SuperCourses gather the resources from the relevant SubCourses.
 		sc, ok := db.Elements[cref].(*base.SuperCourse)
 		if ok {
-			rmap := map[base.Ref]rdata{}
+			rmap := map[Ref]rdata{}
 			for _, subref := range sc.SubCourses {
 				sub := db.Elements[subref].(*base.SubCourse)
 				if sub.Room != "" {
-					rlist := []base.Ref{}
+					rlist := []Ref{}
 					r0 := db.Elements[sub.Room]
 					r, ok := r0.(*base.Room)
 					if ok {
@@ -85,8 +85,8 @@ func getRoomData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 						rdata1, ok := rmap[rref]
 						if !ok {
 							rdata1 = rdata{
-								map[base.Ref]bool{},
-								map[base.Ref]bool{},
+								map[Ref]bool{},
+								map[Ref]bool{},
 							}
 						}
 						for _, tref1 := range sub.Teachers {
@@ -106,8 +106,8 @@ func getRoomData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 					continue
 				}
 				for _, rref := range l.Rooms {
-					tlist := []base.Ref{}
-					glist := []base.Ref{}
+					tlist := []Ref{}
+					glist := []Ref{}
 					rdata1, ok := rmap[rref]
 					if ok {
 						for t := range rdata1.teachers {
@@ -137,10 +137,10 @@ func getRoomData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 			}
 		} else {
 			// A normal Course
-			glist := []base.Ref{}
+			glist := []Ref{}
 			glist = append(glist, cinfo.Groups...)
 			gstrings := splitGroups(ttinfo.SortList(glist))
-			tlist := []base.Ref{}
+			tlist := []Ref{}
 			tlist = append(tlist, cinfo.Teachers...)
 			tstrings := ttinfo.SortList(tlist)
 

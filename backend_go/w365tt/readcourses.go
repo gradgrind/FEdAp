@@ -1,7 +1,7 @@
 package w365tt
 
 import (
-	"W365toFET/base"
+	"gradgrind/backend/base"
 	"strings"
 )
 
@@ -25,7 +25,7 @@ func (db *DbTopLevel) readSuperCourses(newdb *base.DbTopLevel) {
 	// In the input from W365 the subjects for the SuperCourses must be
 	// taken from the linked EpochPlan.
 	// The EpochPlans are otherwise not needed.
-	epochPlanSubjects := map[Ref]base.Ref{}
+	epochPlanSubjects := map[Ref]Ref{}
 	if db.EpochPlans != nil {
 		for _, n := range db.EpochPlans {
 			sref, ok := db.SubjectTags[n.Tag]
@@ -52,7 +52,7 @@ func (db *DbTopLevel) readSuperCourses(newdb *base.DbTopLevel) {
 				// Use a new Id for the SubCourse because it can also be
 				// the Id of a Course.
 				n := newdb.NewSubCourse("$$" + e.Id)
-				n.SuperCourses = []base.Ref{spc.Id}
+				n.SuperCourses = []Ref{spc.Id}
 				n.Subject = subject
 				n.Groups = groups
 				n.Teachers = teachers
@@ -75,9 +75,9 @@ func (db *DbTopLevel) readSuperCourses(newdb *base.DbTopLevel) {
 
 func (db *DbTopLevel) getCourseSubject(
 	newdb *base.DbTopLevel,
-	srefs []base.Ref,
-	courseId base.Ref,
-) base.Ref {
+	srefs []Ref,
+	courseId Ref,
+) Ref {
 	//
 	// Deal with the Subjects field of a Course or SubCourse – W365
 	// allows multiple subjects.
@@ -124,9 +124,9 @@ func (db *DbTopLevel) getCourseSubject(
 
 func (db *DbTopLevel) getCourseRoom(
 	newdb *base.DbTopLevel,
-	rrefs []base.Ref,
-	courseId base.Ref,
-) base.Ref {
+	rrefs []Ref,
+	courseId Ref,
+) Ref {
 	//
 	// Deal with rooms. W365 can have a single RoomGroup or a list of Rooms.
 	// If there is a list of Rooms, this is converted to a RoomChoiceGroup.
@@ -134,7 +134,7 @@ func (db *DbTopLevel) getCourseRoom(
 	// in the "Room" field.
 	// If a list of rooms recurs, the same RoomChoiceGroup is used.
 	//
-	room := base.Ref("")
+	room := Ref("")
 	if len(rrefs) > 1 {
 		// Make a RoomChoiceGroup
 		var estr string
@@ -162,13 +162,13 @@ func (db *DbTopLevel) getCourseRoom(
 
 func (db *DbTopLevel) getCourseGroups(
 	grefs []Ref,
-	courseId base.Ref,
-) []base.Ref {
+	courseId Ref,
+) []Ref {
 	//
 	// Check the group references and replace Class references by the
 	// corresponding whole-class base.Group references.
 	//
-	glist := []base.Ref{}
+	glist := []Ref{}
 	for _, gref := range grefs {
 		ngref, ok := db.GroupRefMap[gref]
 		if !ok {
@@ -182,12 +182,12 @@ func (db *DbTopLevel) getCourseGroups(
 
 func (db *DbTopLevel) getCourseTeachers(
 	trefs []Ref,
-	courseId base.Ref,
-) []base.Ref {
+	courseId Ref,
+) []Ref {
 	//
 	// Check the teacher references.
 	//
-	tlist := []base.Ref{}
+	tlist := []Ref{}
 	for _, tref := range trefs {
 		_, ok := db.TeacherMap[tref]
 		if !ok {

@@ -1,8 +1,8 @@
 package ttbase
 
 import (
-	"W365toFET/base"
 	"fmt"
+	"gradgrind/backend/base"
 	"slices"
 	"strings"
 )
@@ -201,7 +201,7 @@ func (ttinfo *TtInfo) checkAllocatedRooms() {
 		// Handle each lesson independently
 		for _, l := range cinfo.Lessons {
 			lrooms := l.Rooms // the initial room allocation list
-			l.Rooms = make([]base.Ref, nRooms)
+			l.Rooms = make([]Ref, nRooms)
 			// If no rooms are allocated, don't regard this as invalid.
 			if len(lrooms) == 0 {
 				continue

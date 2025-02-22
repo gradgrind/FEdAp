@@ -1,7 +1,7 @@
 package w365tt
 
 import (
-	"W365toFET/base"
+	"gradgrind/backend/base"
 )
 
 func a2r(r any) Ref {

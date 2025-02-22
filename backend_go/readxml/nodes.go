@@ -1,9 +1,9 @@
 package readxml
 
 import (
-	"W365toFET/w365tt"
 	"encoding/xml"
 	"fmt"
+	"gradgrind/backend/w365tt"
 )
 
 // Read from a Waldorf 365 XML file, just the structures relevant for

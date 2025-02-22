@@ -1,9 +1,9 @@
 package fet
 
 import (
-	"W365toFET/ttbase"
 	"encoding/xml"
 	"fmt"
+	"gradgrind/backend/ttbase"
 	"slices"
 	"strconv"
 	"strings"

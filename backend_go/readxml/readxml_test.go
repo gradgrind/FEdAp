@@ -1,10 +1,10 @@
 package readxml
 
 import (
-	"W365toFET/base"
-	"W365toFET/fet"
-	"W365toFET/ttbase"
 	"fmt"
+	"gradgrind/backend/base"
+	"gradgrind/backend/fet"
+	"gradgrind/backend/ttbase"
 	"os"
 	"path/filepath"
 	"slices"

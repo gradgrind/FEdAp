@@ -1,8 +1,8 @@
 package readxml
 
 import (
-	"W365toFET/base"
-	"W365toFET/w365tt"
+	"gradgrind/backend/base"
+	"gradgrind/backend/w365tt"
 	"strings"
 )
 

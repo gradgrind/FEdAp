@@ -1,6 +1,6 @@
 package w365tt
 
-import "W365toFET/base"
+import "gradgrind/backend/base"
 
 func (db *DbTopLevel) readSubjects(newdb *base.DbTopLevel) {
 	db.SubjectMap = map[Ref]string{}
@@ -25,7 +25,7 @@ func (db *DbTopLevel) makeNewSubject(
 	newdb *base.DbTopLevel,
 	tag string,
 	name string,
-) base.Ref {
+) Ref {
 	s := newdb.NewSubject("")
 	s.Tag = tag
 	s.Name = name

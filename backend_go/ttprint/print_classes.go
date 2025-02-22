@@ -1,14 +1,14 @@
 package ttprint
 
 import (
-	"W365toFET/base"
-	"W365toFET/ttbase"
+	"gradgrind/backend/base"
+	"gradgrind/backend/ttbase"
 	"slices"
 )
 
 func getClasses(
 	ttinfo *ttbase.TtInfo,
-	pagemap map[base.Ref][]xPage,
+	pagemap map[Ref][]xPage,
 ) []ttPage {
 	data := getClassData(ttinfo)
 	pages := []ttPage{}
@@ -32,7 +32,7 @@ func getClasses(
 
 func getOneClass(
 	ttinfo *ttbase.TtInfo,
-	pagemap map[base.Ref][]xPage,
+	pagemap map[Ref][]xPage,
 	e *base.Class,
 ) []ttPage {
 	data := getClassData(ttinfo)
@@ -48,22 +48,22 @@ func getOneClass(
 	return []ttPage{page}
 }
 
-func getClassData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
+func getClassData(ttinfo *ttbase.TtInfo) map[Ref][]Tile {
 	db := ttinfo.Db
 	ref2id := ttinfo.Ref2Tag
 	type cdata struct { // for SuperCourses
-		groups   map[base.Ref]bool
-		rooms    map[base.Ref]bool
-		teachers map[base.Ref]bool
+		groups   map[Ref]bool
+		rooms    map[Ref]bool
+		teachers map[Ref]bool
 	}
 	// Generate the tiles.
-	classTiles := map[base.Ref][]Tile{}
+	classTiles := map[Ref][]Tile{}
 	for cref, cinfo := range ttinfo.CourseInfo {
 		subject := ref2id[cinfo.Subject]
 		// For SuperCourses gather the resources from the relevant SubCourses.
 		sc, ok := db.Elements[cref].(*base.SuperCourse)
 		if ok {
-			cmap := map[base.Ref]cdata{}
+			cmap := map[Ref]cdata{}
 			for _, subref := range sc.SubCourses {
 				sub := db.Elements[subref].(*base.SubCourse)
 				for _, gref := range sub.Groups {
@@ -74,9 +74,9 @@ func getClassData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 					cdata1, ok := cmap[cref]
 					if !ok {
 						cdata1 = cdata{
-							map[base.Ref]bool{},
-							map[base.Ref]bool{},
-							map[base.Ref]bool{},
+							map[Ref]bool{},
+							map[Ref]bool{},
+							map[Ref]bool{},
 						}
 					}
 
@@ -99,17 +99,17 @@ func getClassData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 				}
 				rooms := l.Rooms
 				for cref, cdata1 := range cmap {
-					tlist := []base.Ref{}
+					tlist := []Ref{}
 					for t := range cdata1.teachers {
 						tlist = append(tlist, t)
 					}
-					glist := []base.Ref{}
+					glist := []Ref{}
 					for g := range cdata1.groups {
 						glist = append(glist, g)
 					}
 					// Choose the rooms in "rooms" which could be relevant for
 					// the list of (general) rooms in cdata1.rooms.
-					rlist := []base.Ref{}
+					rlist := []Ref{}
 					for rref := range cdata1.rooms {
 						rx := db.Elements[rref]
 						_, ok := rx.(*base.Room)
@@ -169,7 +169,7 @@ func getClassData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 			}
 		} else {
 			// A normal Course
-			tlist := []base.Ref{}
+			tlist := []Ref{}
 			tlist = append(tlist, cinfo.Teachers...)
 			tstrings := ttinfo.SortList(tlist)
 
@@ -178,7 +178,7 @@ func getClassData(ttinfo *ttbase.TtInfo) map[base.Ref][]Tile {
 				if l.Day < 0 {
 					continue
 				}
-				rlist := []base.Ref{}
+				rlist := []Ref{}
 				rlist = append(rlist, l.Rooms...)
 				rstrings := ttinfo.SortList(rlist)
 

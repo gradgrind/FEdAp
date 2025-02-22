@@ -26,15 +26,17 @@
 package ttprint
 
 import (
-	"W365toFET/base"
-	"W365toFET/ttbase"
 	"encoding/json"
 	"errors"
+	"gradgrind/backend/base"
+	"gradgrind/backend/ttbase"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 )
+
+type Ref = base.Ref
 
 // A PrintTable provides configuration data for producing a PDF document
 // containing a particular type of timetable.
@@ -134,9 +136,9 @@ func GenTimetables(
 
 	for _, cmd := range commands {
 		// Collect the "Pages" data from the PrintTable
-		pageData := map[base.Ref][]xPage{}
+		pageData := map[Ref][]xPage{}
 		for _, pd := range cmd.Pages {
-			ref := base.Ref(pd["Id"].(string))
+			ref := Ref(pd["Id"].(string))
 			pdlist := make([]xPage, len(pd)-1)
 			i := 0
 			for k, v := range pd {
@@ -195,11 +197,11 @@ func GenTimetables(
 
 func genTypstOneElement(
 	ttinfo *ttbase.TtInfo,
-	pagemap map[base.Ref][]xPage,
+	pagemap map[Ref][]xPage,
 	cmd *PrintTable,
 ) (Timetable, string) {
 	var tt Timetable
-	ref := base.Ref(cmd.Type)
+	ref := Ref(cmd.Type)
 	typstData := cmd.Typst
 	e := ttinfo.Db.Elements[ref]
 	c, ok := e.(*base.Class)

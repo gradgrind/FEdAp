@@ -1,0 +1,27 @@
+It would be good to support a number of input formats. Currently
+envisaged are:
+
+*) The "native" format, at present a basic JSON dump of the database.
+
+*) W365 XML (full data)
+
+*) W365 "_w365.json" (W365 output for timetabling, limited scope)
+
+*) FET ".fet" (very limited scope – it may be difficult to map this
+to courses)
+Manual editing of a FET-generated timetable should definitely be an
+aim, though I might need to place limits on some structural elements
+(Class/group/subgroup structure).
+
+*) FET result file (which one?), so that FET can be used as a back-end
+for timetable generation. Using the "...data_and_timetable.fet" output
+would possibly be the most convenient as it could be combined with
+the previous point.
+
+Outputs:
+
+*) Save in "native" (JSON) format.
+
+*) FET ".fet", perhaps with and without unfixed placements?
+
+*) Perhaps W365, but this is more difficult.

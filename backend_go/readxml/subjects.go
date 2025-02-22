@@ -1,7 +1,7 @@
 package readxml
 
 import (
-	"W365toFET/base"
+	"gradgrind/backend/base"
 	"slices"
 	"strings"
 )
@@ -78,7 +78,7 @@ func (cdata *conversionData) getCourseSubject(c *Course) Ref {
 func (cdata *conversionData) makeNewSubject(
 	tag string,
 	name string,
-) base.Ref {
+) Ref {
 	s := cdata.db.NewSubject("")
 	s.Tag = tag
 	s.Name = name

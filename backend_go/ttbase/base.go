@@ -4,7 +4,7 @@
 package ttbase
 
 import (
-	"W365toFET/base"
+	"gradgrind/backend/base"
 	"slices"
 	"strings"
 )
@@ -231,7 +231,7 @@ func (ttinfo *TtInfo) orderResources() {
 	// Needed for sorting teachers, groups and rooms
 	db := ttinfo.Db
 	i := 0
-	olist := map[base.Ref]int{}
+	olist := map[Ref]int{}
 	for _, t := range db.Teachers {
 		olist[t.Id] = i
 		i++

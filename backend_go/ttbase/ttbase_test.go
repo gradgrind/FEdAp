@@ -1,10 +1,10 @@
 package ttbase_test
 
 import (
-	"W365toFET/base"
-	"W365toFET/readxml"
-	"W365toFET/ttbase"
 	"fmt"
+	"gradgrind/backend/base"
+	"gradgrind/backend/readxml"
+	"gradgrind/backend/ttbase"
 	"slices"
 	"testing"
 )
