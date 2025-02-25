@@ -10,7 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
 )
 
 // TODO: Read all go source files seeking strings for translation.
@@ -19,8 +19,15 @@ import (
 // These are collected into a translation file, including source file info.
 // These files can be read into a map for performing the translation.
 
+var tregexp *regexp.Regexp
+
+func init() {
+	tregexp = regexp.MustCompile("^[\"`]<([a-zA-Z]*)>([^>]+)>[\"`]$")
+}
+
 type trItem struct {
 	line int
+	tag  string
 	text string
 }
 
@@ -62,7 +69,7 @@ func main() {
 		data := getTrStrings(f)
 		fmt.Printf("++ %s :: %s\n", data.packageName, filepath.Base(data.path))
 		for _, tr := range data.items {
-			fmt.Printf("    -- %04d: %s\n", tr.line, tr.text)
+			fmt.Printf("    -- %04d: [%s] %s\n", tr.line, tr.tag, tr.text)
 		}
 	}
 }
@@ -85,11 +92,13 @@ func getTrStrings(f string) trData {
 		if ok {
 
 			if ret.Kind == token.STRING {
-				s := strings.Trim(ret.Value, "\"`")
-				if strings.HasPrefix(s, "<") && strings.HasSuffix(s, ">") {
+
+				rm := tregexp.FindStringSubmatch(ret.Value)
+				if rm != nil {
 					data.items = append(data.items, trItem{
 						fset.Position(ret.Pos()).Line,
-						s[1 : len(s)-1],
+						rm[1],
+						rm[2],
 					})
 				}
 			}

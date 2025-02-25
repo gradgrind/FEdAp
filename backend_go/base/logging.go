@@ -22,13 +22,6 @@ type LogBase struct {
 	Fallback map[string]string
 }
 
-func init() {
-	Tr(map[string]string{
-		"BUG_UNKNOWN_MESSAGE":       "[Bug] Unknown message: %s ::: %+v",
-		"BUG_MESSAGE_DEFINED_TWICE": "[Bug] Message defined twice: %s",
-	})
-}
-
 func OpenLog(logpath string) {
 	var file *os.File
 	if logpath == "" {
@@ -58,7 +51,7 @@ func I18N(msg string, args ...any) string {
 	if !ok {
 		msgt, ok = logbase.Fallback[msg]
 		if !ok {
-			Report("BUG_UNKNOWN_MESSAGE", msg, args)
+			Report("<Bug>Unknown message: %[1]s ::: %+[2]v>", msg, args)
 			panic("Bug")
 		}
 	}
@@ -97,7 +90,7 @@ func Tr(trmap map[string]string) {
 	}
 	for k, v := range trmap {
 		if _, nok := lg.Fallback[k]; nok {
-			Report("BUG_MESSAGE_DEFINED_TWICE", k)
+			Report("<Bug>Message defined twice: %s>", k)
 			panic("Bug")
 		}
 		lg.Fallback[k] = v
