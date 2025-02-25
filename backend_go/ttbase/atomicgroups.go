@@ -38,7 +38,8 @@ func (ttinfo *TtInfo) makeAtomicGroups() {
 	for _, cl := range ttinfo.Db.Classes {
 		divs, ok := ttinfo.ClassDivisions[cl.Id]
 		if !ok {
-			base.Bug.Fatalf("ttinfo.classDivisions[%s]\n", cl.Id)
+			base.Report("<Bug>ttinfo.classDivisions[%s]>", cl.Id)
+			panic("Bug")
 		}
 
 		if len(divs) == 0 {

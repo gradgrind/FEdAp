@@ -18,8 +18,9 @@ func (ttinfo *TtInfo) initialFixedPlacement() {
 
 			p := l.Placement
 			if p < 0 {
-				base.Error.Fatalf("Fixed lesson has no placement,"+
-					" course: %s\n", ttinfo.printAGCourse(ag))
+				base.Report(
+					"<Error>Fixed lesson has no placement, course: %s>",
+					ttinfo.printAGCourse(ag))
 			}
 
 			if ttinfo.TestPlacement(lix, p) {
@@ -28,9 +29,8 @@ func (ttinfo *TtInfo) initialFixedPlacement() {
 			} else {
 				t := fmt.Sprintf("%d.%d",
 					p/ttinfo.DayLength, p%ttinfo.DayLength)
-				base.Error.Fatalf(
-					"Placement of fixed lesson @ %s failed,\n"+
-						"  course: %s\n",
+				base.Report(
+					"<Error>Placement of fixed lesson @ %s failed,\n  course: %s>",
 					t, ttinfo.printAGCourse(ag))
 			}
 		}
@@ -64,9 +64,8 @@ func (ttinfo *TtInfo) initialNonFixedPlacement() {
 			} else {
 				t := fmt.Sprintf("%d.%d",
 					p/ttinfo.DayLength, p%ttinfo.DayLength)
-				base.Error.Printf(
-					"Placement of non-fixed lesson @ %s failed,\n"+
-						"  course: %s\n",
+				base.Report(
+					"<Error>Placement of non-fixed lesson @ %s failed,\n  course: %s>",
 					t, ttinfo.printAGCourse(ag))
 				l.Placement = -1
 				for i := range l.XRooms {
@@ -97,8 +96,8 @@ func (ttinfo *TtInfo) initialRoomChoices() {
 				if ttplaces.TtSlots[slot] == 0 {
 					ttplaces.TtSlots[slot] = lix
 				} else {
-					base.Warning.Printf(
-						"Lesson cannot use room %s,\n  course: %s\n",
+					base.Report(
+						"<Warning>Lesson cannot use room %s,\n  course: %s>",
 						ttinfo.Resources[rix].(*base.Room).Tag,
 						ttinfo.printAGCourse(ag),
 					)
@@ -120,10 +119,12 @@ func (ttinfo *TtInfo) UnplaceLesson(lix LessonUnitIndex) {
 
 	//TODO--- for testing
 	if l.Fixed {
-		base.Bug.Fatalf("Can't unplace %d – fixed\n", lix)
+		base.Report("<Bug>Can't unplace %d – fixed>", lix)
+		panic("Bug")
 	}
 	if slot < 0 {
-		base.Bug.Fatalf("Can't unplace %d – not placed\n", lix)
+		base.Report("<Bug>Can't unplace %d – not placed>", lix)
+		panic("Bug")
 	}
 	//--
 

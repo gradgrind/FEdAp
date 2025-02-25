@@ -4,12 +4,6 @@ import (
 	"gradgrind/backend/base"
 )
 
-func init() {
-	base.Tr(map[string]string{
-		"OR_PARALLEL?1": "%s (or parallel)",
-	})
-}
-
 type ResourceIndex = int
 type ActivityGroupIndex = int
 type LessonUnitIndex = int
@@ -48,7 +42,7 @@ func (ttinfo *TtInfo) printAGCourse(ag *ActivityGroup) string {
 	if len(ag.Courses) == 1 {
 		return ttinfo.View(c)
 	}
-	return base.I18N("OR_PARALLEL?1", ttinfo.View(c))
+	return base.I18N("<>%s (or parallel)>", ttinfo.View(c))
 }
 
 // PrepareActivityGroups creates the [ActivityGroup] items from the
@@ -137,9 +131,10 @@ func (ttinfo *TtInfo) PrepareActivityGroups() {
 					l0.Hour = l.Hour
 					update = true
 				} else if l.Day != l0.Day || l.Hour != l0.Hour {
-					base.Error.Printf("Parallel Activities with"+
-						"different placements in courses\n"+
-						" -- %s\n -- %s\n",
+					base.Report(
+						`<Error>Parallel Activities with different placements in courses
+ -- %s
+ -- %s>`,
 						ttinfo.View(cinfo), ttinfo.View(pcinfo))
 					// Patch the data to avoid conflict
 					if update {

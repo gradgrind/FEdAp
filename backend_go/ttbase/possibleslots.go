@@ -31,8 +31,8 @@ func (ttinfo *TtInfo) makePossibleSlots() {
 					}
 				}
 				if len(plist) == 0 {
-					base.Error.Fatalf("Lesson %d has no available time"+
-						" slots\n  -- Course: %s\n",
+					base.Report(
+						"<Error>Lesson %d has no available time slots\n  -- Course: %s>",
 						lix, ttinfo.printAGCourse(ag))
 				}
 				dmap[l.Duration] = plist

@@ -82,8 +82,9 @@ func (dgdata *DayGapConstraints) constraintAutomaticDifferentDays(
 		dgdata.DefaultDifferentDaysConsecutiveIfSameDay =
 			c.ConsecutiveIfSameDay
 	} else {
-		base.Bug.Fatalln(
-			"More than one AutomaticDifferentDays constraint")
+		base.Report(
+			"<Bug>More than one AutomaticDifferentDays constraint>")
+		panic("Bug")
 	}
 }
 
@@ -103,16 +104,16 @@ func (ttinfo *TtInfo) addParallelCoursesConstraint(
 		if i == 0 {
 			ll = len(cinfo.Lessons)
 		} else if len(cinfo.Lessons) != ll {
-			base.Error.Printf("Parallel courses have different"+
-				" lessons: %s\n", ttinfo.View(cinfo))
+			base.Report("<Error>Parallel courses have different lessons: %s>",
+				ttinfo.View(cinfo))
 			return
 		}
 		for j, l := range cinfo.Lessons {
 			if i == 0 {
 				footprint = append(footprint, l.Duration)
 			} else if l.Duration != footprint[j] {
-				base.Error.Printf("Parallel courses have lesson"+
-					" mismatch: %s\n", ttinfo.View(cinfo))
+				base.Report("<Error>Parallel courses have lesson mismatch: %s>",
+					ttinfo.View(cinfo))
 				return
 			}
 		}
@@ -125,8 +126,10 @@ func (ttinfo *TtInfo) addParallelCoursesConstraint(
 					continue
 				}
 				if slices.Contains(pc, cr) {
-					base.Error.Printf("Courses subject to more than one"+
-						" parallel constraint:\n  -- %s\n  -- %s\n",
+					base.Report(
+						`<Error>Courses subject to more than one parallel constraint:
+  -- %s
+  -- %s>`,
 						ttinfo.View(cinfo),
 						ttinfo.View(ttinfo.CourseInfo[cr]))
 					return

@@ -10,8 +10,8 @@ import (
 // of the weight to decide. It assumes weights are in the range 0 – 100.
 func AcceptRandom(weight int) bool {
 	if base.MAXWEIGHT != 100 {
-		base.Warning.Printf("Weight range not 0 – 100, converting. There" +
-			" may be a loss of precision.\n")
+		base.Report(
+			"<Warning>Weight range not 0 – 100, converting. There may be a loss of precision.>")
 		weight = (weight * 100) / base.MAXWEIGHT
 	}
 

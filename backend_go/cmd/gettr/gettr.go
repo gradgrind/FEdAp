@@ -22,7 +22,7 @@ import (
 var tregexp *regexp.Regexp
 
 func init() {
-	tregexp = regexp.MustCompile("^[\"`]<([a-zA-Z]*)>([^>]+)>[\"`]$")
+	tregexp = regexp.MustCompile("(?s)^[\"`]<([a-zA-Z]*)>(.+)>[\"`]$")
 }
 
 type trItem struct {
@@ -69,7 +69,7 @@ func main() {
 		data := getTrStrings(f)
 		fmt.Printf("++ %s :: %s\n", data.packageName, filepath.Base(data.path))
 		for _, tr := range data.items {
-			fmt.Printf("    -- %04d: [%s] %s\n", tr.line, tr.tag, tr.text)
+			fmt.Printf("    -- %04d: [%s] %#v\n", tr.line, tr.tag, tr.text)
 		}
 	}
 }
