@@ -42,7 +42,8 @@ func (ttinfo *TtInfo) printAGCourse(ag *ActivityGroup) string {
 	if len(ag.Courses) == 1 {
 		return ttinfo.View(c)
 	}
-	return base.I18N("<>%s (or parallel)>", ttinfo.View(c))
+	t, _ := base.I18N("<>%s (or parallel)>", ttinfo.View(c))
+	return t
 }
 
 // PrepareActivityGroups creates the [ActivityGroup] items from the

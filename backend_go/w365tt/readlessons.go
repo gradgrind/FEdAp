@@ -4,13 +4,6 @@ import (
 	"gradgrind/backend/base"
 )
 
-func init() {
-	base.Tr(map[string]string{
-		"LESSON_INVALID_COURSE?2": "<Lesson> %[1]s:\n" +
-			"  Invalid <Course>-field: %[2]s",
-	})
-}
-
 func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 	for _, e := range db.Lessons {
 		// The course must be Course or Supercourse.

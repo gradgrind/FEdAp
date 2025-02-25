@@ -4,25 +4,28 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 )
 
-// TODO: Replace these loggers by [Report], using logbase
-var (
-	//	Message *log.Logger
-	//	Warning *log.Logger
-	//	Error   *log.Logger
-	//	Bug     *log.Logger
+var tregexp *regexp.Regexp
+var logbase *LogBase
 
-	logbase *LogBase
-)
-
-type LogBase struct {
-	Logger   *log.Logger
-	LangMap  map[string]string
-	Fallback map[string]string
+func init() {
+	tregexp = regexp.MustCompile("(?s)^[\"`]<([a-zA-Z]*)>(.+)>[\"`]$")
 }
 
-func OpenLog(logpath string) {
+type I18nMessage struct {
+	tag  string
+	text string
+}
+
+type LogBase struct {
+	Logger  *log.Logger
+	LangMap map[string]I18nMessage
+	Channel chan map[string]any
+}
+
+func OpenLog(ochan chan map[string]any, logpath string) {
 	var file *os.File
 	if logpath == "" {
 		file = os.Stderr
@@ -34,66 +37,50 @@ func OpenLog(logpath string) {
 			log.Fatal(err)
 		}
 	}
+	logbase = &LogBase{
+		Logger:  log.New(file, "++", log.Lshortfile),
+		LangMap: map[string]I18nMessage{},
+		Channel: ochan,
+	}
+}
 
-	logbase.Logger = log.New(file, "++", log.Lshortfile)
+// TODO: Read message file
+func readMessages(path string) {
 
-	//Message = log.New(file, "*INFO* ", log.Lshortfile)
-	//Warning = log.New(file, "*WARNING* ", log.Lshortfile)
-	//Error = log.New(file, "*ERROR* ", log.Lshortfile)
-	//Bug = log.New(file, "*BUG* ", log.Lshortfile)
 }
 
 // I18N looks up a message in the message catalogue, performing value
 // substitutions.
-func I18N(msg string, args ...any) string {
+func I18N(msg string, args ...any) (string, string) {
 	// Look up message
 	msgt, ok := logbase.LangMap[msg]
 	if !ok {
-		msgt, ok = logbase.Fallback[msg]
-		if !ok {
-			Report("<Bug>Unknown message: %[1]s ::: %+[2]v>", msg, args)
+		// Add the untranslated string to the message map
+
+		rm := tregexp.FindStringSubmatch(msg)
+		if rm == nil {
+			Report("<Bug>Invalid message string: %#v>")
 			panic("Bug")
 		}
+		msgt = I18nMessage{rm[1], rm[2]}
+		logbase.LangMap[msg] = msgt
 	}
-	return fmt.Sprintf(msgt, args...)
+	return fmt.Sprintf(msgt.text, args...), msgt.tag
 }
 
-// TODO
-// Report logs a message. The keys should have a prefix to indicate the
-// type of the error and also the messages themselves should have an
-// appropriate prefix:
+// Report logs a message. The keys must have a prefix enclosed in angle
+// brackets to indicate the type of the message. They must also be terminated
+// by a right angle bracket. The currently supported prefixes are:
 //
-//	"ERROR_"   -> "[Error] ..."
-//	"INFO_"    -> "[Info] ..."
-//	"WARNING_" -> "[Warning] ..."
-//	"BUG_"     -> "[Bug] ..."
-//
-// The message prefixes may be translated.
+//	"<Error>", "<Warning>", "<Notice>: These will force the process
+//			pop-up to open.
+//	"<Info>": This is like "Notice", but the process window will not open
+//	      if the operation completes quickly enough.
+//	"<Bug>": This will cause a special message pop-up to be shown.
 func Report(msg string, args ...any) {
 	// Look up message
-	msgt := I18N(msg, args...)
-	logbase.Logger.Println(msg + "#" + msgt)
-}
+	msgt, tag := I18N(msg, args...)
+	logbase.Logger.Println(tag + ">" + msgt)
 
-// Tr adds message strings to the Fallback map of logbase, initializing
-// logbase if necessary.
-// It can be called from init functions.
-func Tr(trmap map[string]string) {
-	lg := logbase
-	if lg == nil {
-		lg = &LogBase{
-			//Logger: log.New(file, "++", log.Lshortfile),
-			//TODO: load the data from somewhere ...
-			LangMap:  map[string]string{},
-			Fallback: map[string]string{},
-		}
-		logbase = lg
-	}
-	for k, v := range trmap {
-		if _, nok := lg.Fallback[k]; nok {
-			Report("<Bug>Message defined twice: %s>", k)
-			panic("Bug")
-		}
-		lg.Fallback[k] = v
-	}
+	//TODO: Send to back-end interface
 }
