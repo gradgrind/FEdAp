@@ -9,8 +9,10 @@ func (db *DbTopLevel) readSubjects(newdb *base.DbTopLevel) {
 		// Perform some checks and add to the SubjectTags map.
 		_, nok := db.SubjectTags[e.Tag]
 		if nok {
-			base.Error.Fatalf("Subject Tag (Shortcut) defined twice: %s\n",
+			base.Report(
+				"<Error>Subject Tag (Shortcut) defined twice: %s>",
 				e.Tag)
+			continue
 		}
 		db.SubjectTags[e.Tag] = e.Id
 		//Copy data to base db.

@@ -64,8 +64,9 @@ func (db *DbTopLevel) readSuperCourses(newdb *base.DbTopLevel) {
 		// Now add the SuperCourse.
 		subject, ok := epochPlanSubjects[spc.EpochPlan]
 		if !ok {
-			base.Error.Fatalf("Unknown EpochPlan in SuperCourse %s:\n  %s\n",
+			base.Report("<Error>Unknown EpochPlan in SuperCourse %s:\n  %s>",
 				spc.Id, spc.EpochPlan)
+			continue
 		}
 		n := newdb.NewSuperCourse(spc.Id)
 		n.Subject = subject
@@ -86,13 +87,14 @@ func (db *DbTopLevel) getCourseSubject(
 	// to a single "composite" subject, using all the subject tags.
 	// Repeated use of the same subject list will reuse the created subject.
 	//
-	msg := "Course %s:\n  Not a Subject: %s\n"
+	msg := "<Error>Course %s:\n  Not a Subject: %s>"
 	var subject Ref
 	if len(srefs) == 1 {
 		wsid := srefs[0]
 		_, ok := db.SubjectMap[wsid]
 		if !ok {
-			base.Error.Fatalf(msg, courseId, wsid)
+			base.Report(msg, courseId, wsid)
+			return ""
 		}
 		subject = wsid
 	} else if len(srefs) > 1 {
@@ -104,7 +106,8 @@ func (db *DbTopLevel) getCourseSubject(
 			if ok {
 				sklist = append(sklist, stag)
 			} else {
-				base.Error.Fatalf(msg, courseId, wsid)
+				base.Report(msg, courseId, wsid)
+				return ""
 			}
 		}
 		sktag := strings.Join(sklist, "/")
@@ -117,7 +120,8 @@ func (db *DbTopLevel) getCourseSubject(
 			subject = db.makeNewSubject(newdb, sktag, "Compound Subject")
 		}
 	} else {
-		base.Error.Fatalf("Course/SubCourse has no subject: %s\n", courseId)
+		base.Report("<Error>Course/SubCourse has no subject: %s>", courseId)
+		return ""
 	}
 	return subject
 }
@@ -140,7 +144,7 @@ func (db *DbTopLevel) getCourseRoom(
 		var estr string
 		room, estr = db.makeRoomChoiceGroup(newdb, rrefs)
 		if estr != "" {
-			base.Error.Printf("In Course %s:\n%s", courseId, estr)
+			base.Report("<Error>In Course %s:\n%s>", courseId, estr)
 		}
 	} else if len(rrefs) == 1 {
 		// Check that room is Room or RoomGroup.
@@ -152,7 +156,7 @@ func (db *DbTopLevel) getCourseRoom(
 			if db.RoomGroupMap[rref0] {
 				room = rref0
 			} else {
-				base.Error.Printf("Invalid room in Course/SubCourse %s:\n  %s\n",
+				base.Report("<Error>Invalid room in Course/SubCourse %s:\n  %s>",
 					courseId, rref0)
 			}
 		}
@@ -172,8 +176,9 @@ func (db *DbTopLevel) getCourseGroups(
 	for _, gref := range grefs {
 		ngref, ok := db.GroupRefMap[gref]
 		if !ok {
-			base.Error.Fatalf("Invalid group in Course/SubCourse %s:\n  %s\n",
+			base.Report("<Error>Invalid group in Course/SubCourse %s:\n  %s>",
 				courseId, gref)
+			return nil
 		}
 		glist = append(glist, ngref)
 	}
@@ -191,8 +196,9 @@ func (db *DbTopLevel) getCourseTeachers(
 	for _, tref := range trefs {
 		_, ok := db.TeacherMap[tref]
 		if !ok {
-			base.Error.Fatalf("Unknown teacher in Course %s:\n  %s\n",
+			base.Report("<Error>Unknown teacher in Course %s:\n  %s>",
 				courseId, tref)
+			return nil
 		}
 		tlist = append(tlist, tref)
 	}

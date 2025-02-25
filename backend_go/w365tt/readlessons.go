@@ -16,9 +16,10 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 		// The course must be Course or Supercourse.
 		_, ok := db.CourseMap[e.Course]
 		if !ok {
-			base.Error.Fatalf(
-				"Lesson %s:\n  Invalid course: %s\n",
+			base.Report(
+				"<Error>Lesson %s:\n  Invalid course: %s>",
 				e.Id, e.Course)
+			continue
 		}
 		// Check the Rooms.
 		reflist := []Ref{}
@@ -27,8 +28,8 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 			if ok {
 				reflist = append(reflist, rref)
 			} else {
-				base.Error.Printf(
-					"Invalid Room in Lesson %s:\n  %s\n",
+				base.Report(
+					"<Error>Invalid Room in Lesson %s:\n  %s>",
 					e.Id, rref)
 			}
 		}
@@ -42,9 +43,10 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 						cgref := c.Groups[0]
 						cg := newdb.Elements[cgref].(*base.Group)
 						if cg.Tag != "" {
-							base.Error.Fatalf("SubstitutionService lesson"+
-								" (%s) not specified for full stand-in"+
-								" class\n", e.Id)
+							base.Report(
+								`<Error>SubstitutionService lesson (%s) not specified for full stand-in class>`,
+								e.Id)
+							continue
 						}
 						cl := newdb.Elements[cg.Class].(*base.Class)
 						// Mark class as stand-ins object
@@ -53,8 +55,9 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 						cl.Year = -1
 					}
 				} else {
-					base.Error.Fatalf("SubstitutionService lesson (%s) not"+
-						" in standard course: %s\n", e.Id, e.Course)
+					base.Report(
+						"<Error>SubstitutionService lesson (%s) not in standard course: %s>",
+						e.Id, e.Course)
 				}
 				continue
 			}

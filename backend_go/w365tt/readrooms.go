@@ -15,9 +15,10 @@ func (db *DbTopLevel) readRooms(newdb *base.DbTopLevel) {
 		// Perform some checks and add to the RoomTags map.
 		_, nok := db.RoomTags[e.Tag]
 		if nok {
-			base.Error.Fatalf(
-				"Room Tag (Shortcut) defined twice: %s\n",
+			base.Report(
+				"<Error>Room Tag (Shortcut) defined twice: %s>",
 				e.Tag)
+			continue
 		}
 		db.RoomTags[e.Tag] = e.Id
 		// Copy to base db.
@@ -37,9 +38,10 @@ func (db *DbTopLevel) readRoomGroups(newdb *base.DbTopLevel) {
 		if e.Tag != "" {
 			_, nok := db.RoomTags[e.Tag]
 			if nok {
-				base.Error.Fatalf(
-					"Room Tag (Shortcut) defined twice: %s\n",
+				base.Report(
+					"<Error>Room Tag (Shortcut) defined twice: %s>",
 					e.Tag)
+				continue
 			}
 			db.RoomTags[e.Tag] = e.Id
 		}
@@ -66,8 +68,8 @@ func (db *DbTopLevel) checkRoomGroups(newdb *base.DbTopLevel) {
 				continue
 
 			}
-			base.Error.Printf(
-				"Invalid Room in RoomGroup %s:\n  %s\n",
+			base.Report(
+				"<Error>Invalid Room in RoomGroup %s:\n  %s>",
 				e.Tag, rref)
 		}
 		if e.Tag == "" {
