@@ -172,7 +172,9 @@ void BackEnd::handleBackendError()
     IgnoreError("BACKEND ERROR", QString(bytes));
 }
 
-// Send a normal command to the back-end, start the dialog with timer.
+// Send a normal command to the back-end, start the dialog with timer
+// to delay the appearance of the progress window, which might not
+// appear at all if the the operation is quick enough.
 void BackEnd::call_backend(
     const QJsonObject data)
 {

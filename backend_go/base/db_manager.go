@@ -225,6 +225,12 @@ func newtags[T Elem](etype string, elist []T) {
 		checktags[tag] = true
 		e.setTag(tag)
 		Report("ERROR_TAG_REUSED", etype, tag0, e.getId(), tag)
+
+		// "<Error::Tag '%[2]s' (%[1]s) not unique: Element '%[3]s' changed to '%[4]s'>",
+		Report(
+			`<Error>Tag '%[2]s' (%[1]s) not unique:
+   Element '%[3]s' changed to '%[4]s'>`,
+			etype, tag0, e.getId(), tag)
 	}
 }
 
