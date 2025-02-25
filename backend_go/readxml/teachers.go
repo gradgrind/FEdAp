@@ -77,7 +77,7 @@ func (cdata *conversionData) getCourseTeachers(c *Course) []Ref {
 				continue
 			}
 		}
-		base.Error.Fatalf("In Course %s:\n  -- Invalid Teacher: %s\n",
+		base.Report("<Error>In Course %s:\n  -- Invalid Teacher: %s>",
 			c.Id, ref)
 	}
 	return tlist

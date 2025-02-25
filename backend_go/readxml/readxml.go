@@ -47,21 +47,22 @@ func newConversionData(xmlin *Scenario) *conversionData {
 	}
 }
 
-func ReadXML(xmlpath string) W365XML {
+func ReadXML(xmlpath string) *W365XML {
 	// Open the  XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
-		base.Error.Fatal(err)
+		base.Report("<Error>Opening W365 XML file: %s>", err)
 	}
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
 	// read the opened XML file as a byte array.
-	base.Message.Printf("Reading: %s\n", xmlpath)
+	base.Report("<Info>Reading W365 XML file: %s>", xmlpath)
 	byteValue, _ := io.ReadAll(xmlFile)
-	v := W365XML{}
-	err = xml.Unmarshal(byteValue, &v)
+	v := &W365XML{}
+	err = xml.Unmarshal(byteValue, v)
 	if err != nil {
-		base.Error.Fatalf("XML error in %s:\n %v\n", xmlpath, err)
+		base.Report("<Error>XML error in %s:\n %v>", xmlpath, err)
+		return nil
 	}
 	return v
 }
@@ -78,7 +79,8 @@ func ConvertToDb(f365xml string) *conversionData {
 		}
 	}
 	if indata == nil {
-		base.Error.Fatalln("No Active Scenario")
+		base.Report("<Error>No Active \"Scenario\">")
+		return nil
 	}
 
 	cdata := newConversionData(indata)
@@ -155,7 +157,8 @@ func (cdata *conversionData) getAbsences(
 	for _, aref := range splitRefList(reflist) {
 		ts, ok := cdata.absences[aref]
 		if !ok {
-			base.Error.Fatalf("%s:\n  -- Invalid Absence: %s\n", msg, aref)
+			base.Report("<Error>%s:\n  -- Invalid Absence: %s>", msg, aref)
+			continue
 		}
 		result = append(result, ts)
 	}
@@ -168,7 +171,8 @@ func (cdata *conversionData) getAbsences(
 				return -1
 			}
 			if a.Hour == b.Hour {
-				base.Error.Fatalf("%s:\n  -- Equal Absences\n", msg)
+				base.Report("<Error>%s:\n  -- Equal Absences>", msg)
+				return 0
 			}
 			return 1
 		}

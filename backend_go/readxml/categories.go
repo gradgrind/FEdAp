@@ -19,8 +19,9 @@ func (cdata *conversionData) withLunchBreak(
 	for _, catref := range splitRefList(refs) {
 		cat, ok := cdata.categories[catref]
 		if !ok {
-			base.Error.Fatalf("Teacher or Class (%s):\n"+
-				"  -- Invalid Category: %s", nodeId, catref)
+			base.Report("<Error>Teacher or Class (%s):\n  -- Invalid Category: %s>",
+				nodeId, catref)
+			continue
 		}
 		//fmt.Printf("  :: %+v\n", cat)
 		if cat.Shortcut == NO_LUNCH_BREAK {
@@ -41,8 +42,9 @@ func (cdata *conversionData) isStandIns(
 	for _, catref := range splitRefList(refs) {
 		cat, ok := cdata.categories[catref]
 		if !ok {
-			base.Error.Fatalf("Class (%s):\n"+
-				"  -- Invalid Category: %s", nodeId, catref)
+			base.Report("<Error>Class (%s):\n  -- Invalid Category: %s>",
+				nodeId, catref)
+			continue
 		}
 		//fmt.Printf("  :: %+v\n", cat)
 		if (cat.Role & 1) != 0 {
@@ -63,8 +65,9 @@ func (cdata *conversionData) getBlockTag(
 		for _, catref := range splitRefList(refs) {
 			cat, ok := cdata.categories[catref]
 			if !ok {
-				base.Error.Fatalf("Class (%s):\n"+
-					"  -- Invalid Category: %s", nodeId, catref)
+				base.Report("<Error>Class (%s):\n  -- Invalid Category: %s>",
+					nodeId, catref)
+				continue
 			}
 			//fmt.Printf("  :: %+v\n", cat)
 			// If catnode.Shortcut starts with "_", take this as

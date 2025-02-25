@@ -67,26 +67,29 @@ func toFET(db *base.DbTopLevel, fetpath string) {
 	fetfile := fetpath + ".fet"
 	f, err := os.Create(fetfile)
 	if err != nil {
-		base.Bug.Fatalf("Couldn't open output file: %s\n", fetfile)
+		base.Report("<Error>Opening FET file: %s>", err)
+		return
 	}
 	defer f.Close()
 	_, err = f.WriteString(xmlitem)
 	if err != nil {
-		base.Bug.Fatalf("Couldn't write fet output to: %s\n", fetfile)
+		base.Report("<Error>Writing FET file: %s>", err)
+		return
 	}
-	base.Message.Printf("FET file written to: %s\n", fetfile)
+	base.Report("<Info>FET file written to: %s>", fetfile)
 
 	// Write Id-map file.
 	mapfile := fetpath + ".map"
 	fm, err := os.Create(mapfile)
 	if err != nil {
-		base.Bug.Fatalf("Couldn't open output file: %s\n", mapfile)
+		base.Report("<Error>Opening map file: %s>", err)
+		return
 	}
 	defer fm.Close()
 	_, err = fm.WriteString(lessonIdMap)
 	if err != nil {
-		base.Bug.Fatalf("Couldn't write fet output to: %s\n", mapfile)
+		base.Report("<Error>Writing map file: %s>", err)
+		return
 	}
-	base.Message.Printf("Id-map written to: %s\n", mapfile)
-	base.Message.Println("OK")
+	base.Report("<Info>Id-map written to: %s>", mapfile)
 }

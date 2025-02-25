@@ -40,16 +40,15 @@ func (cdata *conversionData) readCourses() map[Ref][]int {
 				if l != "" {
 					ll, err := strconv.Atoi(l)
 					if err != nil {
-						base.Error.Fatalf(" In Course %s:\n"+
-							"  -- SplitHoursPerWeek = %s\n",
+						base.Report("<Error>In Course %s:\n  -- SplitHoursPerWeek = %s>",
 							n.Id, n.SplitHoursPerWeek)
 					}
 					llen = append(llen, ll)
 				}
 			}
 		} else if n.HoursPerWeek != 0.0 {
-			base.Warning.Printf("In Course %s:\n"+
-				"  -- No SplitHoursPerWeek specified\n", n.Id)
+			base.Report("<Warning>In Course %s:\n  -- No SplitHoursPerWeek specified>",
+				n.Id)
 			for i := 0; i < int(n.HoursPerWeek); i++ {
 				llen = append(llen, 1)
 			}

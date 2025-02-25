@@ -42,13 +42,15 @@ func (cdata *conversionData) makeLessons(scheduled []Ref) {
 			if !ok {
 				_, ok = e.(*base.SuperCourse)
 				if !ok {
-					base.Error.Fatalf("Lesson %s has invalid Course\n", n.Id)
+					base.Report("<Error>Lesson %s has invalid Course>",
+						n.Id)
+					continue
 				}
 			}
 			lessons[cid] = append(lessons[cid], n)
 			continue
 		}
-		base.Error.Fatalf("Lesson %s has unknown Course\n", n.Id)
+		base.Report("<Error>Lesson %s has unknown Course>", n.Id)
 	}
 
 	// Generate base.Lessons for the courses, taking into account the

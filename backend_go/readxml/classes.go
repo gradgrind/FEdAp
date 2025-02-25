@@ -102,8 +102,9 @@ func (cdata *conversionData) readClasses() {
 		for i, wdivref := range splitRefList(n.Divisions) {
 			wdiv, ok := cdata.divisions[wdivref]
 			if !ok {
-				base.Error.Fatalf("In Class %s:\n  -- Invalid Division: %s\n",
+				base.Report("<Error>In Class %s:\n  -- Invalid Division: %s>",
 					n.Id, wdivref)
+				continue
 			}
 			dname := wdiv.Name
 			if dname == "" {
@@ -114,21 +115,22 @@ func (cdata *conversionData) readClasses() {
 				c, ok := pregroups[gref]
 				if ok {
 					if c != nil {
-						base.Error.Fatalf("Group Defined in"+
-							" multiple Divisions:\n  -- %s\n", gref)
+						base.Report("<Error>Group Defined in multiple Divisions:\n  -- %s>",
+							gref)
+						continue
 					}
 					// Flag Group and add to division's group list
 					pregroups[gref] = e
 					glist = append(glist, gref)
 				} else {
-					base.Error.Fatalf("Unknown Group in Class %s,"+
-						" Division %s:\n  %s\n", e.Tag, wdiv.Name, gref)
+					base.Report("<Error>Unknown Group in Class %s, Division %s:\n  %s>",
+						e.Tag, wdiv.Name, gref)
 				}
 			}
 			if len(glist) < 2 {
-				base.Error.Fatalf("In Class %s,"+
-					" not enough valid Groups (>1) in Division %s\n",
+				base.Report("<Error>In Class %s, not enough valid Groups (>1) in Division %s>",
 					e.Tag, wdiv.Name)
+				continue
 			}
 			divs = append(divs, base.Division{
 				Name:   dname,
@@ -146,8 +148,9 @@ func (cdata *conversionData) readClasses() {
 					pregroups[gref] = e
 				}
 			} else {
-				base.Error.Fatalf("Unknown Group in Class %s,"+
-					" no Division:\n  %s\n", e.Tag, gref)
+				base.Report("<Error>Unknown Group in Class %s, no Division:\n  %s>",
+					e.Tag, gref)
+				continue
 			}
 		}
 		if len(xdiv) != 0 {
@@ -170,8 +173,8 @@ func (cdata *conversionData) readClasses() {
 	// Copy Groups.
 	for _, n := range cdata.xmlin.Groups {
 		if pregroups[n.Id] == nil {
-			base.Error.Printf("Group not attached to Class, removing:\n"+
-				"  -- %s\n", n.Id)
+			base.Report("<Error>Group not attached to Class, removing:\n  -- %s>",
+				n.Id)
 			continue
 		}
 		g := db.NewGroup(n.Id)
@@ -202,7 +205,7 @@ func (cdata *conversionData) getCourseGroups(c *Course) []Ref {
 				continue
 			}
 		}
-		base.Error.Fatalf("In Course %s:\n  -- Invalid Course Group: %s\n",
+		base.Report("<Error>In Course %s:\n  -- Invalid Course Group: %s>",
 			c.Id, ref)
 	}
 	return glist

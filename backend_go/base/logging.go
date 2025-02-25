@@ -58,6 +58,7 @@ func I18N(msg string, args ...any) string {
 	return fmt.Sprintf(msgt, args...)
 }
 
+// TODO
 // Report logs a message. The keys should have a prefix to indicate the
 // type of the error and also the messages themselves should have an
 // appropriate prefix:
