@@ -225,7 +225,7 @@ func genTypstOneElement(
 		tt = timetable(ttinfo.Db, pages, typstData, "Room")
 		return tt, "room_" + r.Tag
 	}
-	base.Error.Fatalf("Can't print timetable for invalid element: %+v\n", e)
+	base.Report("<Error>Can't print timetable for invalid element: %+v>", e)
 	return tt, ""
 }
 
@@ -298,24 +298,25 @@ func timetable(
 }
 
 func makeTypstJson(tt Timetable, datadir string, outfile string) {
+	emsg := "<Error>Printing failed: %s>"
 	b, err := json.MarshalIndent(tt, "", "  ")
 	if err != nil {
-		base.Error.Fatal(err)
+		base.Report(emsg, err)
 	}
 	// os.Stdout.Write(b)
 	outdir := filepath.Join(datadir, "_data")
 	if _, err := os.Stat(outdir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(outdir, os.ModePerm)
 		if err != nil {
-			base.Error.Fatal(err)
+			base.Report(emsg, err)
 		}
 	}
 	jsonpath := filepath.Join(outdir, outfile+".json")
 	err = os.WriteFile(jsonpath, b, 0666)
 	if err != nil {
-		base.Error.Fatal(err)
+		base.Report(emsg, err)
 	}
-	base.Message.Printf("Wrote: %s\n", jsonpath)
+	base.Report("<Info>Wrote: %s>", jsonpath)
 }
 
 func makePdf(
@@ -329,7 +330,7 @@ func makePdf(
 	if _, err := os.Stat(outdir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(outdir, os.ModePerm)
 		if err != nil {
-			base.Error.Fatalln(err)
+			base.Report("<Error>Writing pdf: %s>", err)
 		}
 	}
 	outpath := filepath.Join(outdir, outfile+".pdf")
@@ -343,10 +344,10 @@ func makePdf(
 	//fmt.Printf(" ::: %s\n", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		base.Error.Println("(Typst) " + string(output))
-		base.Error.Fatal(err)
+		base.Report("<Error>(Typst) %s\n  %s>", string(output), err)
+		return
 	}
-	base.Message.Printf("Timetable written to: %s\n", outpath)
+	base.Report("<Info>Timetable written to: %s>", outpath)
 }
 
 func splitGroups(glist []string) [][]string {

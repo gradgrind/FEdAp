@@ -137,7 +137,8 @@ func getClassData(ttinfo *ttbase.TtInfo) map[Ref][]Tile {
 							}
 							continue
 						}
-						base.Bug.Fatalf("Not a room: %s\n", rref)
+						base.Report("<Bug>Not a room: %s>", rref)
+						panic("Bug")
 					}
 
 					// The groups need special handling, to determine tile

@@ -68,9 +68,10 @@ func getClasses(fetinfo *fetInfo) {
 		}
 		divs, ok := ttinfo.ClassDivisions[cl.Id]
 		if !ok {
-			base.Bug.Fatalf(
-				"Class %s has no entry in ttinfo.ClassDivisions\n",
+			base.Report(
+				"<Bug>Class %s has no entry in ttinfo.ClassDivisions>",
 				cname)
+			panic("Bug")
 		}
 
 		// Construct the Groups and Subgroups
@@ -125,9 +126,10 @@ func getClasses(fetinfo *fetInfo) {
 		for _, na := range cl.NotAvailable {
 			if na.Day != day {
 				if na.Day < day {
-					base.Error.Fatalf(
-						"Class %s has unordered NotAvailable times.\n",
+					base.Report(
+						"<Error>Class %s has unordered NotAvailable times>",
 						cname)
+					continue
 				}
 				day = na.Day
 			}

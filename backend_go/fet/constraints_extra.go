@@ -212,8 +212,9 @@ func (fetinfo *fetInfo) getExtraConstraints() {
 		cn := c.(*base.DoubleLessonNotOverBreaks)
 
 		if len(doubleBlocked) != 0 {
-			base.Error.Fatalln("Constraint DoubleLessonNotOverBreaks" +
-				" specified more than once")
+			base.Report(
+				"<Error>Constraint DoubleLessonNotOverBreaks specified more than once>")
+			continue
 		}
 
 		timeslots := []preferredStart{}
@@ -269,7 +270,8 @@ func (fetinfo *fetInfo) getExtraConstraints() {
 		for _, k := range cn.Courses {
 			cinfo, ok := ttinfo.CourseInfo[k]
 			if !ok {
-				base.Bug.Fatalf("Invalid course: %s\n", k)
+				base.Report("<Bug>Invalid course: %s>", k)
+				panic("Bug")
 			}
 			for _, l := range cinfo.Lessons {
 				tclist.ConstraintActivityPreferredTimeSlots = append(
