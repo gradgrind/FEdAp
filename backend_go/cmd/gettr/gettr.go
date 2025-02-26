@@ -87,6 +87,7 @@ func main() {
 	// Get all go files in this directory (and subdirectories ...)
 	gofiles := listFiles(abspath)
 
+	mmap := map[string]string{} // used in checking for duplicates
 	for _, f := range gofiles {
 		fmt.Printf("Reading %s\n", f)
 
@@ -95,10 +96,15 @@ func main() {
 			fmt.Sprintf("\n::%s@%s",
 				data.packageName, filepath.Base(data.path)))
 		for _, tr := range data.items {
-			//t := strconv.Quote(tr.text)
+			// Check this is not a duplicate
+			if where, ok := mmap[tr.text]; ok {
+				log.Printf("ERROR: Message is a duplicate of %s:\n"+
+					"  %04d: %s\n", where, tr.line, tr.text)
+				continue
+			}
+			mmap[tr.text] = fmt.Sprintf("%s:%04d", f, tr.line)
 			writeLine(ftr,
 				fmt.Sprintf("<<%04d:%s>%s", tr.line, tr.tag, tr.text))
-			//t[1:len(t)-1]))
 		}
 	}
 }
@@ -149,7 +155,8 @@ func getTrStrings(f string) trData {
 						})
 
 					} else {
-						//rmt = strconv.Quote(rm[2])
+						// This warns when a "suitable" string is found, but
+						// enclosed in '"'.
 						fmt.Printf("TODO: %d: <%s>%s>\n",
 							fset.Position(ret.Pos()).Line,
 							rm[1], rm[2])

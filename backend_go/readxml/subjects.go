@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const invalidsubject = `<Error>In Course %s:\n  -- Invalid Subject: %s>`
+
 func (cdata *conversionData) readSubjects() {
 	slices.SortFunc(cdata.xmlin.Subjects, func(a, b Subject) int {
 		if a.ListPosition < b.ListPosition {
@@ -45,8 +47,7 @@ func (cdata *conversionData) getCourseSubject(c *Course) Ref {
 				continue
 			}
 		}
-		base.Report(`<Error>In Course %s:\n  -- Invalid Subject: %s>`,
-			c.Id, ref)
+		base.Report(invalidsubject, c.Id, ref)
 	}
 	if len(slist) == 1 {
 		return slist[0]
@@ -62,8 +63,7 @@ func (cdata *conversionData) getCourseSubject(c *Course) Ref {
 				continue
 			}
 		}
-		base.Report(`<Error>In Course %s:\n  -- Invalid Subject: %s>`,
-			c.Id, sref)
+		base.Report(invalidsubject, c.Id, sref)
 	}
 	sktag := strings.Join(sklist, ",")
 	sref, ok := cdata.subjectTags[sktag]

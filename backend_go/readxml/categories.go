@@ -8,6 +8,8 @@ import (
 
 const NO_LUNCH_BREAK = "-Mp"
 
+const invalidcategory = `<Error>Class (%s):\n  -- Invalid Category: %s>`
+
 // Teachers and classes can have a "flag" (implemented here as a Category)
 // to signal "no lunch break". By default the element should have a
 // lunch break, but if this flag is present the result here will be false.
@@ -43,8 +45,7 @@ func (cdata *conversionData) isStandIns(
 	for _, catref := range splitRefList(refs) {
 		cat, ok := cdata.categories[catref]
 		if !ok {
-			base.Report(`<Error>Class (%s):\n  -- Invalid Category: %s>`,
-				nodeId, catref)
+			base.Report(invalidcategory, nodeId, catref)
 			continue
 		}
 		//fmt.Printf("  :: %+v\n", cat)
@@ -66,8 +67,7 @@ func (cdata *conversionData) getBlockTag(
 		for _, catref := range splitRefList(refs) {
 			cat, ok := cdata.categories[catref]
 			if !ok {
-				base.Report(`<Error>Class (%s):\n  -- Invalid Category: %s>`,
-					nodeId, catref)
+				base.Report(invalidcategory, nodeId, catref)
 				continue
 			}
 			//fmt.Printf("  :: %+v\n", cat)

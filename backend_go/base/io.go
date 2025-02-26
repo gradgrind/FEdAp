@@ -49,7 +49,7 @@ func (db *DbTopLevel) testElement(ref Ref, element Elem) {
 	}
 	_, nok := db.Elements[ref]
 	if nok {
-		Report(`<Error>Element Id defined more than once:\n  %s>`, ref)
+		Report(idduplicate, ref)
 	}
 	db.Elements[ref] = element
 }

@@ -48,7 +48,8 @@ func ReadPlacements(
 	v := fetActivities{}
 	err = xml.Unmarshal(byteValue, &v)
 	if err != nil {
-		base.Report(`<Error>XML error in %s:\n %v>`, xmlpath, err)
+		base.Report(`<Error>FET activities (XML) error in %s:\n %v>`,
+			xmlpath, err)
 		return nil
 	}
 

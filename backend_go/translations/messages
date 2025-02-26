@@ -1,18 +1,18 @@
-#UTC:2025-02-26 11:04:31
+#UTC:2025-02-26 12:21:48
 
 ::base@constraints.go
 
 ::base@db_manager.go
-<<0032:Error>Element Id defined more than once:\n  %s
-<<0141:Error>Lunch break hours not contiguous
-<<0177:Bug>Group not in Class: %s
-<<0213:Error>Tag '%[2]s' (%[1]s) not unique:\n  Element '%[3]s' changed to '%[4]s'
-<<0223:Error>Input has no days
-<<0227:Error>Input has no hours
-<<0231:Error>Input has no teachers
-<<0235:Error>Input has no subjects
-<<0239:Error>Input has no rooms
-<<0243:Error>Input has no classes
+<<0011:Error>Element Id defined more than once:\n  %s
+<<0143:Error>Lunch break hours not contiguous
+<<0179:Bug>Group not in Class: %s
+<<0215:Error>Tag '%[2]s' (%[1]s) not unique:\n  Element '%[3]s' changed to '%[4]s'
+<<0225:Error>Input has no days
+<<0229:Error>Input has no hours
+<<0233:Error>Input has no teachers
+<<0237:Error>Input has no subjects
+<<0241:Error>Input has no rooms
+<<0245:Error>Input has no classes
 
 ::base@io.go
 <<0013:Bug>Saving JSON: %v
@@ -21,10 +21,9 @@
 <<0034:Info>Reading file: %s
 <<0038:Error>Invalid JSON: %s
 <<0047:Error>Element has no Id:\n  -- %+v
-<<0052:Error>Element Id defined more than once:\n  %s
 
 ::base@logging.go
-<<0068:Bug>Invalid message string: %#v
+<<0076:Bug>Invalid message string: %#v
 
 ::base@structures.go
 
@@ -52,12 +51,12 @@
 
 ::fet@fet_base.go
 <<0033:Error>Building FET XML: %v
-<<0062:Warning>Weight range not 0 – 100, converting. There may be a loss of precision.
+<<0062:Warning>Weight range not 0 – 100, converting for FET. There may be a loss of precision.
 
 ::fet@read_placements.go
 <<0040:Error>Reading FET activities: %v
 <<0046:Info>Reading FET placements: %s
-<<0051:Error>XML error in %s:\n %v
+<<0051:Error>FET activities (XML) error in %s:\n %v
 
 ::fet@rooms.go
 
@@ -68,15 +67,14 @@
 ::fet@timeslots.go
 
 ::readxml@categories.go
-<<0023:Error>Teacher or Class (%s):\n  -- Invalid Category: %s
-<<0046:Error>Class (%s):\n  -- Invalid Category: %s
-<<0069:Error>Class (%s):\n  -- Invalid Category: %s
+<<0011:Error>Class (%s):\n  -- Invalid Category: %s
+<<0025:Error>Teacher or Class (%s):\n  -- Invalid Category: %s
 
 ::readxml@classes.go
 <<0105:Error>In Class %s:\n  -- Invalid Division: %s
-<<0119:Error>Group Defined in multiple Divisions:\n  -- %s
+<<0119:Error>Group Defined in more than one Divisions:\n  -- %s
 <<0129:Error>Unknown Group in Class %s, Division %s:\n  %s
-<<0135:Error>In Class %s, not enough valid Groups (>1) in Division %s
+<<0135:Error>In Class %s, too few valid Groups (>1) in Division %s
 <<0157:Error>Unknown Group in Class %s, no Division:\n  %s
 <<0183:Error>Group not attached to Class, removing:\n  -- %s
 <<0215:Error>In Course %s:\n  -- Invalid Course Group: %s
@@ -116,9 +114,8 @@
 <<0121:Bug>%s is not a (real) Room
 
 ::readxml@subjects.go
-<<0035:Error>In Course %s:\n  -- No Subject
-<<0048:Error>In Course %s:\n  -- Invalid Subject: %s
-<<0065:Error>In Course %s:\n  -- Invalid Subject: %s
+<<0009:Error>In Course %s:\n  -- Invalid Subject: %s
+<<0037:Error>In Course %s:\n  -- No Subject
 
 ::readxml@teachers.go
 <<0080:Error>In Course %s:\n  -- Invalid Teacher: %s
@@ -191,13 +188,12 @@
 <<0350:Info>Timetable written to: %s
 
 ::ttprint@print_classes.go
-<<0140:Bug>Not a room: %s
+<<0009:Bug>Not a room: %s
 
 ::ttprint@print_rooms.go
 <<0080:Bug>Invalid room in course %s:\n  %+v
 
 ::ttprint@print_teachers.go
-<<0134:Bug>Not a room: %s
 
 ::w365tt@fromjson.go
 <<0017:Error>Reading JSON: %s

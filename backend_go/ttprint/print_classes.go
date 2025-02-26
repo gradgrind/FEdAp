@@ -6,6 +6,8 @@ import (
 	"slices"
 )
 
+const notaroom = `<Bug>Not a room: %s>`
+
 func getClasses(
 	ttinfo *ttbase.TtInfo,
 	pagemap map[Ref][]xPage,
@@ -137,7 +139,7 @@ func getClassData(ttinfo *ttbase.TtInfo) map[Ref][]Tile {
 							}
 							continue
 						}
-						base.Report(`<Bug>Not a room: %s>`, rref)
+						base.Report(notaroom, rref)
 						panic("Bug")
 					}
 

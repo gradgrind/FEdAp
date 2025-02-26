@@ -59,8 +59,8 @@ type fet struct {
 func weight2fet(w0 int) string {
 	if base.MAXWEIGHT != 100 {
 		base.Report(
-			`<Warning>Weight range not 0 – 100, converting. There may be a
-			> loss of precision.>`)
+			`<Warning>Weight range not 0 – 100, converting for FET. There may
+			> be a loss of precision.>`)
 		w0 = (w0 * 100) / base.MAXWEIGHT
 	}
 

@@ -116,7 +116,7 @@ func (cdata *conversionData) readClasses() {
 				if ok {
 					if c != nil {
 						base.Report(
-							`<Error>Group Defined in multiple Divisions:\n
+							`<Error>Group Defined in more than one Divisions:\n
 							>  -- %s>`,
 							gref)
 						continue
@@ -132,7 +132,7 @@ func (cdata *conversionData) readClasses() {
 			}
 			if len(glist) < 2 {
 				base.Report(
-					`<Error>In Class %s, not enough valid Groups (>1) in
+					`<Error>In Class %s, too few valid Groups (>1) in
 					> Division %s>`,
 					e.Tag, wdiv.Name)
 				continue
