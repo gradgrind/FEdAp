@@ -32,7 +32,7 @@ func (cdata *conversionData) getCourseSubject(c *Course) Ref {
 	// Repeated use of the same subject list will reuse the created subject.
 	//
 	if c.Subjects == "" {
-		base.Report("<Error>In Course %s:\n  -- No Subject>", c.Id)
+		base.Report(`<Error>In Course %s:\n  -- No Subject>`, c.Id)
 		return ""
 	}
 	slist := []Ref{}
@@ -45,7 +45,7 @@ func (cdata *conversionData) getCourseSubject(c *Course) Ref {
 				continue
 			}
 		}
-		base.Report("<Error>In Course %s:\n  -- Invalid Subject: %s>",
+		base.Report(`<Error>In Course %s:\n  -- Invalid Subject: %s>`,
 			c.Id, ref)
 	}
 	if len(slist) == 1 {
@@ -62,7 +62,7 @@ func (cdata *conversionData) getCourseSubject(c *Course) Ref {
 				continue
 			}
 		}
-		base.Report("<Error>In Course %s:\n  -- Invalid Subject: %s>",
+		base.Report(`<Error>In Course %s:\n  -- Invalid Subject: %s>`,
 			c.Id, sref)
 	}
 	sktag := strings.Join(sklist, ",")

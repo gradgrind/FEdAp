@@ -29,7 +29,7 @@ func (db *DbTopLevel) addElement(ref Ref, element Elem) Ref {
 	}
 	_, nok := db.Elements[ref]
 	if nok {
-		Report("<Error>Element Id defined more than once:\n  %s>", ref)
+		Report(`<Error>Element Id defined more than once:\n  %s>`, ref)
 		db.SetInvalid()
 	}
 	db.Elements[ref] = element
@@ -138,7 +138,7 @@ func (db *DbTopLevel) PrepareDb() {
 		slices.Sort(db.Info.MiddayBreak)
 		mb := db.Info.MiddayBreak
 		if mb[len(mb)-1]-mb[0] >= len(mb) {
-			Report("<Error>Lunch break hours not contiguous>")
+			Report(`<Error>Lunch break hours not contiguous>`)
 			db.SetInvalid()
 			db.Info.MiddayBreak = []int{}
 		}
@@ -174,7 +174,7 @@ func (db *DbTopLevel) PrepareDb() {
 	for _, g := range db.Groups {
 		if g.Class == "" {
 			// This is a loader failure, it should not be possible.
-			Report("<Bug>Group not in Class: %s>", g.Id)
+			Report(`<Bug>Group not in Class: %s>`, g.Id)
 			panic("Bug")
 		}
 	}
@@ -210,8 +210,8 @@ func newtags[T Elem](etype string, elist []T) {
 		checktags[tag] = true
 		e.setTag(tag)
 		Report(
-			`<Error>Tag '%[2]s' (%[1]s) not unique:
-   Element '%[3]s' changed to '%[4]s'>`,
+			`<Error>Tag '%[2]s' (%[1]s) not unique:\n
+   			>  Element '%[3]s' changed to '%[4]s'>`,
 			etype, tag0, e.getId(), tag)
 	}
 }
@@ -220,27 +220,27 @@ func (db *DbTopLevel) CheckDbBasics() {
 	// This function is provided for use by code which needs the following
 	// Elements to be provided.
 	if len(db.Days) == 0 {
-		Report("<Error>Input has no days>")
+		Report(`<Error>Input has no days>`)
 		db.SetInvalid()
 	}
 	if len(db.Hours) == 0 {
-		Report("<Error>Input has no hours>")
+		Report(`<Error>Input has no hours>`)
 		db.SetInvalid()
 	}
 	if len(db.Teachers) == 0 {
-		Report("<Error>Input has no teachers>")
+		Report(`<Error>Input has no teachers>`)
 		db.SetInvalid()
 	}
 	if len(db.Subjects) == 0 {
-		Report("<Error>Input has no subjects>")
+		Report(`<Error>Input has no subjects>`)
 		db.SetInvalid()
 	}
 	if len(db.Rooms) == 0 {
-		Report("<Error>Input has no rooms>")
+		Report(`<Error>Input has no rooms>`)
 		db.SetInvalid()
 	}
 	if len(db.Classes) == 0 {
-		Report("<Error>Input has no classes>")
+		Report(`<Error>Input has no classes>`)
 		db.SetInvalid()
 	}
 }

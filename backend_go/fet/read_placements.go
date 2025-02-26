@@ -37,18 +37,18 @@ func ReadPlacements(
 	// Open the  XML activities file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
-		base.Report("<Error>Reading FET activities: %v>", err)
+		base.Report(`<Error>Reading FET activities: %v>`, err)
 		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
 	// read the opened XML file as a byte array.
-	base.Report("<Info>Reading FET placements: %s>", xmlpath)
+	base.Report(`<Info>Reading FET placements: %s>`, xmlpath)
 	byteValue, _ := io.ReadAll(xmlFile)
 	v := fetActivities{}
 	err = xml.Unmarshal(byteValue, &v)
 	if err != nil {
-		base.Report("<Error>XML error in %s:\n %v>", xmlpath, err)
+		base.Report(`<Error>XML error in %s:\n %v>`, xmlpath, err)
 		return nil
 	}
 

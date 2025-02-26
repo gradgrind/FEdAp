@@ -29,7 +29,7 @@ func (ttinfo *TtInfo) View(cinfo *CourseInfo) string {
 	for _, g := range cinfo.Groups {
 		gx, ok := ttinfo.Ref2Tag[g]
 		if !ok {
-			base.Report("<Bug>No Ref2Tag for %s>", g)
+			base.Report(`<Bug>No Ref2Tag for %s>`, g)
 			panic("Bug")
 		}
 		glist = append(glist, gx)
@@ -175,7 +175,7 @@ func (ttinfo *TtInfo) filterRoomData(roomData map[Ref][]Ref) {
 					rc, ok := rx.(*base.RoomChoiceGroup)
 					if !ok {
 						base.Report(
-							"<Bug>Invalid room in course %s:\n  %s>",
+							`<Bug>Invalid room in course %s:\n  %s>`,
 							cref, rref)
 						panic("Bug")
 					}
@@ -306,12 +306,14 @@ func (ttinfo *TtInfo) checkAllocatedRooms() {
 			}
 			if len(rlist) != 0 && !warned {
 				base.Report(
-					"<Warning>Lesson in Course %s has invalid room allocations: %+v>",
+					`<Warning>Lesson in Course %s has invalid room
+					> allocations: %+v>`,
 					ttinfo.View(cinfo), rlist)
 				warned = true
 			} else if !complete && !warned && nplaced != 0 {
 				base.Report(
-					"<Warning>Lesson in Course %s has incomplete room allocations>",
+					`<Warning>Lesson in Course %s has incomplete room
+					> allocations>`,
 					ttinfo.View(cinfo))
 				warned = true
 			}
@@ -338,7 +340,8 @@ func (ttinfo *TtInfo) collectCourseResources() {
 				// Check for repetitions
 				if slices.Contains(resources, agix) {
 					base.Report(
-						"<Warning>Lesson with repeated atomic group in Course: %s>",
+						`<Warning>Lesson with repeated atomic group in
+						> Course: %s>`,
 						ttinfo.View(cinfo))
 				} else {
 					resources = append(resources, agix)

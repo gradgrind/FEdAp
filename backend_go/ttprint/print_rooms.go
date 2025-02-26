@@ -77,7 +77,7 @@ func getRoomData(ttinfo *ttbase.TtInfo) map[Ref][]Tile {
 								rlist = append(rlist, r.Rooms...)
 							} else {
 								base.Report(
-									"<Bug>Invalid room in course %s:\n  %+v>",
+									`<Bug>Invalid room in course %s:\n  %+v>`,
 									ttinfo.View(cinfo), r0)
 								panic("Bug")
 							}

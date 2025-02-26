@@ -225,7 +225,7 @@ func genTypstOneElement(
 		tt = timetable(ttinfo.Db, pages, typstData, "Room")
 		return tt, "room_" + r.Tag
 	}
-	base.Report("<Error>Can't print timetable for invalid element: %+v>", e)
+	base.Report(`<Error>Can't print timetable for invalid element: %+v>`, e)
 	return tt, ""
 }
 
@@ -298,7 +298,7 @@ func timetable(
 }
 
 func makeTypstJson(tt Timetable, datadir string, outfile string) {
-	emsg := "<Error>Printing failed: %s>"
+	emsg := `<Error>Printing failed: %s>`
 	b, err := json.MarshalIndent(tt, "", "  ")
 	if err != nil {
 		base.Report(emsg, err)
@@ -316,7 +316,7 @@ func makeTypstJson(tt Timetable, datadir string, outfile string) {
 	if err != nil {
 		base.Report(emsg, err)
 	}
-	base.Report("<Info>Wrote: %s>", jsonpath)
+	base.Report(`<Info>Wrote: %s>`, jsonpath)
 }
 
 func makePdf(
@@ -330,7 +330,7 @@ func makePdf(
 	if _, err := os.Stat(outdir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(outdir, os.ModePerm)
 		if err != nil {
-			base.Report("<Error>Writing pdf: %s>", err)
+			base.Report(`<Error>Writing pdf: %s>`, err)
 		}
 	}
 	outpath := filepath.Join(outdir, outfile+".pdf")
@@ -344,10 +344,10 @@ func makePdf(
 	//fmt.Printf(" ::: %s\n", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		base.Report("<Error>(Typst) %s\n  %s>", string(output), err)
+		base.Report(`<Error>(Typst) %s\n  %s>`, string(output), err)
 		return
 	}
-	base.Report("<Info>Timetable written to: %s>", outpath)
+	base.Report(`<Info>Timetable written to: %s>`, outpath)
 }
 
 func splitGroups(glist []string) [][]string {

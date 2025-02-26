@@ -11,6 +11,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
+	"time"
+	"unicode"
 )
 
 // TODO: Read all go source files seeking strings for translation.
@@ -20,9 +23,12 @@ import (
 // These files can be read into a map for performing the translation.
 
 var tregexp *regexp.Regexp
+var nlregexp *regexp.Regexp
 
 func init() {
 	tregexp = regexp.MustCompile("(?s)^[\"`]<([a-zA-Z]*)>(.+)>[\"`]$")
+	//tregexp = regexp.MustCompile("(?s)^`<([a-zA-Z]*)>(.+)>`$")
+	nlregexp = regexp.MustCompile(`[\t \f\r]*[\n][\t\n \f\r]*>?`)
 }
 
 type trItem struct {
@@ -60,17 +66,47 @@ func main() {
 	if !fileInfo.IsDir() {
 		log.Fatalf("*ERROR* %s is not a directory", abspath)
 	}
+	trdir := filepath.Join(abspath, "translations")
+	fileInfo, err = os.Stat(trdir)
+	if err != nil {
+		log.Fatalln("ERROR* " + err.Error())
+	}
+	if !fileInfo.IsDir() {
+		log.Fatalf("*ERROR* %s is not a directory", trdir)
+	}
+	trfile := filepath.Join(trdir, "messages")
+	ftr, err := os.Create(trfile)
+	if err != nil {
+		log.Fatalf("Couldn't open output file: %s\n", trfile)
+	}
+	defer ftr.Close()
+
+	t := time.Now().UTC().Format("2006-01-02 15:04:05")
+	writeLine(ftr, "#UTC:"+t)
 
 	// Get all go files in this directory (and subdirectories ...)
 	gofiles := listFiles(abspath)
 
 	for _, f := range gofiles {
-		fmt.Printf("\n[%s]\n", f)
+		fmt.Printf("Reading %s\n", f)
+
 		data := getTrStrings(f)
-		fmt.Printf("++ %s :: %s\n", data.packageName, filepath.Base(data.path))
+		writeLine(ftr,
+			fmt.Sprintf("\n::%s@%s",
+				data.packageName, filepath.Base(data.path)))
 		for _, tr := range data.items {
-			fmt.Printf("    -- %04d: [%s] %#v\n", tr.line, tr.tag, tr.text)
+			//t := strconv.Quote(tr.text)
+			writeLine(ftr,
+				fmt.Sprintf("<<%04d:%s>%s", tr.line, tr.tag, tr.text))
+			//t[1:len(t)-1]))
 		}
+	}
+}
+
+func writeLine(f *os.File, line string) {
+	_, err := f.WriteString(line + "\n")
+	if err != nil {
+		log.Fatalf("Couldn't write line to: %s\n  -- %s\n", f.Name(), line)
 	}
 }
 
@@ -95,11 +131,29 @@ func getTrStrings(f string) trData {
 
 				rm := tregexp.FindStringSubmatch(ret.Value)
 				if rm != nil {
-					data.items = append(data.items, trItem{
-						fset.Position(ret.Pos()).Line,
-						rm[1],
-						rm[2],
-					})
+					var rmt string
+					if rm[0][0] == '`' {
+						// Strip and replace newlines
+						rmt = nlregexp.ReplaceAllString(rm[2], "")
+						// Remove remaining control characters
+						rmt = strings.Map(func(r rune) rune {
+							if unicode.IsPrint(r) {
+								return r
+							}
+							return -1
+						}, rmt)
+						data.items = append(data.items, trItem{
+							fset.Position(ret.Pos()).Line,
+							rm[1],
+							rmt,
+						})
+
+					} else {
+						//rmt = strconv.Quote(rm[2])
+						fmt.Printf("TODO: %d: <%s>%s>\n",
+							fset.Position(ret.Pos()).Line,
+							rm[1], rm[2])
+					}
 				}
 			}
 			return true

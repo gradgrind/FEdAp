@@ -38,7 +38,8 @@ func (db *DbTopLevel) readClasses(newdb *base.DbTopLevel) {
 				if ok {
 					if flag {
 						base.Report(
-							"<Error>Group Defined in multiple Divisions:\n  -- %s>",
+							`<Error>Group Defined in multiple Divisions:\n
+							>  -- %s>`,
 							g)
 						continue
 					}
@@ -46,13 +47,17 @@ func (db *DbTopLevel) readClasses(newdb *base.DbTopLevel) {
 					pregroups[g] = true
 					glist = append(glist, g)
 				} else {
-					base.Report("<Error>Unknown Group in Class %s, Division %s:\n  %s>",
+					base.Report(
+						`<Error>Unknown Group in Class %s, Division %s:\n
+						>  -- %s>`,
 						e.Tag, wdiv.Name, g)
 				}
 			}
 			// Accept Divisions which have too few Groups at this stage.
 			if len(glist) < 2 {
-				base.Report("<Warning>In Class %s, not enough valid Groups (>1) in Division %s>",
+				base.Report(
+					`<Warning>In Class %s, not enough valid Groups (>1) in
+					> Division %s>`,
 					e.Tag, wdiv.Name)
 			}
 			divs = append(divs, base.Division{
@@ -90,7 +95,7 @@ func (db *DbTopLevel) readClasses(newdb *base.DbTopLevel) {
 			g.Tag = n.Tag
 			db.GroupRefMap[n.Id] = n.Id // mapping to itself is correct!
 		} else {
-			base.Report("<Error>Group not in Division, removing:\n  %s>",
+			base.Report(`<Error>Group not in Division, removing:\n  %s>`,
 				n.Id)
 		}
 	}

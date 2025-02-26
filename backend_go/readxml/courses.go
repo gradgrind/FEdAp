@@ -2,7 +2,6 @@ package readxml
 
 import (
 	"gradgrind/backend/base"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -40,14 +39,17 @@ func (cdata *conversionData) readCourses() map[Ref][]int {
 				if l != "" {
 					ll, err := strconv.Atoi(l)
 					if err != nil {
-						base.Report("<Error>In Course %s:\n  -- SplitHoursPerWeek = %s>",
+						base.Report(
+							`<Error>In Course %s:\n
+							>  -- SplitHoursPerWeek = %s>`,
 							n.Id, n.SplitHoursPerWeek)
 					}
 					llen = append(llen, ll)
 				}
 			}
 		} else if n.HoursPerWeek != 0.0 {
-			base.Report("<Warning>In Course %s:\n  -- No SplitHoursPerWeek specified>",
+			base.Report(
+				`<Warning>In Course %s:\n  -- No SplitHoursPerWeek specified>`,
 				n.Id)
 			for i := 0; i < int(n.HoursPerWeek); i++ {
 				llen = append(llen, 1)
@@ -85,9 +87,9 @@ func (cdata *conversionData) readCourses() map[Ref][]int {
 				// A SuperCourse
 				xc := xcourses[blockTag]
 				if xc.super != nil {
-					log.Fatalf("*ERROR* Block with two"+
-						" SuperCourses: %s\n",
+					base.Report(`<Error>Block with two SuperCourses: %s>`,
 						blockTag)
+					continue
 				}
 				xc.super = tcourse
 				xc.lessons = llen

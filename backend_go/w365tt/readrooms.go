@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const roomtagerror = `<Error>Room Tag (Shortcut) defined twice: %s>`
+
 func (db *DbTopLevel) readRooms(newdb *base.DbTopLevel) {
 	db.RealRooms = map[Ref]string{}
 	db.RoomTags = map[string]Ref{}
@@ -16,7 +18,7 @@ func (db *DbTopLevel) readRooms(newdb *base.DbTopLevel) {
 		_, nok := db.RoomTags[e.Tag]
 		if nok {
 			base.Report(
-				"<Error>Room Tag (Shortcut) defined twice: %s>",
+				roomtagerror,
 				e.Tag)
 			continue
 		}
@@ -39,7 +41,7 @@ func (db *DbTopLevel) readRoomGroups(newdb *base.DbTopLevel) {
 			_, nok := db.RoomTags[e.Tag]
 			if nok {
 				base.Report(
-					"<Error>Room Tag (Shortcut) defined twice: %s>",
+					roomtagerror,
 					e.Tag)
 				continue
 			}
@@ -69,7 +71,7 @@ func (db *DbTopLevel) checkRoomGroups(newdb *base.DbTopLevel) {
 
 			}
 			base.Report(
-				"<Error>Invalid Room in RoomGroup %s:\n  %s>",
+				`<Error>Invalid Room in RoomGroup %s:\n  -- %s>`,
 				e.Tag, rref)
 		}
 		if e.Tag == "" {

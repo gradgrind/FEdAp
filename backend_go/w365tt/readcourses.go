@@ -64,7 +64,8 @@ func (db *DbTopLevel) readSuperCourses(newdb *base.DbTopLevel) {
 		// Now add the SuperCourse.
 		subject, ok := epochPlanSubjects[spc.EpochPlan]
 		if !ok {
-			base.Report("<Error>Unknown EpochPlan in SuperCourse %s:\n  %s>",
+			base.Report(
+				`<Error>Unknown EpochPlan in SuperCourse %s:\n --  %s>`,
 				spc.Id, spc.EpochPlan)
 			continue
 		}
@@ -87,7 +88,7 @@ func (db *DbTopLevel) getCourseSubject(
 	// to a single "composite" subject, using all the subject tags.
 	// Repeated use of the same subject list will reuse the created subject.
 	//
-	msg := "<Error>Course %s:\n  Not a Subject: %s>"
+	msg := `<Error>Course %s:\n  Not a Subject: %s>`
 	var subject Ref
 	if len(srefs) == 1 {
 		wsid := srefs[0]
@@ -120,7 +121,7 @@ func (db *DbTopLevel) getCourseSubject(
 			subject = db.makeNewSubject(newdb, sktag, "Compound Subject")
 		}
 	} else {
-		base.Report("<Error>Course/SubCourse has no subject: %s>", courseId)
+		base.Report(`<Error>Course/SubCourse has no subject: %s>`, courseId)
 		return ""
 	}
 	return subject
@@ -144,7 +145,7 @@ func (db *DbTopLevel) getCourseRoom(
 		var estr string
 		room, estr = db.makeRoomChoiceGroup(newdb, rrefs)
 		if estr != "" {
-			base.Report("<Error>In Course %s:\n%s>", courseId, estr)
+			base.Report(`<Error>In Course %s:\n  -- %s>`, courseId, estr)
 		}
 	} else if len(rrefs) == 1 {
 		// Check that room is Room or RoomGroup.
@@ -156,7 +157,8 @@ func (db *DbTopLevel) getCourseRoom(
 			if db.RoomGroupMap[rref0] {
 				room = rref0
 			} else {
-				base.Report("<Error>Invalid room in Course/SubCourse %s:\n  %s>",
+				base.Report(
+					`<Error>Invalid room in Course/SubCourse %s:\n --  %s>`,
 					courseId, rref0)
 			}
 		}
@@ -176,7 +178,8 @@ func (db *DbTopLevel) getCourseGroups(
 	for _, gref := range grefs {
 		ngref, ok := db.GroupRefMap[gref]
 		if !ok {
-			base.Report("<Error>Invalid group in Course/SubCourse %s:\n  %s>",
+			base.Report(
+				`<Error>Invalid group in Course/SubCourse %s:\n  -- %s>`,
 				courseId, gref)
 			return nil
 		}
@@ -196,7 +199,7 @@ func (db *DbTopLevel) getCourseTeachers(
 	for _, tref := range trefs {
 		_, ok := db.TeacherMap[tref]
 		if !ok {
-			base.Report("<Error>Unknown teacher in Course %s:\n  %s>",
+			base.Report(`<Error>Unknown teacher in Course %s:\n --  %s>`,
 				courseId, tref)
 			return nil
 		}

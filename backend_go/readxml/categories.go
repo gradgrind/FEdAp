@@ -19,7 +19,8 @@ func (cdata *conversionData) withLunchBreak(
 	for _, catref := range splitRefList(refs) {
 		cat, ok := cdata.categories[catref]
 		if !ok {
-			base.Report("<Error>Teacher or Class (%s):\n  -- Invalid Category: %s>",
+			base.Report(
+				`<Error>Teacher or Class (%s):\n  -- Invalid Category: %s>`,
 				nodeId, catref)
 			continue
 		}
@@ -42,7 +43,7 @@ func (cdata *conversionData) isStandIns(
 	for _, catref := range splitRefList(refs) {
 		cat, ok := cdata.categories[catref]
 		if !ok {
-			base.Report("<Error>Class (%s):\n  -- Invalid Category: %s>",
+			base.Report(`<Error>Class (%s):\n  -- Invalid Category: %s>`,
 				nodeId, catref)
 			continue
 		}
@@ -65,7 +66,7 @@ func (cdata *conversionData) getBlockTag(
 		for _, catref := range splitRefList(refs) {
 			cat, ok := cdata.categories[catref]
 			if !ok {
-				base.Report("<Error>Class (%s):\n  -- Invalid Category: %s>",
+				base.Report(`<Error>Class (%s):\n  -- Invalid Category: %s>`,
 					nodeId, catref)
 				continue
 			}

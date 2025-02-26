@@ -73,7 +73,7 @@ func (db *DbTopLevel) readConstraints(newdb *base.DbTopLevel) {
 			c.Weight = a2i(e["Weight"])
 			c.Courses = a2rr(e["Courses"])
 		default:
-			base.Report("<Warning>Unrecognized constraint: %+v>", e)
+			base.Report(`<Warning>Unrecognized constraint: %+v>`, e)
 		}
 	}
 }

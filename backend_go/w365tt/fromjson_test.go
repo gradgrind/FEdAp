@@ -24,7 +24,7 @@ func TestFromJSON(t *testing.T) {
 
 		//stempath := strings.TrimSuffix(fjson, filepath.Ext(fjson))
 		//logpath := stempath + ".log"
-		base.OpenLog("")
+		base.OpenLog(nil, "")
 
 		data := ReadJSON(fjson)
 
@@ -52,7 +52,7 @@ func TestToDb(t *testing.T) {
 
 		stempath := strings.TrimSuffix(fjson, filepath.Ext(fjson))
 		//logpath := stempath + ".log"
-		base.OpenLog("")
+		base.OpenLog(nil, "")
 
 		db := base.NewDb()
 		LoadJSON(db, fjson)

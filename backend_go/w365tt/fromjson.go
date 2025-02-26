@@ -14,18 +14,18 @@ func ReadJSON(jsonpath string) *DbTopLevel {
 	// Open the  JSON file
 	jsonFile, err := os.Open(jsonpath)
 	if err != nil {
-		base.Report("<Error>Reading JSON: %s>", err)
+		base.Report(`<Error>Reading JSON: %s>`, err)
 		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer jsonFile.Close()
 	// read the opened XML file as a byte array.
 	byteValue, _ := io.ReadAll(jsonFile)
-	base.Report("<Info>Reading: %s>", jsonpath)
+	base.Report(`<Info>Reading: %s>`, jsonpath)
 	v := DbTopLevel{}
 	err = json.Unmarshal(byteValue, &v)
 	if err != nil {
-		base.Report("<Error>Could not unmarshal json: %s>", err)
+		base.Report(`<Error>Could not unmarshal json: %s>`, err)
 		return nil
 	}
 	return &v

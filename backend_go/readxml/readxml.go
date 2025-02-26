@@ -51,17 +51,17 @@ func ReadXML(xmlpath string) *W365XML {
 	// Open the  XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
-		base.Report("<Error>Opening W365 XML file: %s>", err)
+		base.Report(`<Error>Opening W365 XML file: %s>`, err)
 	}
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
 	// read the opened XML file as a byte array.
-	base.Report("<Info>Reading W365 XML file: %s>", xmlpath)
+	base.Report(`<Info>Reading W365 XML file: %s>`, xmlpath)
 	byteValue, _ := io.ReadAll(xmlFile)
 	v := &W365XML{}
 	err = xml.Unmarshal(byteValue, v)
 	if err != nil {
-		base.Report("<Error>XML error in %s:\n %v>", xmlpath, err)
+		base.Report(`<Error>XML error in %s:\n %v>`, xmlpath, err)
 		return nil
 	}
 	return v
@@ -79,7 +79,7 @@ func ConvertToDb(f365xml string) *conversionData {
 		}
 	}
 	if indata == nil {
-		base.Report("<Error>No Active \"Scenario\">")
+		base.Report(`<Error>No Active "Scenario">`)
 		return nil
 	}
 
@@ -157,7 +157,7 @@ func (cdata *conversionData) getAbsences(
 	for _, aref := range splitRefList(reflist) {
 		ts, ok := cdata.absences[aref]
 		if !ok {
-			base.Report("<Error>%s:\n  -- Invalid Absence: %s>", msg, aref)
+			base.Report(`<Error>%s:\n  -- Invalid Absence: %s>`, msg, aref)
 			continue
 		}
 		result = append(result, ts)
@@ -171,7 +171,7 @@ func (cdata *conversionData) getAbsences(
 				return -1
 			}
 			if a.Hour == b.Hour {
-				base.Report("<Error>%s:\n  -- Equal Absences>", msg)
+				base.Report(`<Error>%s:\n  -- Equal Absences>`, msg)
 				return 0
 			}
 			return 1

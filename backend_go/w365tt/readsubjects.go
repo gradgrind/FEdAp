@@ -10,7 +10,7 @@ func (db *DbTopLevel) readSubjects(newdb *base.DbTopLevel) {
 		_, nok := db.SubjectTags[e.Tag]
 		if nok {
 			base.Report(
-				"<Error>Subject Tag (Shortcut) defined twice: %s>",
+				`<Error>Subject Tag (Shortcut) defined twice: %s>`,
 				e.Tag)
 			continue
 		}

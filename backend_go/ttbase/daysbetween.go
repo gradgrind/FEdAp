@@ -37,9 +37,8 @@ func (ttinfo *TtInfo) processDaysBetweenConstraints() {
 		agix := ttinfo.Placements.CourseActivityGroup[dbc.Course1]
 		if ttinfo.Placements.CourseActivityGroup[dbc.Course2] == agix {
 			base.Report(
-				`<Error>DAYS-BETWEEN_JOIN constraint between parallel courses:
-  -- %s
-  -- %s>`,
+				`<Error>DAYS-BETWEEN_JOIN constraint between parallel
+				> courses:\n  -- %s\n  -- %s>`,
 				ttinfo.View(ttinfo.CourseInfo[dbc.Course1]),
 				ttinfo.View(ttinfo.CourseInfo[dbc.Course2]),
 			)
@@ -79,16 +78,16 @@ func (ttinfo *TtInfo) processDaysBetween(
 					hardgap = gap
 				} else {
 					base.Report(
-						`<Error>Multiple hard DAYS_BETWEEN constraints for a course (possibly with parallel courses):
-  -- %s>`,
+						`<Error>Multiple hard DAYS_BETWEEN constraints for a
+						> course (possibly with parallel courses):\n  -- %s>`,
 						ttinfo.View(ttinfo.CourseInfo[ag.Courses[0]]))
 					continue
 				}
 			}
 			if _, nok := gapmap[agix]; nok {
 				base.Report(
-					`<Error>Multiple DAYS_BETWEEN constraints with gap %d for a course (possibly with parallel courses):
-  -- %s>`,
+					`<Error>Multiple DAYS_BETWEEN constraints with gap %d for
+					> a course (possibly with parallel courses):\n  -- %s>`,
 					gap, ttinfo.View(ttinfo.CourseInfo[ag.Courses[0]]))
 				continue
 			}
@@ -101,8 +100,8 @@ func (ttinfo *TtInfo) processDaysBetween(
 		for gap, dbc := range gapmap {
 			if gap < hardgap {
 				base.Report(
-					`<Error>DAYS_BETWEEN constraint with gap smaller than hard gap, course (or parallel course):
-  -- %s>`,
+					`<Error>DAYS_BETWEEN constraint with gap smaller than hard
+					> gap, course (or parallel course):\n  -- %s>`,
 					ttinfo.View(ttinfo.CourseInfo[ag.Courses[0]]))
 				continue
 			}
@@ -195,9 +194,9 @@ func (ttinfo *TtInfo) processCrossDaysBetween(
 						hardgap = gap
 					} else {
 						base.Report(
-							`<Error>Multiple hard DAYS_BETWEEN_JOIN constraints for courses (possibly with parallel courses):
-  -- %s
-  -- %s>`,
+							`<Error>Multiple hard DAYS_BETWEEN_JOIN constraints
+							> for courses (possibly with parallel courses):\n
+							>  -- %s\n  -- %s>`,
 							ttinfo.View(ttinfo.CourseInfo[ag.Courses[0]]),
 							ttinfo.View(ttinfo.CourseInfo[ag2.Courses[0]]),
 						)
@@ -206,9 +205,9 @@ func (ttinfo *TtInfo) processCrossDaysBetween(
 				}
 				if _, nok := gapmap[agix]; nok {
 					base.Report(
-						`<Error>Multiple DAYS_BETWEEN_JOIN constraints with gap %d for courses (possibly with parallel courses):
-  -- %s
-  -- %s>`,
+						`<Error>Multiple DAYS_BETWEEN_JOIN constraints with
+						> gap %d for courses (possibly with parallel
+						> courses):\n  -- %s\n  -- %s>`,
 						gap,
 						ttinfo.View(ttinfo.CourseInfo[ag.Courses[0]]),
 						ttinfo.View(ttinfo.CourseInfo[ag2.Courses[0]]),
@@ -224,9 +223,9 @@ func (ttinfo *TtInfo) processCrossDaysBetween(
 			for gap, dbc := range gapmap {
 				if gap < hardgap {
 					base.Report(
-						`<Error>DAYS_BETWEEN_JOIN constraint with gap smaller than hard gap, courses (or parallel courses):
-  -- %s
-  -- %s>`,
+						`<Error>DAYS_BETWEEN_JOIN constraint with gap smaller
+						> than hard gap, courses (or parallel courses):\n
+						>  -- %s\n  -- %s>`,
 						ttinfo.View(ttinfo.CourseInfo[ag.Courses[0]]),
 						ttinfo.View(ttinfo.CourseInfo[ag2.Courses[0]]),
 					)

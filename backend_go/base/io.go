@@ -10,11 +10,11 @@ func (db *DbTopLevel) SaveDb(fpath string) bool {
 	// Save as JSON
 	j, err := json.MarshalIndent(db, "", "  ")
 	if err != nil {
-		Report("<Bug>Saving JSON: %v>", err)
+		Report(`<Bug>Saving JSON: %v>`, err)
 		return false
 	}
 	if err := os.WriteFile(fpath, j, 0666); err != nil {
-		Report("<Error>Saving file: %v>", err)
+		Report(`<Error>Saving file: %v>`, err)
 		return false
 	}
 	return true
@@ -24,18 +24,18 @@ func LoadDb(fpath string) *DbTopLevel {
 	// Open the  JSON file
 	jsonFile, err := os.Open(fpath)
 	if err != nil {
-		Report("<Error>Opening file: %v>", err)
+		Report(`<Error>Opening file: %v>`, err)
 		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer jsonFile.Close()
 	// read the opened XML file as a byte array.
 	byteValue, _ := io.ReadAll(jsonFile)
-	Report("<Info>Reading file: %s>", fpath)
+	Report(`<Info>Reading file: %s>`, fpath)
 	v := NewDb()
 	err = json.Unmarshal(byteValue, v)
 	if err != nil {
-		Report("<Error>Invalid JSON: %s>", err)
+		Report(`<Error>Invalid JSON: %s>`, err)
 		return nil
 	}
 	v.initElements()
@@ -44,12 +44,12 @@ func LoadDb(fpath string) *DbTopLevel {
 
 func (db *DbTopLevel) testElement(ref Ref, element Elem) {
 	if ref == "" {
-		Report("<Error>Element has no Id:\n  -- %+v>", element)
+		Report(`<Error>Element has no Id:\n  -- %+v>`, element)
 		db.SetInvalid()
 	}
 	_, nok := db.Elements[ref]
 	if nok {
-		Report("<Error>Element Id defined more than once:\n  %s>", ref)
+		Report(`<Error>Element Id defined more than once:\n  %s>`, ref)
 	}
 	db.Elements[ref] = element
 }

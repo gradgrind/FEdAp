@@ -2,7 +2,6 @@ package readxml
 
 import (
 	"gradgrind/backend/base"
-	"log"
 	"slices"
 )
 
@@ -42,7 +41,7 @@ func (cdata *conversionData) makeLessons(scheduled []Ref) {
 			if !ok {
 				_, ok = e.(*base.SuperCourse)
 				if !ok {
-					base.Report("<Error>Lesson %s has invalid Course>",
+					base.Report(`<Error>Lesson %s has invalid Course>`,
 						n.Id)
 					continue
 				}
@@ -50,7 +49,7 @@ func (cdata *conversionData) makeLessons(scheduled []Ref) {
 			lessons[cid] = append(lessons[cid], n)
 			continue
 		}
-		base.Report("<Error>Lesson %s has unknown Course>", n.Id)
+		base.Report(`<Error>Lesson %s has unknown Course>`, n.Id)
 	}
 
 	// Generate base.Lessons for the courses, taking into account the
@@ -107,7 +106,7 @@ func (cdata *conversionData) makeLessons(scheduled []Ref) {
 			l.Rooms = []Ref{}
 		}
 		if len(llist) != 0 {
-			log.Fatalf("*ERROR* Didn't consume all lessons in course %s\n",
+			base.Report(`<Error>Didn't consume all lessons in course %s>`,
 				cref)
 		}
 	}

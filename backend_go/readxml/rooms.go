@@ -56,7 +56,7 @@ func (cdata *conversionData) checkRealRooms(
 				continue
 			}
 		}
-		base.Report("<Error>%s:\n  -- Invalid Room: %s>", msg, ref)
+		base.Report(`<Error>%s:\n  -- Invalid Room: %s>`, msg, ref)
 		return nil
 	}
 	return result
@@ -84,15 +84,15 @@ func (cdata *conversionData) getCourseRoom(c *Course) Ref {
 			if ok {
 				if len(refs) != 1 {
 					base.Report(
-						`<Error>In Course %s:
-  -- a RoomGroup must be the only item in the PreferredRooms list: %s>`,
+						`<Error>In Course %s:\n  -- a RoomGroup must be the
+						> only item in the PreferredRooms list: %s>`,
 						c.Id, ref)
 					return ""
 				}
 				return ref
 			}
 		}
-		base.Report("<Error>In Course %s:\n  -- Invalid Room: %s>",
+		base.Report(`<Error>In Course %s:\n  -- Invalid Room: %s>`,
 			c.Id, ref)
 	}
 	if len(rlist) == 0 {
@@ -118,7 +118,7 @@ func (cdata *conversionData) makeRoomChoiceGroup(rooms []Ref) Ref {
 				continue
 			}
 		}
-		base.Report("<Bug>%s is not a (real) Room>", rref)
+		base.Report(`<Bug>%s is not a (real) Room>`, rref)
 		panic("Bug")
 	}
 	name := strings.Join(taglist, ",")

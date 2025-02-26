@@ -131,7 +131,7 @@ func getTeacherData(ttinfo *ttbase.TtInfo) map[Ref][]Tile {
 							}
 							continue
 						}
-						base.Report("<Bug>Not a room: %s>", rref)
+						base.Report(`<Bug>Not a room: %s>`, rref)
 						panic("Bug")
 					}
 					gstrings := splitGroups(ttinfo.SortList(glist))

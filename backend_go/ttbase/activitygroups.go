@@ -42,7 +42,7 @@ func (ttinfo *TtInfo) printAGCourse(ag *ActivityGroup) string {
 	if len(ag.Courses) == 1 {
 		return ttinfo.View(c)
 	}
-	t, _ := base.I18N("<>%s (or parallel)>", ttinfo.View(c))
+	t, _ := base.I18N(`<>%s (or parallel)>`, ttinfo.View(c))
 	return t
 }
 
@@ -133,9 +133,8 @@ func (ttinfo *TtInfo) PrepareActivityGroups() {
 					update = true
 				} else if l.Day != l0.Day || l.Hour != l0.Hour {
 					base.Report(
-						`<Error>Parallel Activities with different placements in courses
- -- %s
- -- %s>`,
+						`<Error>Parallel Activities with different placements
+						> in courses:\n  -- %s\n  -- %s>`,
 						ttinfo.View(cinfo), ttinfo.View(pcinfo))
 					// Patch the data to avoid conflict
 					if update {

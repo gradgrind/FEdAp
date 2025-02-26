@@ -102,7 +102,7 @@ func (cdata *conversionData) readClasses() {
 		for i, wdivref := range splitRefList(n.Divisions) {
 			wdiv, ok := cdata.divisions[wdivref]
 			if !ok {
-				base.Report("<Error>In Class %s:\n  -- Invalid Division: %s>",
+				base.Report(`<Error>In Class %s:\n  -- Invalid Division: %s>`,
 					n.Id, wdivref)
 				continue
 			}
@@ -115,7 +115,9 @@ func (cdata *conversionData) readClasses() {
 				c, ok := pregroups[gref]
 				if ok {
 					if c != nil {
-						base.Report("<Error>Group Defined in multiple Divisions:\n  -- %s>",
+						base.Report(
+							`<Error>Group Defined in multiple Divisions:\n
+							>  -- %s>`,
 							gref)
 						continue
 					}
@@ -123,12 +125,15 @@ func (cdata *conversionData) readClasses() {
 					pregroups[gref] = e
 					glist = append(glist, gref)
 				} else {
-					base.Report("<Error>Unknown Group in Class %s, Division %s:\n  %s>",
+					base.Report(
+						`<Error>Unknown Group in Class %s, Division %s:\n  %s>`,
 						e.Tag, wdiv.Name, gref)
 				}
 			}
 			if len(glist) < 2 {
-				base.Report("<Error>In Class %s, not enough valid Groups (>1) in Division %s>",
+				base.Report(
+					`<Error>In Class %s, not enough valid Groups (>1) in
+					> Division %s>`,
 					e.Tag, wdiv.Name)
 				continue
 			}
@@ -148,7 +153,8 @@ func (cdata *conversionData) readClasses() {
 					pregroups[gref] = e
 				}
 			} else {
-				base.Report("<Error>Unknown Group in Class %s, no Division:\n  %s>",
+				base.Report(
+					`<Error>Unknown Group in Class %s, no Division:\n  %s>`,
 					e.Tag, gref)
 				continue
 			}
@@ -173,7 +179,8 @@ func (cdata *conversionData) readClasses() {
 	// Copy Groups.
 	for _, n := range cdata.xmlin.Groups {
 		if pregroups[n.Id] == nil {
-			base.Report("<Error>Group not attached to Class, removing:\n  -- %s>",
+			base.Report(
+				`<Error>Group not attached to Class, removing:\n  -- %s>`,
 				n.Id)
 			continue
 		}
@@ -205,7 +212,7 @@ func (cdata *conversionData) getCourseGroups(c *Course) []Ref {
 				continue
 			}
 		}
-		base.Report("<Error>In Course %s:\n  -- Invalid Course Group: %s>",
+		base.Report(`<Error>In Course %s:\n  -- Invalid Course Group: %s>`,
 			c.Id, ref)
 	}
 	return glist

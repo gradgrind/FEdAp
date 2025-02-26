@@ -213,7 +213,7 @@ func (fetinfo *fetInfo) getExtraConstraints() {
 
 		if len(doubleBlocked) != 0 {
 			base.Report(
-				"<Error>Constraint DoubleLessonNotOverBreaks specified more than once>")
+				`<Error>Constraint DoubleLessonNotOverBreaks specified more than once>`)
 			continue
 		}
 
@@ -270,7 +270,7 @@ func (fetinfo *fetInfo) getExtraConstraints() {
 		for _, k := range cn.Courses {
 			cinfo, ok := ttinfo.CourseInfo[k]
 			if !ok {
-				base.Report("<Bug>Invalid course: %s>", k)
+				base.Report(`<Bug>Invalid course: %s>`, k)
 				panic("Bug")
 			}
 			for _, l := range cinfo.Lessons {

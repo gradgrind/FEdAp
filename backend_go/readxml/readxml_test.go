@@ -18,7 +18,7 @@ var inputfiles = []string{
 }
 
 func Test2JSON(t *testing.T) {
-	base.OpenLog("")
+	base.OpenLog(nil, "")
 	for _, fxml := range inputfiles {
 		fmt.Println("\n ++++++++++++++++++++++")
 		cdata := ConvertToDb(fxml)
@@ -67,29 +67,29 @@ func toFET(db *base.DbTopLevel, fetpath string) {
 	fetfile := fetpath + ".fet"
 	f, err := os.Create(fetfile)
 	if err != nil {
-		base.Report("<Error>Opening FET file: %s>", err)
+		base.Report(`<Error>Opening FET file: %s>`, err)
 		return
 	}
 	defer f.Close()
 	_, err = f.WriteString(xmlitem)
 	if err != nil {
-		base.Report("<Error>Writing FET file: %s>", err)
+		base.Report(`<Error>Writing FET file: %s>`, err)
 		return
 	}
-	base.Report("<Info>FET file written to: %s>", fetfile)
+	base.Report(`<Info>FET file written to: %s>`, fetfile)
 
 	// Write Id-map file.
 	mapfile := fetpath + ".map"
 	fm, err := os.Create(mapfile)
 	if err != nil {
-		base.Report("<Error>Opening map file: %s>", err)
+		base.Report(`<Error>Opening map file: %s>`, err)
 		return
 	}
 	defer fm.Close()
 	_, err = fm.WriteString(lessonIdMap)
 	if err != nil {
-		base.Report("<Error>Writing map file: %s>", err)
+		base.Report(`<Error>Writing map file: %s>`, err)
 		return
 	}
-	base.Report("<Info>Id-map written to: %s>", mapfile)
+	base.Report(`<Info>Id-map written to: %s>`, mapfile)
 }

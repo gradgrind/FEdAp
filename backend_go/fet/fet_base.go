@@ -30,7 +30,7 @@ func makeXML(data interface{}, indent_level int) string {
 	prefix := strings.Repeat(indent, indent_level)
 	xmlData, err := xml.MarshalIndent(data, prefix, indent)
 	if err != nil {
-		base.Report("<Error>Building FET XML: %v>", err)
+		base.Report(`<Error>Building FET XML: %v>`, err)
 		return ""
 	}
 	return string(xmlData)
@@ -59,7 +59,8 @@ type fet struct {
 func weight2fet(w0 int) string {
 	if base.MAXWEIGHT != 100 {
 		base.Report(
-			"<Warning>Weight range not 0 – 100, converting. There may be a loss of precision.>")
+			`<Warning>Weight range not 0 – 100, converting. There may be a
+			> loss of precision.>`)
 		w0 = (w0 * 100) / base.MAXWEIGHT
 	}
 

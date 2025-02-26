@@ -10,7 +10,7 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 		_, ok := db.CourseMap[e.Course]
 		if !ok {
 			base.Report(
-				"<Error>Lesson %s:\n  Invalid course: %s>",
+				`<Error>Lesson %s:\n  Invalid course: %s>`,
 				e.Id, e.Course)
 			continue
 		}
@@ -22,7 +22,7 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 				reflist = append(reflist, rref)
 			} else {
 				base.Report(
-					"<Error>Invalid Room in Lesson %s:\n  %s>",
+					`<Error>Invalid Room in Lesson %s:\n  -- %s>`,
 					e.Id, rref)
 			}
 		}
@@ -37,7 +37,8 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 						cg := newdb.Elements[cgref].(*base.Group)
 						if cg.Tag != "" {
 							base.Report(
-								`<Error>SubstitutionService lesson (%s) not specified for full stand-in class>`,
+								`<Error>SubstitutionService lesson (%s) not
+								> specified for full stand-in class>`,
 								e.Id)
 							continue
 						}
@@ -49,7 +50,8 @@ func (db *DbTopLevel) readLessons(newdb *base.DbTopLevel) {
 					}
 				} else {
 					base.Report(
-						"<Error>SubstitutionService lesson (%s) not in standard course: %s>",
+						`<Error>SubstitutionService lesson (%s) not in
+						> standard course: %s>`,
 						e.Id, e.Course)
 				}
 				continue

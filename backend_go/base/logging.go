@@ -7,11 +7,15 @@ import (
 	"regexp"
 )
 
-var tregexp *regexp.Regexp
-var logbase *LogBase
+var (
+	tregexp  *regexp.Regexp
+	logbase  *LogBase
+	nlregexp *regexp.Regexp
+)
 
 func init() {
-	tregexp = regexp.MustCompile("(?s)^[\"`]<([a-zA-Z]*)>(.+)>[\"`]$")
+	tregexp = regexp.MustCompile("(?s)^`<([a-zA-Z]*)>(.+)>`$")
+	nlregexp = regexp.MustCompile(`[\t \f\r]*[\n][\t\n \f\r]*>?`)
 }
 
 type I18nMessage struct {
@@ -52,6 +56,8 @@ func readMessages(path string) {
 // I18N looks up a message in the message catalogue, performing value
 // substitutions.
 func I18N(msg string, args ...any) (string, string) {
+	// Preprocess message string (merge lines)
+	msg = nlregexp.ReplaceAllString(msg, "")
 	// Look up message
 	msgt, ok := logbase.LangMap[msg]
 	if !ok {
@@ -59,7 +65,7 @@ func I18N(msg string, args ...any) (string, string) {
 
 		rm := tregexp.FindStringSubmatch(msg)
 		if rm == nil {
-			Report("<Bug>Invalid message string: %#v>")
+			Report(`<Bug>Invalid message string: %#v>`)
 			panic("Bug")
 		}
 		msgt = I18nMessage{rm[1], rm[2]}
@@ -82,5 +88,12 @@ func Report(msg string, args ...any) {
 	msgt, tag := I18N(msg, args...)
 	logbase.Logger.Println(tag + ">" + msgt)
 
-	//TODO: Send to back-end interface
+	// Send to back-end interface
+	if logbase.Channel != nil {
+		logbase.Channel <- map[string]any{
+			"DONE":   "",
+			"REPORT": tag,
+			"DATA":   msgt,
+		}
+	}
 }
