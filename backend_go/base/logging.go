@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
+	"unicode"
 )
 
 var (
@@ -56,8 +58,14 @@ func readMessages(path string) {
 // I18N looks up a message in the message catalogue, performing value
 // substitutions.
 func I18N(msg string, args ...any) (string, string) {
-	// Preprocess message string (merge lines)
+	// Preprocess message string (merge lines, remove control characters)
 	msg = nlregexp.ReplaceAllString(msg, "")
+	msg = strings.Map(func(r rune) rune {
+		if unicode.IsPrint(r) {
+			return r
+		}
+		return -1
+	}, msg)
 	// Look up message
 	msgt, ok := logbase.LangMap[msg]
 	if !ok {
