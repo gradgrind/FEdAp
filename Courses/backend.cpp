@@ -163,13 +163,15 @@ void BackEnd::handleBackendOutput()
 void BackEnd::received_invalid(
     QString text)
 {
-    IgnoreError("INVALID INPUT", text);
+    qDebug() << "INVALID INPUT:" << text;
+    //IgnoreError("INVALID INPUT", text);
 }
 
 void BackEnd::handleBackendError()
 {
     auto bytes = process->readAllStandardError();
-    IgnoreError("BACKEND ERROR", QString(bytes));
+    qDebug() << "BACKEND ERROR:" << QString(bytes);
+    //IgnoreError("BACKEND ERROR", QString(bytes));
 }
 
 // Send a normal command to the back-end, start the dialog with timer

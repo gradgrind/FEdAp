@@ -15,8 +15,6 @@ func LoadFile(ochan chan map[string]any, path string) {
 	}
 
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
-	logpath := stempath + ".log"
-	base.OpenLog(ochan, logpath)
 	stempath = strings.TrimSuffix(stempath, "_w365")
 
 	db := base.NewDb()

@@ -28,7 +28,8 @@ void TestIo::sendJson()
             sent->appendPlainText(jin.toJson());
             return;
         }
-        IgnoreError("INVALID INPUT", "CALLBACK ERROR, not object\n:: " + text);
+        qDebug() << "CALLBACK ERROR, not object:" << text;
+        //IgnoreError("INVALID INPUT", "CALLBACK ERROR, not object\n:: " + text);
         return;
     }
     // else: JSON parse failed
@@ -37,7 +38,8 @@ void TestIo::sendJson()
         //TODO: Ignore this?
         qDebug() << "CALLBACK EMPTY";
     } else {
-        IgnoreError("CALLBACK ERROR: " + jerr.errorString() + "\n:: " + text);
+        qDebug() << "CALLBACK ERROR:" << jerr.errorString() << "//" << text;
+        //IgnoreError("CALLBACK ERROR: " + jerr.errorString() + "\n:: " + text);
     }
 }
 

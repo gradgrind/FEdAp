@@ -44,7 +44,7 @@ func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 
 		case "LOAD_W365_JSON":
 			//TODO: Maybe start testing with a single fixed file?
-			fpath := "test1_w365.json"
+			fpath := "/home/user/tmp/test1_w365.json"
 			w365tt.LoadFile(ochan, fpath)
 			done = "LOADED"
 

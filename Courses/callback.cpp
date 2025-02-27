@@ -88,8 +88,8 @@ void CallBackManager::handleResult(
 void CallBackManager::handleError(
     const QString text)
 {
-    qDebug() << text;
-    IgnoreError("INVALID INPUT", text);
+    qDebug() << "CallBackManager::handleError" << text;
+    //IgnoreError("INVALID INPUT", text);
 }
 
 void CallBackManager::closing()

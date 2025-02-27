@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"gradgrind/backend/base"
 	"math/rand/v2"
 	"os"
 )
@@ -32,6 +33,14 @@ func main() {
 	go sender(ochan, writer)
 	xchan := make(chan map[string]any)
 	go commandHandler(ochan, xchan)
+
+	//TODO: Where should the logfile be?
+	logpath, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	logpath += ".log"
+	base.OpenLog(ochan, logpath)
 
 	for {
 		message, _ := reader.ReadString('\n')

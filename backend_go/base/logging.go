@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	tregexp = regexp.MustCompile("(?s)^`<([a-zA-Z]*)>(.+)>`$")
+	tregexp = regexp.MustCompile("(?s)^<([a-zA-Z]*)>(.+)>$")
 	nlregexp = regexp.MustCompile(`[\t \f\r]*[\n][\t\n \f\r]*>?`)
 }
 
@@ -73,7 +73,9 @@ func I18N(msg string, args ...any) (string, string) {
 
 		rm := tregexp.FindStringSubmatch(msg)
 		if rm == nil {
-			Report(`<Bug>Invalid message string: %#v>`)
+			//TODO
+			fmt.Printf("<Bug>Invalid message string: %#v>\n", msg)
+			//Report(`<Bug>Invalid message string: %#v>`)
 			panic("Bug")
 		}
 		msgt = I18nMessage{rm[1], rm[2]}
