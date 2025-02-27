@@ -130,8 +130,8 @@ void WaitingDialog::closeEvent(
 
 void WaitingDialog::done()
 {
-    timeout.stop();
     if (autoclose) {
+        timeout.stop();
         hide();
     } else {
         ok_button->setEnabled(true);
@@ -161,4 +161,9 @@ void WaitingDialog::handle_cancel()
 {
     autoclose = false;
     backend->cancel_current();
+}
+
+void WaitingDialog::force_open()
+{
+    autoclose = false;
 }

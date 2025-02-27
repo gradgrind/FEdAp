@@ -56,7 +56,16 @@ func readMessages(path string) {
 }
 
 // I18N looks up a message in the message catalogue, performing value
-// substitutions.
+// substitutions. Note that for this to work in conjunction with the "gettr"
+// utility the message string must be a single back-tick enclosed string
+// where the only permitted "escape" characters are "\n" and "\t". Control
+// characters will be removed, newlines including all surrounding whitespace.
+// If a new line starts with ">" this will be stripped (this is to allow
+// indentation to be used, preserving the whitespace only after the ">").
+// The message needs to have the structure defined by the regular expression
+// [tregexp]. The main part and the tag prefix are returned separately.
+// The main part can have formatting escapes, whose matching parameters need
+// to be provided as arguments to this function.
 func I18N(msg string, args ...any) (string, string) {
 	// Preprocess message string (merge lines, remove control characters)
 	msg = nlregexp.ReplaceAllString(msg, "")
@@ -70,12 +79,9 @@ func I18N(msg string, args ...any) (string, string) {
 	msgt, ok := logbase.LangMap[msg]
 	if !ok {
 		// Add the untranslated string to the message map
-
 		rm := tregexp.FindStringSubmatch(msg)
 		if rm == nil {
-			//TODO
-			fmt.Printf("<Bug>Invalid message string: %#v>\n", msg)
-			//Report(`<Bug>Invalid message string: %#v>`)
+			Report(`<Bug>Invalid message string: %#v>`)
 			panic("Bug")
 		}
 		msgt = I18nMessage{rm[1], rm[2]}
@@ -84,9 +90,11 @@ func I18N(msg string, args ...any) (string, string) {
 	return fmt.Sprintf(msgt.text, args...), msgt.tag
 }
 
-// Report logs a message. The keys must have a prefix enclosed in angle
-// brackets to indicate the type of the message. They must also be terminated
-// by a right angle bracket. The currently supported prefixes are:
+// Report logs a message. This uses [I18N()] to support translations by
+// looking up the messages in [logbase.LangMap]. The messages must have a
+// prefix enclosed in angle brackets to indicate the type of the message.
+// They must also be terminated by a right angle bracket.
+// The currently supported prefixes are:
 //
 //	"<Error>", "<Warning>", "<Notice>: These will force the process
 //			pop-up to open.
@@ -103,7 +111,7 @@ func Report(msg string, args ...any) {
 		logbase.Channel <- map[string]any{
 			"DONE":   "",
 			"REPORT": tag,
-			"DATA":   msgt,
+			"TEXT":   msgt,
 		}
 	}
 }

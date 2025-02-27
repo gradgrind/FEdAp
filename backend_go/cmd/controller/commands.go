@@ -20,7 +20,7 @@ func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 				if cancel {
 					ochan <- map[string]any{
 						"DONE":   "",
-						"REPORT": "REPORT",
+						"REPORT": "Notice",
 						"TEXT":   "OPERATION_CANCELLED",
 					}
 					done = "CANCELLED"
@@ -30,7 +30,7 @@ func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 				time.Sleep(1 * time.Second)
 				ochan <- map[string]any{
 					"DONE":   "",
-					"REPORT": "REPORT",
+					"REPORT": "Info",
 					"TEXT":   "TICK",
 				}
 				ochan <- map[string]any{

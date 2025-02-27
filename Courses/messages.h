@@ -36,6 +36,7 @@ public:
     void add_text(QString text);
     void set_progress(QString text);
     void operation_cancelled();
+    void force_open();
 
 private slots:
     void handle_ok();

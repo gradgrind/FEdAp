@@ -106,9 +106,21 @@ void BackEnd::handleBackendOutput()
                         if (rp == "PROGRESS") {
                             waiting_dialog->set_progress(
                                 jobj.value("TEXT").toString());
-                        } else if (rp == "REPORT") {
+
+                            //TODO: Translate the message tags?
+
+                        } else if (rp == "Error" || rp == "Warning"
+                                   || rp == "Notice") {
+                            waiting_dialog->force_open();
                             waiting_dialog->add_text(
-                                jobj.value("TEXT").toString());
+                                "*" + rp + "* " + jobj.value("TEXT").toString());
+                        } else if (rp == "Info") {
+                            waiting_dialog->add_text(
+                                "*" + rp + "* " + jobj.value("TEXT").toString());
+                        } else if (rp == "Bug") {
+                            QMessageBox ::critical(mainwindow,
+                                                   "BUG",
+                                                   jobj.value("TEXT").toString());
                         } else if (rp == "QUIT_UNSAVED?") {
                             if (QMessageBox ::warning(
                                     mainwindow,
