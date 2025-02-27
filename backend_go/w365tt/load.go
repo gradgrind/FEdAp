@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func LoadFile(ochan chan map[string]any, path string) {
+func LoadFile(path string) {
 	abspath, err := filepath.Abs(path)
 	if err != nil {
 		base.Report(`<Error>Couldn't resolve file path: %s>`, path)
