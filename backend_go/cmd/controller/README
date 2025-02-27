@@ -1,3 +1,6 @@
+To compile, run in this directory:
+go build -o ../../../bin/backend
+
 It would be good to support a number of input formats. Currently
 envisaged are:
 

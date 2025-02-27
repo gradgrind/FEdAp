@@ -18,7 +18,7 @@ func (cdata *conversionData) readGroups() {
 */
 
 func (cdata *conversionData) readDivisions() {
-	for i := 0; i < len(cdata.xmlin.Divisions); i++ {
+	for i := range cdata.xmlin.Divisions {
 		n := &cdata.xmlin.Divisions[i]
 		cdata.divisions[n.Id] = n
 	}
@@ -45,7 +45,7 @@ func (cdata *conversionData) readClasses() {
 	})
 	ndays := len(db.Days)
 	nhours := len(db.Hours)
-	for i := 0; i < len(cdata.xmlin.Classes); i++ {
+	for i := range cdata.xmlin.Classes {
 		n := &cdata.xmlin.Classes[i]
 		e := db.NewClass(n.Id)
 		e.Name = n.Name
