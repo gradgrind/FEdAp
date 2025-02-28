@@ -1,4 +1,17 @@
-#UTC:2025-02-26 12:21:48
+#UTC:2025-02-28 11:17:35
+
+::backend@backend.go
+
+::backend@commands.go
+<<0055:Notice>Operation cancelled
+<<0068:Info>Tick
+<<0069:PROGRESS>%s
+<<0110:Info>FET file written to: %s
+<<0117:Info>Id-map written to: %s
+
+::backend@files.go
+<<0013:Error>Couldn't resolve file path: %s\n  +++ %v
+<<0044:Error>Couldn't write output to: %s\n  +++ %v
 
 ::base@constraints.go
 
@@ -23,15 +36,13 @@
 <<0047:Error>Element has no Id:\n  -- %+v
 
 ::base@logging.go
-<<0076:Bug>Invalid message string: %#v
+<<0101:Bug>Invalid message string: %#v
 
 ::base@structures.go
 
-::main@gettr.go
-
 ::main@backend.go
 
-::main@commands.go
+::main@gettr.go
 
 ::fet@activities.go
 
@@ -102,10 +113,10 @@
 ::readxml@readxml_test.go
 <<0070:Error>Opening FET file: %s
 <<0076:Error>Writing FET file: %s
-<<0079:Info>FET file written to: %s
+<<0079:Info>Wrote FET file to: %s
 <<0085:Error>Opening map file: %s
 <<0091:Error>Writing map file: %s
-<<0094:Info>Id-map written to: %s
+<<0094:Info>Wrote Id-map to: %s
 
 ::readxml@rooms.go
 <<0059:Error>%s:\n  -- Invalid Room: %s

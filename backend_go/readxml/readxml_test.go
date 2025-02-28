@@ -76,7 +76,7 @@ func toFET(db *base.DbTopLevel, fetpath string) {
 		base.Report(`<Error>Writing FET file: %s>`, err)
 		return
 	}
-	base.Report(`<Info>FET file written to: %s>`, fetfile)
+	base.Report(`<Info>Wrote FET file to: %s>`, fetfile)
 
 	// Write Id-map file.
 	mapfile := fetpath + ".map"
@@ -91,5 +91,5 @@ func toFET(db *base.DbTopLevel, fetpath string) {
 		base.Report(`<Error>Writing map file: %s>`, err)
 		return
 	}
-	base.Report(`<Info>Id-map written to: %s>`, mapfile)
+	base.Report(`<Info>Wrote Id-map to: %s>`, mapfile)
 }

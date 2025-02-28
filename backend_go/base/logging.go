@@ -1,6 +1,7 @@
 package base
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -51,8 +52,54 @@ func OpenLog(ochan chan map[string]any, logpath string) {
 }
 
 // TODO: Read message file
-func readMessages(path string) {
+// An attempt could be made to read the system language (e.g. using
+// https://github.com/Xuanwo/go-locale), or else the language could be set
+// explicitly (perhaps using a persistent settings file).
+// Language files are basically just key/value look-up tables, a key-line
+// (the source text) being followed by its value line (the translation).
+// Key line:
+//
+//	<<preamble>Message
+//
+// Value line:
+//
+//	>>Translated Message
+//
+// The value lines can be omitted if no translation is available.
+// Lines may not be split, even if they are very long, but newlines can be
+// specified by "\n" (also tab with "\t"). The %-escapes (of the go "fmt"
+// package) should be preserved, because there will be corresponding
+// arguments.
+// The preamble consists of a line number and the message type, separated by
+// a ":". The look-up key should be constructed to be the same as in the
+// source, i.e. thus:
+//
+//	<message type>Message>
+//
+// There are also package/file lines:
+//
+//	::package-name@file-name
+//
+// These serve only as documentation, so that the source lines where the
+// messages originate can be found easily.
+func ReadMessages(path string) bool {
+	readFile, err := os.Open(path)
+	if err != nil {
+		Report(`<Error>Reading translations: %v>`, err)
+		return false
+	}
+	defer readFile.Close()
+	logbase.LangMap = map[string]I18nMessage{}
 
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	for fileScanner.Scan() {
+
+		//TODO
+
+		fmt.Println(fileScanner.Text())
+	}
+	return true
 }
 
 // I18N looks up a message in the message catalogue, performing value

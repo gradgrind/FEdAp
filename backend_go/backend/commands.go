@@ -19,6 +19,7 @@ func init() {
 
 	commandMap["SLEEP"] = testSleep
 
+	commandMap["SET_LANGUAGE"] = setLanguage
 	commandMap["LOAD_W365_JSON"] = loadW365Json
 	commandMap["SAVE_FET"] = makeFetFiles
 }
@@ -72,13 +73,21 @@ func testSleep(cmd map[string]any, outmap map[string]any) string {
 	return "SLEPT"
 }
 
+// TODO: setLanguage reads a translations file ...
+func setLanguage(cmd map[string]any, outmap map[string]any) string {
+	if base.ReadMessages("/home/user/tmp/messages") {
+		return "OK"
+	}
+	return "FAILED"
+}
+
 // loadW365Json reads a Waldorf 365 timetable-data file (_w365.json) and
 // sets up the data as the current database.
 func loadW365Json(cmd map[string]any, outmap map[string]any) string {
 	//TODO: Maybe start testing with a single fixed file?
 	fpath := "/home/user/tmp/test1_w365.json"
 	LoadFile(fpath, w365tt.LoadJSON)
-	return "LOADED"
+	return "OK"
 }
 
 // makeFetFiles generates a FET file (.fet) from the current database.

@@ -16,7 +16,7 @@ import (
 	"unicode"
 )
 
-// TODO: Read all go source files seeking strings for translation.
+// Read all go source files seeking strings for translation.
 // These strings may not be split ("xxx ..."+ "yyy ...") and must start with
 // "<" and end with ">".
 // These are collected into a translation file, including source file info.
