@@ -1,13 +1,13 @@
-#UTC:2025-02-28 11:17:35
+#UTC:2025-02-28 15:36:01
 
 ::backend@backend.go
 
 ::backend@commands.go
-<<0055:Notice>Operation cancelled
-<<0068:Info>Tick
-<<0069:PROGRESS>%s
-<<0110:Info>FET file written to: %s
-<<0117:Info>Id-map written to: %s
+<<0056:Notice>Operation cancelled
+<<0069:Info>Tick
+<<0070:PROGRESS>%s
+<<0119:Info>FET file written to: %s
+<<0126:Info>Id-map written to: %s
 
 ::backend@files.go
 <<0013:Error>Couldn't resolve file path: %s\n  +++ %v
@@ -36,7 +36,14 @@
 <<0047:Error>Element has no Id:\n  -- %+v
 
 ::base@logging.go
-<<0101:Bug>Invalid message string: %#v
+<<0014:>Error
+<<0015:>Warning
+<<0016:>Notice
+<<0017:>Info
+<<0018:>Bug
+<<0096:Error>Reading translations: %v
+<<0119:Error>Invalid line (%d) in messages file, %s:\n  -- %s
+<<0163:Bug>Invalid message string: %#v
 
 ::base@structures.go
 
@@ -130,8 +137,6 @@
 
 ::readxml@teachers.go
 <<0080:Error>In Course %s:\n  -- Invalid Teacher: %s
-
-::main@test.go
 
 ::ttbase@activitygroups.go
 <<0045:>%s (or parallel)

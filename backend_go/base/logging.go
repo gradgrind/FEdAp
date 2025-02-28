@@ -10,6 +10,14 @@ import (
 	"unicode"
 )
 
+const (
+	Error   = `<>Error>`
+	Warning = `<>Warning>`
+	Notice  = `<>Notice>`
+	InfoTag = `<>Info>`
+	Bug     = `<>Bug>`
+)
+
 var (
 	tregexp  *regexp.Regexp
 	logbase  *LogBase
@@ -93,11 +101,32 @@ func ReadMessages(path string) bool {
 
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
+	var sourceLine *I18nMessage
+	l := 0
 	for fileScanner.Scan() {
-
-		//TODO
-
-		fmt.Println(fileScanner.Text())
+		l++
+		line := fileScanner.Text()
+		if strings.HasPrefix(line, "<<") {
+			sl := strings.SplitN(line[2:], ">", 2)
+			if len(sl) == 2 {
+				pl := strings.Split(sl[0], ":")
+				if len(pl) == 2 {
+					sourceLine = &I18nMessage{pl[1], sl[1]}
+					continue
+				}
+			}
+			Report(
+				`<Error>Invalid line (%d) in messages file, %s:\n  -- %s>`,
+				l, path, line)
+			continue
+		}
+		if strings.HasPrefix(line, ">>") {
+			if sourceLine != nil {
+				key := "<" + sourceLine.tag + ">" + sourceLine.text + ">"
+				logbase.LangMap[key] = I18nMessage{sourceLine.tag, line[2:]}
+				sourceLine = nil
+			}
+		}
 	}
 	return true
 }
@@ -128,7 +157,7 @@ func I18N(msg string, args ...any) (string, string) {
 		// Add the untranslated string to the message map
 		rm := tregexp.FindStringSubmatch(msg)
 		if rm == nil {
-			Report(`<Bug>Invalid message string: %#v>`)
+			Report(`<Bug>Invalid message string: %#v>`, msg)
 			panic("Bug")
 		}
 		msgt = I18nMessage{rm[1], rm[2]}
@@ -155,10 +184,12 @@ func Report(msg string, args ...any) {
 
 	// Send to back-end interface
 	if logbase.Channel != nil {
+		tr, _ := I18N("<>" + tag + ">")
 		logbase.Channel <- map[string]any{
 			"DONE":   "",
 			"REPORT": tag,
 			"TEXT":   msgt,
+			"TR":     tr,
 		}
 	}
 }
