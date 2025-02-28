@@ -44,7 +44,7 @@ func OpenLog(ochan chan map[string]any, logpath string) {
 		}
 	}
 	logbase = &LogBase{
-		Logger:  log.New(file, "++", log.Lshortfile),
+		Logger:  log.New(file, "++", 0),
 		LangMap: map[string]I18nMessage{},
 		Channel: ochan,
 	}
