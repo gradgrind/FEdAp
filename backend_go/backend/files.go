@@ -7,30 +7,47 @@ import (
 	"path/filepath"
 )
 
-func LoadFile(path string, loader func(*base.DbTopLevel, string)) {
+func LoadFile(
+	cmd map[string]any,
+	loader func(*base.DbTopLevel, string),
+) bool {
+	path0, ok := cmd["FILEPATH"]
+	var path string
+	if ok {
+		path, ok = path0.(string)
+	}
+	if !ok || path == "" {
+		base.Report(`<Error>Opening data file: no file path>`)
+		return false
+	}
+	// Actually, the supplied path should already be absolute ...
 	abspath, err := filepath.Abs(path)
 	if err != nil {
 		base.Report(`<Error>Couldn't resolve file path: %s\n  +++ %v>`,
 			path, err)
-		return
+		return false
 	}
 
-	//stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
-	//stempath = strings.TrimSuffix(stempath, "_w365")
-
+	// Make a new database structure
 	db := base.NewDb()
+	// Load the data using ths supplied function
 	loader(db, abspath)
-	//LoadJSON(db, abspath)
 	db.PrepareDb()
 	DB = db
 
-	ttinfo := ttbase.MakeTtInfo(db)
-
-	//TODO: This was optional for inputting to print. That may be difficult
-	// to handle outside of that dedicated app. How much of it is essential?
-	ttinfo.PrepareCoreData()
-
-	TtData = ttinfo
+	// By default the timetable data is loaded into TtData and further
+	// checked by testing fixed allocations, etc. These steps can, however,
+	// be skipped.
+	tt, ok := cmd["TIMETABLE"]
+	if ok && tt.(string) == "NO" {
+		TtData = nil
+	} else {
+		TtData = ttbase.MakeTtInfo(DB)
+		if !ok || tt.(string) != "LOAD_ONLY" {
+			TtData.PrepareCoreData()
+		}
+	}
+	return true
 }
 
 func SaveFile(filePath string, data []byte) bool {

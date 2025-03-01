@@ -16,6 +16,11 @@ import (
 	"unicode"
 )
 
+//TODO: Maybe allow duplicates, adding a special reference line so that the
+// first entry can be found easily?
+// #<<this line number:...>...
+// #::::package@file?that line number
+
 // Read all go source files seeking strings for translation.
 // These strings may not be split ("xxx ..."+ "yyy ...") and must start with
 // "<" and end with ">".

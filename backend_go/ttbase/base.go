@@ -26,7 +26,7 @@ type VirtualRoom struct {
 	RoomChoices [][]Ref // list of ("real") Room lists
 }
 
-// A TtInfo contains the core structures for the timetable
+// A TtInfo object contains the core structures for the timetable.
 type TtInfo struct {
 	NDays  int // number of days in the school week
 	NHours int // number of timetable-hours in the school day
@@ -107,9 +107,23 @@ func (ttinfo *TtInfo) pResources(rlist []Ref) string {
 
 // MakeTtInfo makes a new TtInfo object and initializes some of its
 // properties.
+// When changing items in the database which may be relevant for the timetable
+// it is sometimes difficult to determine how the TtInfo data needs to be
+// updated. As changes are manual, the updating doesn't need to be very
+// efficient, so to keep it simple it seems best just to completely rebuild
+// the structure.
+// The rebuilding could be done after every change, and this could give
+// fairly immediate feedback about certain problems, but it might be better
+// to run this only when it is actually needed.
 func MakeTtInfo(db *base.DbTopLevel) *TtInfo {
+	// Make a new TtInfo object, initializing the timing data for a week.
 	ndays := len(db.Days)
 	nhours := len(db.Hours)
+	// The idea behind the DayLength field is to allocate extra space at
+	// the end of the allocation/placement arrays for each day so that a
+	// simple subtraction can determine whether two lessons are on different
+	// days. It is wasteful of memory, but might make handling some
+	// constraints simpler and more efficient.
 	daylength := nhours*2 - 1
 	ttinfo := &TtInfo{
 		Db: db,

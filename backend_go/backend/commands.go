@@ -84,10 +84,14 @@ func setLanguage(cmd map[string]any, outmap map[string]any) string {
 // loadW365Json reads a Waldorf 365 timetable-data file (_w365.json) and
 // sets up the data as the current database.
 func loadW365Json(cmd map[string]any, outmap map[string]any) string {
-	//TODO: Maybe start testing with a single fixed file?
-	fpath := "/home/user/tmp/test1_w365.json"
-	LoadFile(fpath, w365tt.LoadJSON)
-	return "OK"
+	//TODO-- Start testing with a single fixed file?
+	cmd["FILEPATH"] = "/home/user/tmp/test1_w365.json"
+
+	if LoadFile(cmd, w365tt.LoadJSON) {
+		return "OK"
+	} else {
+		return "FAILED"
+	}
 }
 
 // makeFetFiles generates a FET file (.fet) from the current database.
