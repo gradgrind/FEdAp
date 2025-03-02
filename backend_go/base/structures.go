@@ -230,7 +230,7 @@ func (c *SuperCourse) AddLesson(lref Ref) {
 }
 
 // A SubCourse has no Lessons of its own, but shares those of its parent
-// [SuperCourse] elements. A SubCourse may blong to more than one
+// [SuperCourse] elements. A SubCourse may belong to more than one
 // [SuperCourse]. Otherwise it is much like a [Course], bundling the
 // necessary resources.
 type SubCourse struct {

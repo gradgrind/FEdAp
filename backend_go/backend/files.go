@@ -33,6 +33,9 @@ func LoadFile(
 	// Load the data using ths supplied function
 	loader(db, abspath)
 	db.PrepareDb()
+	if db.Invalid {
+		return false
+	}
 	DB = db
 
 	// By default the timetable data is loaded into TtData and further

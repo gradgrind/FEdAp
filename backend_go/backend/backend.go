@@ -75,8 +75,11 @@ func BackEnd() {
 			e := fmt.Sprintf("Could not unmarshal json: %s\n:: %s\n",
 				err, message)
 			odata = map[string]any{
-				"ERROR": e,
+				"DONE": "ERROR",
+				"TEXT": e,
 			}
+			ochan <- odata
+			continue
 		} else if n, ok := idata["DO"]; ok {
 			if n == "QUIT" {
 				// If there are unsaved changes, respond with "DONE": "QUIT_UNSAVED"
