@@ -25,7 +25,7 @@ var (
 func init() {
 	//TODO
 
-	WorkingDir = "home/user/tmp/FEdAp"
+	WorkingDir = "/home/user/tmp/FEdAp"
 
 	expath, err := os.Executable()
 	if err != nil {

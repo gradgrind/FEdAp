@@ -8,6 +8,7 @@ import (
 	"gradgrind/backend/w365tt"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -95,6 +96,9 @@ func loadW365Json(cmd map[string]any, outmap map[string]any) string {
 	cmd["FILEPATH"] = "/home/user/tmp/test1_w365.json"
 
 	if LoadFile(cmd, w365tt.LoadJSON) {
+		f := filepath.Base(cmd["FILEPATH"].(string))
+		StemFile = strings.TrimSuffix(f, filepath.Ext(f))
+		StemFile = strings.TrimSuffix(StemFile, "_w365")
 		return "OK"
 	} else {
 		return "FAILED"
