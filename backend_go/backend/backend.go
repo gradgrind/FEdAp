@@ -7,7 +7,35 @@ import (
 	"gradgrind/backend/base"
 	"math/rand/v2"
 	"os"
+	"path/filepath"
+	"strings"
 )
+
+var (
+	// WorkingDir is the directory into which output files will be written
+	WorkingDir string
+	// StemFile is the name of the current data set, the data-file name
+	// without type suffix
+	StemFile string
+	// LogFile is the path relative to WorkingDir of the log file for the
+	// current run
+	LogFile string
+)
+
+func init() {
+	//TODO
+
+	WorkingDir = "home/user/tmp/FEdAp"
+
+	expath, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exname := filepath.Base(expath)
+	exstem := strings.TrimSuffix(exname, filepath.Ext(exname))
+	LogFile = filepath.Base(exstem) + ".log"
+
+}
 
 // It should be possible to cancel long-running operations.
 // However, a goroutine can't be stopped from the outside, so any
@@ -34,12 +62,7 @@ func BackEnd() {
 	xchan := make(chan map[string]any)
 	go commandHandler(ochan, xchan)
 
-	//TODO: Where should the logfile be?
-	logpath, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	logpath += ".log"
+	logpath := filepath.Join(WorkingDir, LogFile)
 	base.OpenLog(ochan, logpath)
 
 	for {

@@ -38,6 +38,14 @@ import (
 
 type Ref = base.Ref
 
+var (
+	typst = "typst" // Typst executable
+)
+
+func SetTypst(path string) {
+	typst = path
+}
+
 // A PrintTable provides configuration data for producing a PDF document
 // containing a particular type of timetable.
 // A list of PrintTable instances is kept in the main database's ModuleData
@@ -120,80 +128,90 @@ func (page ttPage) extendPage(x []xPage) {
 	}
 }
 
-func GenTimetables(
+// GenTimetable handles the command described by the given [PrintTable]
+func GenTimetable(
 	ttinfo *ttbase.TtInfo,
-	datadir string, // working directory
+	datadir string, // typst base directory
 	stemfile string, // name
-	commands []*PrintTable,
-	genpdf string,
-) {
+	command *PrintTable,
+	nopdf bool,
+) bool {
 	var f string
 	var tt Timetable
 	var typstData map[string]any
-	if len(commands) == 0 {
-		commands = DEFAULT_PRINT_TABLES()
+	// Collect the "Pages" data from the PrintTable
+	pageData := map[Ref][]xPage{}
+	for _, pd := range command.Pages {
+		ref := Ref(pd["Id"].(string))
+		pdlist := make([]xPage, len(pd)-1)
+		i := 0
+		for k, v := range pd {
+			if k != "Id" {
+				pdlist[i] = xPage{k, v}
+				i += 1
+			}
+		}
+		pageData[ref] = pdlist
 	}
-
-	for _, cmd := range commands {
-		// Collect the "Pages" data from the PrintTable
-		pageData := map[Ref][]xPage{}
-		for _, pd := range cmd.Pages {
-			ref := Ref(pd["Id"].(string))
-			pdlist := make([]xPage, len(pd)-1)
-			i := 0
-			for k, v := range pd {
-				if k != "Id" {
-					pdlist[i] = xPage{k, v}
-					i += 1
-				}
-			}
-			pageData[ref] = pdlist
+	f = command.TypstJson
+	typstData = command.Typst
+	switch command.Type {
+	case "Class":
+		pages := getClasses(ttinfo, pageData)
+		tt = timetable(ttinfo.Db, pages, typstData, "Class")
+		if f == "" {
+			f = stemfile + "_classes"
 		}
-		f = cmd.TypstJson
-		typstData = cmd.Typst
-		switch cmd.Type {
-		case "Class":
-			pages := getClasses(ttinfo, pageData)
-			tt = timetable(ttinfo.Db, pages, typstData, "Class")
-			if f == "" {
-				f = stemfile + "_classes"
-			}
-		case "Teacher":
-			pages := getTeachers(ttinfo, pageData)
-			tt = timetable(ttinfo.Db, pages, typstData, "Teacher")
-			if f == "" {
-				f = stemfile + "_teachers"
-			}
-		case "Room":
-			pages := getRooms(ttinfo, pageData)
-			tt = timetable(ttinfo.Db, pages, typstData, "Room")
-			if f == "" {
-				f = stemfile + "_rooms"
-			}
-		default:
-			// Table for individual element
-			var tag string
-			tt, tag = genTypstOneElement(ttinfo, pageData, cmd)
-			if f == "" {
-				f = stemfile + tag
-			}
+	case "Teacher":
+		pages := getTeachers(ttinfo, pageData)
+		tt = timetable(ttinfo.Db, pages, typstData, "Teacher")
+		if f == "" {
+			f = stemfile + "_teachers"
 		}
-		makeTypstJson(tt, datadir, f)
-
-		if genpdf != "" {
-			tmpl := cmd.TypstTemplate
-			pdf := cmd.Pdf
-			if pdf == "" {
-				if strings.HasSuffix(tmpl, "_overview") {
-					pdf = f + "_overview"
-				} else {
-					pdf = f
-				}
-			}
-			makePdf(tmpl, datadir, f, pdf, genpdf)
+	case "Room":
+		pages := getRooms(ttinfo, pageData)
+		tt = timetable(ttinfo.Db, pages, typstData, "Room")
+		if f == "" {
+			f = stemfile + "_rooms"
+		}
+	default:
+		// Table for individual element
+		var tag string
+		tt, tag = genTypstOneElement(ttinfo, pageData, command)
+		if tag == "" {
+			return false
+		}
+		if f == "" {
+			f = stemfile + tag
 		}
 	}
+	if !makeTypstJson(tt, datadir, f) {
+		return false
+	}
+
+	if !nopdf {
+		tmpl := command.TypstTemplate
+		pdf := command.Pdf
+		if pdf == "" {
+			if strings.HasSuffix(tmpl, "_overview") {
+				pdf = f + "_overview"
+			} else {
+				pdf = f
+			}
+		}
+		return makePdf(tmpl, datadir, f, pdf, typst)
+	}
+	return true
 }
+
+// TODO: To use this with a W365 input, something like:
+//  ... commands []*PrintTable
+// 	if len(commands) == 0 {
+//		commands = DEFAULT_PRINT_TABLES()
+//	}
+//  for _, cmd := range commands {
+//	    GenTimetable(ttinfo, datadir, stemfile,	cmd, nopdf)
+//	)
 
 func genTypstOneElement(
 	ttinfo *ttbase.TtInfo,
@@ -297,11 +315,12 @@ func timetable(
 	}
 }
 
-func makeTypstJson(tt Timetable, datadir string, outfile string) {
+func makeTypstJson(tt Timetable, datadir string, outfile string) bool {
 	emsg := `<Error>Printing failed: %s>`
 	b, err := json.MarshalIndent(tt, "", "  ")
 	if err != nil {
 		base.Report(emsg, err)
+		return false
 	}
 	// os.Stdout.Write(b)
 	outdir := filepath.Join(datadir, "_data")
@@ -309,14 +328,17 @@ func makeTypstJson(tt Timetable, datadir string, outfile string) {
 		err := os.Mkdir(outdir, os.ModePerm)
 		if err != nil {
 			base.Report(emsg, err)
+			return false
 		}
 	}
 	jsonpath := filepath.Join(outdir, outfile+".json")
 	err = os.WriteFile(jsonpath, b, 0666)
 	if err != nil {
 		base.Report(emsg, err)
+		return false
 	}
 	base.Report(`<Info>Wrote: %s>`, jsonpath)
+	return true
 }
 
 func makePdf(
@@ -325,12 +347,13 @@ func makePdf(
 	stemfile string,
 	outfile string,
 	typst string,
-) {
+) bool {
 	outdir := filepath.Join(datadir, "_pdf")
 	if _, err := os.Stat(outdir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(outdir, os.ModePerm)
 		if err != nil {
 			base.Report(`<Error>Writing pdf: %s>`, err)
+			return false
 		}
 	}
 	outpath := filepath.Join(outdir, outfile+".pdf")
@@ -345,9 +368,10 @@ func makePdf(
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		base.Report(`<Error>(Typst) %s\n  %s>`, string(output), err)
-		return
+		return false
 	}
 	base.Report(`<Info>Timetable written to: %s>`, outpath)
+	return true
 }
 
 func splitGroups(glist []string) [][]string {
