@@ -11,26 +11,51 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
 )
 
-//TODO: Maybe allow duplicates, adding a special reference line so that the
-// first entry can be found easily?
-// #<<this line number:...>...
-// #::::package@file?that line number
-
 // Read all go source files seeking strings for translation.
-// These strings may not be split ("xxx ..."+ "yyy ...") and must start with
-// "<" and end with ">".
-// These are collected into a translation file, including source file info.
+// The messages must be single back-tick enclosed strings where the only
+// permitted "escape" characters are "\n" and "\t". Control characters will
+// be removed, also all whitespace surreounding newlines.
+// If a new line starts with ">" this character will be stripped (this is to
+// allow indentation to be used in the message string, preserving the
+// whitespace only after the ">").
+// The messages must have a prefix enclosed in angle brackets (<...>) to
+// indicate the type of the message. They must also be terminated by a
+// right angle bracket. They must be single (unsplit) strings.
+// The regular expression [tregexp] also accepts '"'-delimited strings, but
+// only so that these can be reported as probable errors.
+
+// The messsages are collected into a translation file, including a source
+// file reference and line number.
 // These files can be read into a map for performing the translation.
+// There is a block for each source file, starting with a line like:
+//   ::package@file-name
+// Following this there is a line for each message:
+//   <<line-number:prefix>message
+// A translation may be added by following such a message line by a
+// translation line:
+//   >>translated message
+
+// Duplicates (repeated use of the same message string) are handled by adding
+// a special reference line rather than a new entry, so that the first entry
+// can be found easily:
+//   #<<this line number:prefix>message
+//   #::package@file-name?that line number
+
+// This program generates the basic structure without translation lines.
+// A translator will rename the file, e.g. "messages_de", and add the
+// translations.
 
 var tregexp *regexp.Regexp
 var nlregexp *regexp.Regexp
 
 func init() {
+	// This regexp allows '"'-strings, but only so that these can be reported.
 	tregexp = regexp.MustCompile("(?s)^[\"`]<([a-zA-Z]*)>(.+)>[\"`]$")
 	//tregexp = regexp.MustCompile("(?s)^`<([a-zA-Z]*)>(.+)>`$")
 	nlregexp = regexp.MustCompile(`[\t \f\r]*[\n][\t\n \f\r]*>?`)
@@ -49,8 +74,9 @@ type trData struct {
 }
 
 func main() {
-	// Get base directory
+	// Get base directory.
 	//TODO: Another possibility might be to search upwards for go.mod?
+	// But such things are highly dependent on the directory structure.
 	flag.Parse()
 	args := flag.Args()
 	if len(args) != 1 {
@@ -97,17 +123,18 @@ func main() {
 		fmt.Printf("Reading %s\n", f)
 
 		data := getTrStrings(f)
-		writeLine(ftr,
-			fmt.Sprintf("\n::%s@%s",
-				data.packageName, filepath.Base(data.path)))
+		pkgline := "::" + data.packageName + "@" + filepath.Base(data.path)
+		writeLine(ftr, "\n"+pkgline)
 		for _, tr := range data.items {
-			// Check this is not a duplicate
+			// Check whether this is a duplicate
 			if where, ok := mmap[tr.text]; ok {
-				log.Printf("ERROR: Message is a duplicate of %s:\n"+
-					"  %04d: %s\n", where, tr.line, tr.text)
+				// This message is known already
+				writeLine(ftr,
+					fmt.Sprintf("#<<%04d:%s>%s", tr.line, tr.tag, tr.text))
+				writeLine(ftr, where)
 				continue
 			}
-			mmap[tr.text] = fmt.Sprintf("%s:%04d", f, tr.line)
+			mmap[tr.text] = "#" + pkgline + "?" + strconv.Itoa(tr.line)
 			writeLine(ftr,
 				fmt.Sprintf("<<%04d:%s>%s", tr.line, tr.tag, tr.text))
 		}

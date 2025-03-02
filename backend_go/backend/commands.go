@@ -113,6 +113,12 @@ func makeFetFiles(cmd map[string]any, outmap map[string]any) string {
 	fetfile = "/home/user/tmp/test1"
 	mapfile = fetfile
 
+	if TtData == nil {
+		TtData = ttbase.MakeTtInfo(DB)
+	}
+	if TtData.Placements == nil {
+		TtData.PrepareCoreData()
+	}
 	xmlitem, lessonIdMap := fet.MakeFetFile(TtData)
 
 	if fetfile != "" {

@@ -2,6 +2,7 @@ package ttbase
 
 import (
 	"gradgrind/backend/base"
+	"slices"
 )
 
 type ResourceIndex = int
@@ -67,7 +68,7 @@ func (ttinfo *TtInfo) PrepareActivityGroups() {
 	ttinfo.blockPadding() // block the extra slots at the end of each day
 	ttinfo.addBlockers()  // block the resources' not-available slots
 
-	// Build activity groups from the [CouurseInfo] items.
+	// Build activity groups from the [CourseInfo] items.
 	// The handling of the first encountered course of a hard-parallel set
 	// will also deal with the other courses in the set.
 	for _, cinfo := range ttinfo.LessonCourses {
@@ -90,7 +91,7 @@ func (ttinfo *TtInfo) PrepareActivityGroups() {
 		// all hard-parallel courses.
 	restart:
 		pcourses := []Ref{cref} // list of parallel courses
-		resources := append([]ResourceIndex{}, cinfo.Resources...)
+		resources := slices.Clone(cinfo.Resources)
 
 		for _, hpc := range ttinfo.HardParallelCourses[cinfo.Id] {
 			// One (or more!) of the activities may have a placement.

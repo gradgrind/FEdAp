@@ -1,4 +1,4 @@
-#UTC:2025-02-28 15:36:01
+#UTC:2025-03-02 05:48:26
 
 ::backend@backend.go
 
@@ -6,12 +6,13 @@
 <<0056:Notice>Operation cancelled
 <<0069:Info>Tick
 <<0070:PROGRESS>%s
-<<0119:Info>FET file written to: %s
-<<0126:Info>Id-map written to: %s
+<<0129:Info>FET file written to: %s
+<<0136:Info>Id-map written to: %s
 
 ::backend@files.go
-<<0013:Error>Couldn't resolve file path: %s\n  +++ %v
-<<0044:Error>Couldn't write output to: %s\n  +++ %v
+<<0020:Error>Opening data file: no file path
+<<0026:Error>Couldn't resolve file path: %s\n  +++ %v
+<<0061:Error>Couldn't write output to: %s\n  +++ %v
 
 ::base@constraints.go
 
@@ -43,7 +44,7 @@
 <<0018:>Bug
 <<0096:Error>Reading translations: %v
 <<0119:Error>Invalid line (%d) in messages file, %s:\n  -- %s
-<<0163:Bug>Invalid message string: %#v
+<<0160:Bug>Invalid message string: %#v
 
 ::base@structures.go
 
@@ -139,8 +140,8 @@
 <<0080:Error>In Course %s:\n  -- Invalid Teacher: %s
 
 ::ttbase@activitygroups.go
-<<0045:>%s (or parallel)
-<<0136:Error>Parallel Activities with different placements in courses:\n  -- %s\n  -- %s
+<<0046:>%s (or parallel)
+<<0137:Error>Parallel Activities with different placements in courses:\n  -- %s\n  -- %s
 
 ::ttbase@atomicgroups.go
 <<0041:Bug>ttinfo.classDivisions[%s]
