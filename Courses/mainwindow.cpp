@@ -12,6 +12,8 @@ MainWindow::MainWindow(
     : QWidget()
 {
     QUiLoader loader;
+    qDebug() << loader.availableWidgets();
+    qDebug() << loader.availableLayouts();
 
     QFile file(QString("ui/") + uifile);
 

@@ -33,8 +33,12 @@ int main(
 {
     QApplication a(argc, argv);
 
-    //MainWindow w("courses.ui");
-    TestIo w;
+    MainWindow w("courses_1.ui");
+    //TestIo w;
+    const QList<QPushButton *> allPButtons = w.findChildren<QPushButton *>();
+    for (const auto pb : allPButtons) {
+        qDebug() << pb->objectName();
+    }
 
     BackEnd cbman(&w);
     //CallBackManager cbman;
