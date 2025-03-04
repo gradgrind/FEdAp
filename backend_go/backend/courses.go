@@ -66,8 +66,44 @@ type CoursesState struct {
 	// Maintains the state of the current courses view.
 	// Note that this is dependent on the current database and needs
 	// to be renewed when a new data set is loaded.
+	tableType int
+	tableShow string
 }
 
-func coursesInit() {
+func coursesInit(courseState *CoursesState) {
+	if courseState == nil {
+		//TODO ... Where is the state saved?
+		courseState = &CoursesState{}
+	}
+	cmd := map[string]any{}
+	switch courseState.tableType {
+	case 0: // show a class's courses
+		// Set the classes
+		clist := make([]string, len(DB.Classes))
+		for i, c := range DB.Classes {
+			clist[i] = c.Name
+		}
+		cmd["GUI"] = "COMBOBOX_SET_ITEMS"
+		cmd["OBJECT"] = "table_show"
+		cmd["DATA"] = clist
+		// I could do this as a function call, like
+		//   send_cmd("COMBOBOX_SET_ITEMS", "table_show", clist)
+		// if all gui commands can have the same structure.
 
+		// Then I would need the courses involving the currently selected
+		// class to set up the table rows. The printing module may help with
+		// some ideas here ...
+		// The rows could be sent as a list of string-lists.
+
+		// Finally, one of the courses (by default the first?) would be
+		// selected (leading to its display in the editor panel).
+
+	case 1: // show a teacher's courses
+
+	case 2: // show the courses in a particular subject
+
+	default:
+		base.Report(`<Bug>coursesInit: courseState.tableType = %d>`,
+			courseState.tableType)
+	}
 }
