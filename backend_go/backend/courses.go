@@ -1,5 +1,7 @@
 package backend
 
+import "gradgrind/backend/base"
+
 func init() {
 	commandMap["GET_COURSES"] = getCourses
 }
@@ -42,5 +44,30 @@ func getCourses(cmd map[string]any, outmap map[string]any) string {
 	return "OK"
 }
 
-//-- {"DO":"LOAD_W365_JSON"}
-//-- {"DO":"GET_COURSES"}
+/* The handler for the courses gui ...
+
+1) Full initialization of the view.
+ - decide on classes, teachers or subjects
+ - set the selection list
+ - collect the data for the initial selection
+
+*/
+
+func CourseViewTypes() []string {
+	vals := []string{`<>Class>`, `<>Teacher>`, `<>Subject>`}
+	res := make([]string, len(vals))
+	for i, s := range vals {
+		res[i], _ = base.I18N(s)
+	}
+	return res
+}
+
+type CoursesState struct {
+	// Maintains the state of the current courses view.
+	// Note that this is dependent on the current database and needs
+	// to be renewed when a new data set is loaded.
+}
+
+func coursesInit() {
+
+}

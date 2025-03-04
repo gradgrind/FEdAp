@@ -9,6 +9,7 @@
 #include <QFile>
 
 #include <QJsonDocument>
+#include <qcombobox.h>
 
 //TODO--
 const char *testcmd = R"(
@@ -75,6 +76,18 @@ int main(
     QJsonParseError jerr;
     QJsonDocument jcmd = QJsonDocument::fromJson(testcmd, &jerr);
     backend->call_backend(jcmd.object());
+
+    SlotHandler slotHandler;
+    auto cbvt = w.findChild<QComboBox *>("table_type");
+    QObject::connect(cbvt, &QComboBox::currentIndexChanged, [cbvt](int i) {
+        qDebug() << i << cbvt->objectName();
+    });
+    QObject::connect(cbvt,
+                     &QComboBox::currentIndexChanged,
+                     &slotHandler,
+                     &SlotHandler::comboboxSelectionChanged);
+
+    cbvt->setCurrentIndex(-1); // this can cause a signal
 
     w.show();
     //QWidget *w = loadUiFile("courses.ui");

@@ -34,4 +34,24 @@ private slots:
 
 extern BackEnd* backend;
 
+//TODO?
+class SlotHandler : public QObject
+{
+    Q_OBJECT
+
+public:
+    SlotHandler()
+        : QObject()
+    {}
+
+public slots:
+
+    void comboboxSelectionChanged(
+        int i)
+    {
+        auto o = sender();
+        qDebug() << "$" << i << o->objectName();
+    }
+};
+
 #endif // BACKEND_H
