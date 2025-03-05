@@ -37,11 +37,11 @@ Editing possibilities:
     discarded?), option to keep or discard fully freed block?
 */
 
-func getCourses(cmd map[string]any, outmap map[string]any) string {
+func getCourses(cmd map[string]any, outmap map[string]any) bool {
 	outmap["Courses"] = DB.Courses
 	outmap["SuperCourses"] = DB.SuperCourses
 	outmap["SubCourses"] = DB.SubCourses
-	return "OK"
+	return true
 }
 
 /* The handler for the courses gui ...
@@ -106,4 +106,13 @@ func coursesInit(courseState *CoursesState) {
 		base.Report(`<Bug>coursesInit: courseState.tableType = %d>`,
 			courseState.tableType)
 	}
+}
+
+func gui(cmd string, object string, data any) {
+	payload := map[string]any{
+		"GUI":    cmd,
+		"OBJECT": object,
+		"DATA":   data,
+	}
+	SenderChannel <- payload
 }

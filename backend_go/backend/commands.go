@@ -18,10 +18,10 @@ const typstFiles = "typst_files"
 var DB *base.DbTopLevel   // The current database
 var TtData *ttbase.TtInfo // The current timetable data
 
-var commandMap map[string]func(map[string]any, map[string]any) string
+var commandMap map[string]func(map[string]any, map[string]any) bool
 
 func init() {
-	commandMap = map[string]func(map[string]any, map[string]any) string{}
+	commandMap = map[string]func(map[string]any, map[string]any) bool{}
 
 	commandMap["SLEEP"] = testSleep
 
@@ -34,9 +34,9 @@ func init() {
 
 // commandHandler is the dispatcher loop, reading commands from the input
 // channel (xchan) and calling corresponding handlers. Responses are written
-// to the output channel (ochan).
-func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
-	var done string
+// to the output channel (SenderChannel).
+func commandHandler(xchan chan map[string]any) {
+	var done bool
 	for {
 		odata := map[string]any{}
 		xdata := <-xchan
@@ -48,26 +48,27 @@ func commandHandler(ochan chan map[string]any, xchan chan map[string]any) {
 				goto done_send
 			}
 		}
-		done = "UNKNOWN_COMMAND"
+		base.Report(`<Bug>Unknown command sent to back-end: %#v`, xdata)
+		done = false
 		odata["DATA"] = xdata
 
 	done_send:
 
 		odata["DONE"] = done
-		ochan <- odata
+		SenderChannel <- odata
 
 		running = false
 	}
 }
 
-func ReportCancelled(cmd map[string]any, outmap map[string]any) string {
+func ReportCancelled(cmd map[string]any, outmap map[string]any) bool {
 	base.Report(`<Notice>Operation cancelled>`)
 	outmap["DATA"] = cmd
-	return "CANCELLED"
+	return false
 }
 
 // This command is just for testing
-func testSleep(cmd map[string]any, outmap map[string]any) string {
+func testSleep(cmd map[string]any, outmap map[string]any) bool {
 	tsecs := int(cmd["TIME"].(float64))
 	for i := range tsecs {
 		if cancel {
@@ -78,20 +79,17 @@ func testSleep(cmd map[string]any, outmap map[string]any) string {
 		base.Report(`<PROGRESS>%s>`, strconv.Itoa(i+1))
 	}
 	outmap["TIME"] = tsecs
-	return "SLEPT"
+	return true
 }
 
 // TODO: setLanguage reads a translations file ...
-func setLanguage(cmd map[string]any, outmap map[string]any) string {
-	if base.ReadMessages("/home/user/tmp/messages") {
-		return "OK"
-	}
-	return "FAILED"
+func setLanguage(cmd map[string]any, outmap map[string]any) bool {
+	return base.ReadMessages("/home/user/tmp/messages")
 }
 
 // loadW365Json reads a Waldorf 365 timetable-data file (_w365.json) and
 // sets up the data as the current database.
-func loadW365Json(cmd map[string]any, outmap map[string]any) string {
+func loadW365Json(cmd map[string]any, outmap map[string]any) bool {
 	//TODO-- Start testing with a single fixed file?
 	cmd["FILEPATH"] = "/home/user/tmp/test1_w365.json"
 
@@ -99,14 +97,14 @@ func loadW365Json(cmd map[string]any, outmap map[string]any) string {
 		f := filepath.Base(cmd["FILEPATH"].(string))
 		StemFile = strings.TrimSuffix(f, filepath.Ext(f))
 		StemFile = strings.TrimSuffix(StemFile, "_w365")
-		return "OK"
+		return true
 	} else {
-		return "FAILED"
+		return false
 	}
 }
 
 // makeFetFiles generates a FET file (.fet) from the current database.
-func makeFetFiles(cmd map[string]any, outmap map[string]any) string {
+func makeFetFiles(cmd map[string]any, outmap map[string]any) bool {
 	var fetfile string
 	var mapfile string
 
@@ -135,23 +133,23 @@ func makeFetFiles(cmd map[string]any, outmap map[string]any) string {
 	if fetfile != "" {
 		fetfile += ".fet"
 		if !SaveFile(fetfile, []byte(xmlitem)) {
-			return "FAILED"
+			return false
 		}
 		base.Report(`<Info>FET file written to: %s>`, fetfile)
 	}
 	if mapfile != "" {
 		mapfile += ".map"
 		if !SaveFile(mapfile, []byte(lessonIdMap)) {
-			return "FAILED"
+			return false
 		}
 		base.Report(`<Info>Id-map written to: %s>`, mapfile)
 	}
-	return "OK"
+	return true
 }
 
 // TODO: May want to be able to load & retain print formatting structures
 // (e.g as supplied in W365 JSON input).
-func printTimetable(cmd map[string]any, outmap map[string]any) string {
+func printTimetable(cmd map[string]any, outmap map[string]any) bool {
 	if TtData == nil {
 		TtData = ttbase.MakeTtInfo(DB)
 	}
@@ -169,7 +167,7 @@ func printTimetable(cmd map[string]any, outmap map[string]any) string {
 	}
 	if !ok {
 		base.Report(`<Bug>Printing: invalid "PRINT_TABLE", %#v>`, ptcmd0)
-		return "FAILED"
+		return false
 	}
 	var nopdf bool
 	nopdf0, ok := cmd["NO_PDF"]
@@ -178,12 +176,12 @@ func printTimetable(cmd map[string]any, outmap map[string]any) string {
 	}
 	typstDir := filepath.Join(WorkingDir, typstFiles)
 	if ttprint.GenTimetable(TtData, typstDir, StemFile, ptcmd, nopdf) {
-		return "OK"
+		return true
 	}
-	return "FAILED"
+	return false
 }
 
-func printBaseTimetables(cmd map[string]any, outmap map[string]any) string {
+func printBaseTimetables(cmd map[string]any, outmap map[string]any) bool {
 	if TtData == nil {
 		TtData = ttbase.MakeTtInfo(DB)
 	}
@@ -206,8 +204,8 @@ func printBaseTimetables(cmd map[string]any, outmap map[string]any) string {
 	typstDir := filepath.Join(WorkingDir, typstFiles)
 	for _, cmd := range commands {
 		if !ttprint.GenTimetable(TtData, typstDir, StemFile, cmd, nopdf) {
-			return "FAILED"
+			return false
 		}
 	}
-	return "OK"
+	return true
 }

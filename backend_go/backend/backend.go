@@ -20,6 +20,8 @@ var (
 	// LogFile is the path relative to WorkingDir of the log file for the
 	// current run
 	LogFile string
+	// SenderChannel is used to transmit messages
+	SenderChannel chan map[string]any
 )
 
 func init() {
@@ -57,13 +59,13 @@ func BackEnd() {
 	//TODO: Maybe unsaved should be a global variable?
 	unsaved := rand.IntN(3) == 0
 
-	ochan := make(chan map[string]any)
-	go sender(ochan, writer)
+	SenderChannel = make(chan map[string]any)
+	go sender(writer)
 	xchan := make(chan map[string]any)
-	go commandHandler(ochan, xchan)
+	go commandHandler(xchan)
 
 	logpath := filepath.Join(WorkingDir, LogFile)
-	base.OpenLog(ochan, logpath)
+	base.OpenLog(SenderChannel, logpath)
 
 	for {
 		message, _ := reader.ReadString('\n')
@@ -78,7 +80,7 @@ func BackEnd() {
 				"DONE": "ERROR",
 				"TEXT": e,
 			}
-			ochan <- odata
+			SenderChannel <- odata
 			continue
 		} else if n, ok := idata["DO"]; ok {
 			if n == "QUIT" {
@@ -88,7 +90,7 @@ func BackEnd() {
 						"DONE":   "",
 						"REPORT": "QUIT_UNSAVED?",
 					}
-					ochan <- odata
+					SenderChannel <- odata
 					continue
 				}
 				os.Exit(0)
@@ -107,7 +109,7 @@ func BackEnd() {
 					"REPORT": "BACKEND_BUSY",
 					"DATA":   idata,
 				}
-				ochan <- odata
+				SenderChannel <- odata
 				continue
 			}
 			cancel = false
@@ -120,14 +122,14 @@ func BackEnd() {
 			"DONE": "ERROR",
 			"DATA": idata,
 		}
-		ochan <- odata
+		SenderChannel <- odata
 	}
 }
 
 // TODO: Maybe this needs the possibility to block sending?
-func sender(ochan chan map[string]any, writer *bufio.Writer) {
+func sender(writer *bufio.Writer) {
 	for {
-		data := <-ochan
+		data := <-SenderChannel
 		jsonData, err := json.Marshal(data)
 		if err != nil {
 			panic(fmt.Sprintf("Could not marshal json: %s\n", err))

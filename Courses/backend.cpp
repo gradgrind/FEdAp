@@ -10,9 +10,15 @@
  * Also the result is a JSON object, the value with key "DONE" specifying
  * how it should be handled. Again, the parameters can take any form. The
  * back-end can, however, also send reports before completion of the
- * operation. In this case, the "DONE" value should be "" and the value
+ * operation. In this case, there is no "DONE" property and the value
  * with key "REPORT" indicates what is to be done with the report.
- * At present the supported possibilities are:
+ * There is also the possibility of receiving a message with key "GUI".
+ * This is a command to perform some operation on the graphical
+ * user interface, the value is the command to perform. There is also
+ * an "OBJECT" field, specifying the name of the object which is to be
+ * operated on, and a "DATA" field, which supplies any parameters.
+ * At present the supported possibilities for "REPORT" messages are:
+ * TODO!
  *   "PROGRESS" – the text field with key "TEXT" will be used to set the
  *   progress widget,
  *   "REPORT" –  the text field with key "TEXT" will be added to the
@@ -100,8 +106,18 @@ void BackEnd::handleBackendOutput()
                     auto lb = linebuffer;
                     linebuffer.clear();
                     auto jobj = jin.object();
-                    auto doneval = jobj.value("DONE").toString();
-                    if (doneval == "") {
+                    if (jobj.contains("DONE")) {
+                        //TODO++?
+                        //auto doneval = jobj.value("DONE").toBool();
+
+                        waiting_dialog->done();
+                        current_operation = QJsonObject();
+
+                        //TODO: maybe a special function for DONE?
+                        mainwindow->received_input(jobj);
+                        continue;
+                    }
+                    if (jobj.contains("REPORT")) {
                         auto rp = jobj.value("REPORT").toString();
                         if (rp == "PROGRESS") {
                             waiting_dialog->set_progress(
@@ -141,12 +157,19 @@ void BackEnd::handleBackendOutput()
                                                   lb);
                         }
                         continue;
-                    } else {
-                        waiting_dialog->done();
-                        current_operation = QJsonObject();
                     }
-                    mainwindow->received_input(jobj);
-                    continue;
+                    if (jobj.contains("GUI")) {
+                        //TODO
+
+                        continue;
+
+                        //TODO: how to handle invalid messages?
+                    } else {
+                        QMessageBox::critical(waiting_dialog,
+                                              "UNKNOWN_MESSAGE",
+                                              lb);
+                        continue;
+                    }
                 }
                 received_invalid(
                     QString("CALLBACK ERROR, not object\n:: " + linebuffer));
