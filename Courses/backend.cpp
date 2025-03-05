@@ -23,8 +23,29 @@
  *   progress widget,
  *   "REPORT" –  the text field with key "TEXT" will be added to the
  *   report widget,
+ *   
  *   "QUIT_UNSAVED?" – the back-end has unsaved data, request confirmation
  *   that the changes should be discarded.
+ *   TODO: Actually this is a tricky one. When the user triggers a "QUIT"
+ *   action (e.g. by clicking on the little X-button) a "DO": "QUIT"
+ *   would be sent to the back-end. If there is no unsaved data, the
+ *   backend could quit, which the front-end would be able to detect,
+ *   if the back-end is a subprocess. A "DONE" might not be expected,
+ *   in which case it might be alright to have the "QUIT_UNSAVED?" as
+ *   a "REPORT" – or maybe rather a "GUI" – message?
+ *   But bear in mind that the relationship might turn out not to be
+ *   process-subprocess and that a "DONE" might be necessary.
+ *   
+ *   TODO: How asynchronous should the communication be? Are there any
+ *   cases when the result of a "DO" (its "DONE") might need to pass
+ *   data to a continuation somehow? Possibly not, in which case "DONE"
+ *   wouldn't really need a value (though perhaps as a JSON object
+ *   key it has to have one). "DONE" would just be a synchronization
+ *   flag. Consider front or back-end being a library, data being
+ *   passed by function calls (I mention this because it might – in
+ *   production – be more convenient than the process-subprocess
+ *   approach).
+ *   
  *   "BACKEND_BUSY" – the operation available via the "DATA" key was
  *   received by the backend while it was processing another command.
  * The whole process is event-driven (using signals and slots), so that
