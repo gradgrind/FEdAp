@@ -166,6 +166,14 @@ func I18N(msg string, args ...any) (string, string) {
 	return fmt.Sprintf(msgt.text, args...), msgt.tag
 }
 
+// Tr looks up the given string in the message map, performing argument
+// substitution, but ignoring the message's type tag.
+// See function [I18N] for further details.
+func Tr(text string, args ...any) string {
+	tr, _ := I18N(text, args...)
+	return tr
+}
+
 // Report logs a message. This uses [I18N()] to support translations by
 // looking up the messages in [logbase.LangMap]. The messages must have a
 // prefix enclosed in angle brackets to indicate the type of the message.
@@ -184,12 +192,10 @@ func Report(msg string, args ...any) {
 
 	// Send to back-end interface
 	if logbase.Channel != nil {
-		tr, _ := I18N("<>" + tag + ">")
 		logbase.Channel <- map[string]any{
-			"DONE":   "",
 			"REPORT": tag,
 			"TEXT":   msgt,
-			"TR":     tr,
+			"TR":     Tr("<>" + tag + ">"),
 		}
 	}
 }

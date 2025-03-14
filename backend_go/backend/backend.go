@@ -82,17 +82,25 @@ func BackEnd() {
 			}
 			SenderChannel <- odata
 			continue
-		} else if n, ok := idata["DO"]; ok {
+		}
+		if n, ok := idata["DO"]; ok {
 			if n == "QUIT" {
-				// If there are unsaved changes, respond with "DONE": "QUIT_UNSAVED"
+				// If there are unsaved changes, request a "QUIT_UNSAVED?"
+				// dialog.
 				if unsaved && idata["FORCE"] != true {
 					odata = map[string]any{
-						"DONE":   "",
-						"REPORT": "QUIT_UNSAVED?",
+						"DONE":   false,
+						"DIALOG": "QUIT_UNSAVED?",
+						"TEXT": base.Tr(
+							`<>There is unsaved data. Quit and lose it?>`),
 					}
 					SenderChannel <- odata
 					continue
 				}
+				odata = map[string]any{
+					"DONE": true,
+				}
+				SenderChannel <- odata
 				os.Exit(0)
 			}
 			if n == "CANCEL" {
@@ -104,25 +112,22 @@ func BackEnd() {
 			// Pass command to handler.
 			// Ensure somehow that only one gets handled at a time.
 			if running {
+				base.Report(`<Bug>Unexpected front-end message (back-end
+					> busy):\n -- %s>`, message)
+				//TODO: Should this be sent?
 				odata = map[string]any{
-					"DONE":   "",
-					"REPORT": "BACKEND_BUSY",
-					"DATA":   idata,
+					"DONE": false,
 				}
 				SenderChannel <- odata
 				continue
 			}
+			// Pass the message to the command handler.
 			cancel = false
 			xchan <- idata
 			continue
 		}
-		//TODO: No "DO" ...
-
-		odata = map[string]any{
-			"DONE": "ERROR",
-			"DATA": idata,
-		}
-		SenderChannel <- odata
+		// No "DO" ...
+		base.Report(`<Bug>Invalid front-end message:\n -- %s>`, message)
 	}
 }
 
@@ -138,4 +143,13 @@ func sender(writer *bufio.Writer) {
 		fmt.Fprintln(writer, string(jsonData))
 		writer.Flush() // Don't forget to flush!
 	}
+}
+
+func gui(cmd string, object string, data any) {
+	payload := map[string]any{
+		"GUI":    cmd,
+		"OBJECT": object,
+		"DATA":   data,
+	}
+	SenderChannel <- payload
 }

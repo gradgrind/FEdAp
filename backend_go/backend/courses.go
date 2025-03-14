@@ -75,7 +75,6 @@ func coursesInit(courseState *CoursesState) {
 		//TODO ... Where is the state saved?
 		courseState = &CoursesState{}
 	}
-	cmd := map[string]any{}
 	switch courseState.tableType {
 	case 0: // show a class's courses
 		// Set the classes
@@ -83,12 +82,7 @@ func coursesInit(courseState *CoursesState) {
 		for i, c := range DB.Classes {
 			clist[i] = c.Name
 		}
-		cmd["GUI"] = "COMBOBOX_SET_ITEMS"
-		cmd["OBJECT"] = "table_show"
-		cmd["DATA"] = clist
-		// I could do this as a function call, like
-		//   send_cmd("COMBOBOX_SET_ITEMS", "table_show", clist)
-		// if all gui commands can have the same structure.
+		gui("COMBOBOX_SET_ITEMS", "table_show", clist)
 
 		// Then I would need the courses involving the currently selected
 		// class to set up the table rows. The printing module may help with
@@ -106,13 +100,4 @@ func coursesInit(courseState *CoursesState) {
 		base.Report(`<Bug>coursesInit: courseState.tableType = %d>`,
 			courseState.tableType)
 	}
-}
-
-func gui(cmd string, object string, data any) {
-	payload := map[string]any{
-		"GUI":    cmd,
-		"OBJECT": object,
-		"DATA":   data,
-	}
-	SenderChannel <- payload
 }
