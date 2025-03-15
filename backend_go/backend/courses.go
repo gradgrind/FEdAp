@@ -11,8 +11,8 @@ func init() {
 // I could pass a class, teacher (or subject?) and get the data to be
 // displayed?
 
-/* What is needed? For a class, teacher (or subject?) a list of courses.
-The table has fields:
+/* For a class, teacher (or subject?) a list of courses is needed.
+The table has the following fields (columns):
     subject, groups, teachers, lesson lengths, properties(?), rooms
 The side panel ("form") allows editing of the selected course and has
 the additional fields:
@@ -24,8 +24,8 @@ There might also be summary information about the number of lessons for
 the teacher or groups.
 */
 
-/* A subgroup can "belong" to more than one supergroup, which complicates
-things a bit. It is understandable in that the subgroup basically – as far as
+/* A subcourse can "belong" to more than one supercourse, which complicates
+things a bit. It is understandable in that the subcourse basically – as far as
 the timetabling is concerned – just functions as a set of "resources"
 (teachers, groups, etc.). The supercourses provide only the lessons (and a
 name/tag).
