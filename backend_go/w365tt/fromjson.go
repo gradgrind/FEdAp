@@ -101,8 +101,9 @@ func (db *DbTopLevel) readTeachers(newdb *base.DbTopLevel) {
 		}
 		n := newdb.NewTeacher(e.Id)
 		n.Tag = e.Tag
-		n.Name = e.Name
+		n.Lastname = e.Name
 		n.Firstname = e.Firstname
+		n.Name = e.Firstname + " " + e.Name
 		n.NotAvailable = tsl
 		n.MinLessonsPerDay = e.MinLessonsPerDay
 		n.MaxLessonsPerDay = e.MaxLessonsPerDay

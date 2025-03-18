@@ -58,36 +58,51 @@ type Element struct {
 	Id Ref
 	// Not all Element objects use the Tag field
 	Tag string // abbreviation/acronmym
+	// Not all Element objects use the Name field
+	Name string // Full name or description
+}
+
+type ElementStrings struct {
+	Short string
+	Long  string
 }
 
 type Elem interface {
-	getId() Ref
-	getTag() string
-	setTag(string)
+	GetId() Ref
+	GetTag() string
+	SetTag(string)
+	SetName(string)
+	GetElementStrings() ElementStrings
 }
 
-func (e *Element) getId() Ref {
+func (e *Element) GetId() Ref {
 	return e.Id
 }
 
-func (e *Element) getTag() string {
+func (e *Element) GetTag() string {
 	return e.Tag
 }
 
-func (e *Element) setTag(tag string) {
+func (e *Element) SetTag(tag string) {
 	e.Tag = tag
+}
+
+func (e *Element) SetName(name string) {
+	e.Name = name
+}
+
+func (e *Element) GetElementStrings() ElementStrings {
+	return ElementStrings{e.Tag, e.Name}
 }
 
 // A Day represents a day of the timetable's week
 type Day struct {
 	Element
-	Name string
 }
 
 // An Hour represents a lesson period ("hour") of a timetable's day
 type Hour struct {
 	Element
-	Name  string
 	Start string // start time, format hour:mins, e.g. "13:45"
 	End   string // end time, format hour:mins, e.g. "14:30"
 }
@@ -97,8 +112,8 @@ type Hour struct {
 // It can be specified as a recourse for an activity.
 type Teacher struct {
 	Element
-	Name      string
 	Firstname string
+	Lastname  string
 	// NotAvailable is an ordered list of time-slots in which the teacher
 	// is to be regarded as not available for the timetable.
 	NotAvailable     []TimeSlot
@@ -116,13 +131,11 @@ type Teacher struct {
 // conferences).
 type Subject struct {
 	Element
-	Name string
 }
 
 // A Room is a resource which can be specified for an activity.
 type Room struct {
 	Element
-	Name string
 	// NotAvailable is an ordered list of time-slots in which the room is to
 	// be regarded as not available for the timetable.
 	NotAvailable []TimeSlot
@@ -137,7 +150,6 @@ func (r *Room) IsReal() bool {
 // A RoomGroup is a collection of [Room] items, all of which are "required".
 type RoomGroup struct {
 	Element
-	Name  string
 	Rooms []Ref
 }
 
@@ -149,7 +161,6 @@ func (r *RoomGroup) IsReal() bool {
 // "required".
 type RoomChoiceGroup struct {
 	Element
-	Name  string
 	Rooms []Ref
 }
 
@@ -169,7 +180,6 @@ func (r *RoomChoiceGroup) IsReal() bool {
 // description of the class.
 type Class struct {
 	Element
-	Name             string
 	Year             int
 	Letter           string
 	NotAvailable     []TimeSlot
