@@ -54,6 +54,7 @@ type Info struct {
 	Reference string
 }
 
+/*
 type Element struct {
 	Id Ref
 	// Not all Element objects use the Tag field
@@ -61,6 +62,7 @@ type Element struct {
 	// Not all Element objects use the Name field
 	Name string // Full name or description
 }
+*/
 
 type ElementStrings struct {
 	Short string

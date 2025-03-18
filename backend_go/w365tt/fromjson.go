@@ -31,17 +31,32 @@ func ReadJSON(jsonpath string) *DbTopLevel {
 	return &v
 }
 
-func LoadJSON(newdb *base.DbTopLevel, jsonpath string) {
+// LoadJSON reads the data into a map[string]any conforming to the
+// requirements of the database map in package base.
+func LoadJSON(jsonpath string) *base.BaseDb {
+	basedb := base.NewDb()
 	db := ReadJSON(jsonpath)
 	if db == nil {
-		return
+		basedb.Invalid = true
+		return basedb
 	}
-	newdb.Info = base.Info(db.Info)
-	newdb.ModuleData = map[string]any{
+
+	basedb.Info = map[string]any{
+		"Institution":        db.Info.Institution,
+		"FirstAfternoonHour": db.Info.FirstAfternoonHour,
+		"MiddayBreak":        db.Info.MiddayBreak,
+		"Reference":          db.Info.Reference,
+	}
+
+	basedb.ModuleData = map[string]any{
 		"PrintTables": db.PrintTables,
 		"FetData":     db.FetData,
 	}
-	db.readDays(newdb)
+
+	db.readDays(basedb)
+
+	//TODO
+
 	db.readHours(newdb)
 	db.readTeachers(newdb)
 	db.readSubjects(newdb)
@@ -55,13 +70,15 @@ func LoadJSON(newdb *base.DbTopLevel, jsonpath string) {
 	db.readSuperCourses(newdb)
 	db.readLessons(newdb)
 	db.readConstraints(newdb)
+
+	//
+
+	return basedb
 }
 
-func (db *DbTopLevel) readDays(newdb *base.DbTopLevel) {
+func (db *DbTopLevel) readDays(basedb *base.BaseDb) {
 	for _, e := range db.Days {
-		n := newdb.NewDay(e.Id)
-		n.Tag = e.Tag
-		n.Name = e.Name
+		basedb.NewDay(e.Id, e.Tag, e.Name)
 	}
 }
 

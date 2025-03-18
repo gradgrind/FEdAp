@@ -8,15 +8,30 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-const idduplicate = `<Error>Element Id defined more than once:\n  %s>`
+type Element map[string]any
 
-func NewDb() *DbTopLevel {
-	db := &DbTopLevel{}
-	db.Elements = map[Ref]Elem{}
-	return db
+type BaseDb struct {
+	Info map[string]any
+	// ModuleData is for data supplied and managed by other packages
+	ModuleData  map[string]any
+	DbMap       map[string][]Element
+	Constraints []map[string]any
+	Elements    map[Ref]Element
+	Invalid     bool
 }
 
-func (db *DbTopLevel) newId() Ref {
+func NewDb() *BaseDb {
+	return &BaseDb{
+		Info:        map[string]any{},
+		ModuleData:  map[string]any{},
+		DbMap:       map[string][]Element{},
+		Constraints: []map[string]any{},
+		Elements:    map[Ref]Element{},
+		Invalid:     false,
+	}
+}
+
+func (db *BaseDb) newId() Ref {
 	// Create a Version 4 UUID.
 	u2, err := uuid.NewV4()
 	if err != nil {
@@ -25,23 +40,33 @@ func (db *DbTopLevel) newId() Ref {
 	return Ref(u2.String())
 }
 
-func (db *DbTopLevel) addElement(ref Ref, element Elem) Ref {
+func (db *BaseDb) addElement(element Element) Ref {
+	ref := element["Id"].(Ref)
 	if ref == "" {
 		ref = db.newId()
+		element["Id"] = ref
 	}
 	_, nok := db.Elements[ref]
 	if nok {
-		Report(idduplicate, ref)
-		db.SetInvalid()
+		Report(`<Error>Element Id defined more than once:\n  %s>`, ref)
+		db.Invalid = true
 	}
 	db.Elements[ref] = element
 	return ref
 }
 
-func (db *DbTopLevel) NewDay(ref Ref) *Day {
-	e := &Day{}
-	e.Id = db.addElement(ref, e)
-	db.Days = append(db.Days, e)
+func (db *BaseDb) NewDay(ref Ref, short string, long string) Element {
+	e := Element{
+		"Id":    ref,
+		"Short": short,
+		"Long":  long,
+	}
+	db.addElement(e)
+	dlist, ok := db.DbMap["Days"]
+	if !ok {
+		dlist = nil
+	}
+	db.DbMap["Days"] = append(dlist, e)
 	return e
 }
 
