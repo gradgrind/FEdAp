@@ -1,6 +1,9 @@
 package backend
 
-import "gradgrind/backend/base"
+import (
+	"gradgrind/backend/base"
+	"slices"
+)
 
 func init() {
 	commandMap["GET_COURSES"] = getCourses
@@ -38,6 +41,8 @@ Editing possibilities:
 */
 
 func getCourses(cmd map[string]any, outmap map[string]any) bool {
+	//TODO: Need the type of table and the unit for which the courses are
+	// to be collected.
 	outmap["Courses"] = DB.Courses
 	outmap["SuperCourses"] = DB.SuperCourses
 	outmap["SubCourses"] = DB.SubCourses
@@ -100,4 +105,50 @@ func coursesInit(courseState *CoursesState) {
 		base.Report(`<Bug>coursesInit: courseState.tableType = %d>`,
 			courseState.tableType)
 	}
+}
+
+/*
+type CourseDisplayData struct {
+	Subject string
+	SubjectName string
+	Teachers []string
+	TeacherNames []string
+	Groups []string
+	Rooms []string
+	//RoomNames []string
+	LessonLengths []int
+	...
+}
+*/
+
+func getCourseShowData(cp base.CourseInterface) map[string]any {
+	courseDisplayData := map[string]any{}
+	tlist := []string{}
+	tlistnames := []string{}
+	for _, tref := range cp.GetTeachers() {
+		tp := DB.Elements[tref].GetElementStrings()
+		tlist = append(tlist, tp.Short)
+		tlistnames = append(tlistnames, tp.Long)
+	}
+	courseDisplayData["Teachers"] = tlist
+	courseDisplayData["TeacherNames"] = tlistnames
+
+	// ...
+
+}
+
+func coursesForTeacher(tindex int) {
+	courses := []map[string]any{}
+	//TODO: get tref from tindex
+	for _, cp := range DB.Courses {
+		if slices.Contains(cp.Teachers, tref) {
+			// Include this course
+			courses = append(courses, getCourseShowData(cp))
+		}
+	}
+
+	outmap["Courses"] = DB.Courses
+	outmap["SuperCourses"] = DB.SuperCourses
+	outmap["SubCourses"] = DB.SubCourses
+
 }

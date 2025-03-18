@@ -22,6 +22,17 @@ var (
 	LogFile string
 	// SenderChannel is used to transmit messages
 	SenderChannel chan map[string]any
+	// It should be possible to cancel long-running operations.
+	// However, a goroutine can't be stopped from the outside, so any
+	// long-running operation should periodically check whether the [cancel]
+	// flag is set (true).
+	cancel bool
+	// When an operation is running, no new operations can be started, the
+	// [running] flag is set (true). It should be regarded as an error if a
+	// new comman request arrives while this flag is set. To ensure that
+	// the front-end knows when an operation has completed, all completions
+	// should send a "DONE" message.
+	running bool
 )
 
 func init() {
@@ -38,19 +49,6 @@ func init() {
 	LogFile = filepath.Base(exstem) + ".log"
 
 }
-
-// It should be possible to cancel long-running operations.
-// However, a goroutine can't be stopped from the outside, so any
-// long-running operation should periodically check whether the [cancel]
-// flag is set (true).
-var cancel bool
-
-// When an operation is running, no new operations can be started, the
-// [running] flag is set (true). It should be regarded as an error if a
-// new comman request arrives while this flag is set. To ensure that
-// the front-end knows when an operation has completed, all completions
-// should send a "DONE" message.
-var running bool
 
 func BackEnd() {
 	reader := bufio.NewReader(os.Stdin)
