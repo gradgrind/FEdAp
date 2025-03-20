@@ -126,9 +126,9 @@ func getCourseShowData(cp base.CourseInterface) map[string]any {
 	tlist := []string{}
 	tlistnames := []string{}
 	for _, tref := range cp.GetTeachers() {
-		tp := DB.Elements[tref].GetElementStrings()
-		tlist = append(tlist, tp.Short)
-		tlistnames = append(tlistnames, tp.Long)
+		tp := getElementNames(tref)
+		tlist = append(tlist, tp[0])
+		tlistnames = append(tlistnames, tp[1])
 	}
 	courseDisplayData["Teachers"] = tlist
 	courseDisplayData["TeacherNames"] = tlistnames

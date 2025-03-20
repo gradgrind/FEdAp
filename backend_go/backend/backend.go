@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+type Ref = base.Ref
+
 var (
 	// WorkingDir is the directory into which output files will be written
 	WorkingDir string
@@ -150,4 +152,14 @@ func gui(cmd string, object string, data any) {
 		"DATA":   data,
 	}
 	SenderChannel <- payload
+}
+
+func getElementNames(ref Ref) []string {
+	e, ok := DB.Elements[ref]
+	if !ok {
+		base.Report("<Bug>Unknown Element: %s>", ref)
+		return []string{"", ""}
+	}
+	en := e.GetElementStrings()
+	return []string{en.Short, en.Long}
 }

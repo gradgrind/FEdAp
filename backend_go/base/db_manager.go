@@ -8,8 +8,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-const idduplicate = `<Error>Element Id defined more than once:\n  %s>`
-
 func NewDb() *DbTopLevel {
 	db := &DbTopLevel{}
 	db.Elements = map[Ref]Elem{}
@@ -31,7 +29,7 @@ func (db *DbTopLevel) addElement(ref Ref, element Elem) Ref {
 	}
 	_, nok := db.Elements[ref]
 	if nok {
-		Report(idduplicate, ref)
+		Report(`<Error>Element Id defined more than once:\n  %s>`, ref)
 		db.SetInvalid()
 	}
 	db.Elements[ref] = element
