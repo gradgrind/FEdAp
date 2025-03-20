@@ -122,7 +122,12 @@ func (db *DbTopLevel) getCourseSubject(
 		}
 	} else {
 		base.Report(`<Error>Course/SubCourse has no subject: %s>`, courseId)
-		return ""
+		// Use a dummy Subject.
+		var ok bool
+		subject, ok = db.SubjectTags["?"]
+		if !ok {
+			subject = db.makeNewSubject(newdb, "?", "No Subject")
+		}
 	}
 	return subject
 }
