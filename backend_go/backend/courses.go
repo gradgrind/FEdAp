@@ -7,6 +7,16 @@ import (
 	"strconv"
 )
 
+func InitView() {
+	courseState = &CoursesState{}
+	vals := []string{`<>Class>`, `<>Teacher>`, `<>Subject>`}
+	res := make([]string, len(vals))
+	for i, s := range vals {
+		res[i], _ = base.I18N(s)
+	}
+	Gui("COMBOBOX_SET_ITEMS", "table_type", res)
+}
+
 var (
 	courseState *CoursesState
 )
@@ -46,9 +56,32 @@ Editing possibilities:
     discarded?), option to keep or discard fully freed block?
 */
 
+// TODO?
+func ToInt(val any) int {
+	i, ok := val.(int)
+	if !ok {
+		f, ok := val.(float64)
+		if !ok {
+			panic(fmt.Sprintf("Not an integer: %#v", val))
+		}
+		i = int(f)
+		if float64(i) != f {
+			panic(fmt.Sprintf("Invalid (integer) value: %g", f))
+		}
+	}
+	return i
+}
+
 func getCourses(cmd map[string]any, outmap map[string]any) bool {
 	//TODO: Need the type of table and the unit for which the courses are
 	// to be collected.
+	tt := ToInt(cmd["TableType"])
+	if tt != courseState.tableType {
+		// Change the table type
+		courseState.tableType = tt
+		coursesInit()
+	}
+
 	outmap["Courses"] = DB.Courses
 	outmap["SuperCourses"] = DB.SuperCourses
 	outmap["SubCourses"] = DB.SubCourses
@@ -64,28 +97,16 @@ func getCourses(cmd map[string]any, outmap map[string]any) bool {
 
 */
 
-func CourseViewTypes() []string {
-	vals := []string{`<>Class>`, `<>Teacher>`, `<>Subject>`}
-	res := make([]string, len(vals))
-	for i, s := range vals {
-		res[i], _ = base.I18N(s)
-	}
-	return res
-}
-
 type CoursesState struct {
 	// Maintains the state of the current courses view.
 	// Note that this is dependent on the current database and needs
 	// to be renewed when a new data set is loaded.
-	tableType int
-	tableShow string
-	items     []Ref //?
+	tableType int // index to the table types list, see [CourseViewTypes()]
+	tableShow int // index to the items list
+	items     []Ref
 }
 
 func coursesInit() {
-	if courseState == nil {
-		courseState = &CoursesState{}
-	}
 	var clist [][]string
 	items := []Ref{}
 	switch courseState.tableType {
@@ -119,7 +140,7 @@ func coursesInit() {
 		return
 	}
 	courseState.items = items
-	gui("COMBOBOX_SET_ITEMS", "table_show", clist)
+	Gui("COMBOBOX_SET_ITEMS_X", "table_show", clist)
 
 	// Then I would need the courses involving the currently selected
 	// class (etc.) to set up the table rows. The printing module may help

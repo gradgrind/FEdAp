@@ -145,7 +145,7 @@ func sender(writer *bufio.Writer) {
 	}
 }
 
-func gui(cmd string, object string, data any) {
+func Gui(cmd string, object string, data any) {
 	payload := map[string]any{
 		"GUI":    cmd,
 		"OBJECT": object,
