@@ -242,7 +242,9 @@ func (c *SuperCourse) AddLesson(lref Ref) {
 // A SubCourse has no Lessons of its own, but shares those of its parent
 // [SuperCourse] elements. A SubCourse may belong to more than one
 // [SuperCourse]. Otherwise it is much like a [Course], bundling the
-// necessary resources.
+// necessary resources. There is also a Units field specifying the extent
+// of the course, a list of the individual block extents. What "units"
+// actually are (number of blocks, weeks, ...) is determined elsewhere!
 type SubCourse struct {
 	Element
 	SuperCourses []Ref
@@ -250,6 +252,7 @@ type SubCourse struct {
 	Groups       []Ref
 	Teachers     []Ref
 	Room         Ref //  [Room], [RoomGroup] or [RoomChoiceGroup] element
+	Units        []int
 }
 
 // A GeneralRoom covers  [Room], [RoomGroup] and [RoomChoiceGroup].

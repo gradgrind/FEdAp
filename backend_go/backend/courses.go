@@ -1,8 +1,14 @@
 package backend
 
 import (
+	"fmt"
 	"gradgrind/backend/base"
 	"slices"
+	"strconv"
+)
+
+var (
+	courseState *CoursesState
 )
 
 func init() {
@@ -73,38 +79,55 @@ type CoursesState struct {
 	// to be renewed when a new data set is loaded.
 	tableType int
 	tableShow string
+	items     []Ref //?
 }
 
-func coursesInit(courseState *CoursesState) {
+func coursesInit() {
 	if courseState == nil {
-		//TODO ... Where is the state saved?
 		courseState = &CoursesState{}
 	}
+	var clist [][]string
+	items := []Ref{}
 	switch courseState.tableType {
 	case 0: // show a class's courses
 		// Set the classes
-		clist := make([]string, len(DB.Classes))
+		clist = make([][]string, len(DB.Classes))
 		for i, c := range DB.Classes {
-			clist[i] = c.Name
+			items = append(items, c.Id)
+			clist[i] = []string{c.Tag, c.Name}
 		}
-		gui("COMBOBOX_SET_ITEMS", "table_show", clist)
-
-		// Then I would need the courses involving the currently selected
-		// class to set up the table rows. The printing module may help with
-		// some ideas here ...
-		// The rows could be sent as a list of string-lists.
-
-		// Finally, one of the courses (by default the first?) would be
-		// selected (leading to its display in the editor panel).
 
 	case 1: // show a teacher's courses
+		// Set the teachers
+		clist = make([][]string, len(DB.Teachers))
+		for i, c := range DB.Teachers {
+			items = append(items, c.Id)
+			clist[i] = []string{c.Tag, c.Name}
+		}
 
 	case 2: // show the courses in a particular subject
+		// Set the subjects
+		clist = make([][]string, len(DB.Subjects))
+		for i, c := range DB.Subjects {
+			items = append(items, c.Id)
+			clist[i] = []string{c.Tag, c.Name}
+		}
 
 	default:
 		base.Report(`<Bug>coursesInit: courseState.tableType = %d>`,
 			courseState.tableType)
+		return
 	}
+	courseState.items = items
+	gui("COMBOBOX_SET_ITEMS", "table_show", clist)
+
+	// Then I would need the courses involving the currently selected
+	// class (etc.) to set up the table rows. The printing module may help
+	// with some ideas here ...
+	// The rows could be sent as a list of string-lists.
+
+	// Finally, one of the courses (by default the first?) would be
+	// selected (leading to its display in the editor panel).
 }
 
 /*
@@ -123,6 +146,11 @@ type CourseDisplayData struct {
 
 func getCourseShowData(cp base.CourseInterface) map[string]any {
 	courseDisplayData := map[string]any{}
+	// Subject
+	sbj := getElementNames(cp.GetSubject())
+	courseDisplayData["Subject"] = sbj[0]
+	courseDisplayData["SubjectName"] = sbj[1]
+	// Teachers
 	tlist := []string{}
 	tlistnames := []string{}
 	for _, tref := range cp.GetTeachers() {
@@ -132,14 +160,75 @@ func getCourseShowData(cp base.CourseInterface) map[string]any {
 	}
 	courseDisplayData["Teachers"] = tlist
 	courseDisplayData["TeacherNames"] = tlistnames
+	// Groups
+	glist := []string{}
+	for _, gref := range cp.GetGroups() {
+		glist = append(glist, getElementNames(gref)[0])
+	}
 
-	// ...
+	//TODO: This might be better outside of this function, so that it
+	// can accumulate lesson/block data
+	if sub, ok := cp.(*base.SubCourse); ok {
+		ulist := []string{}
+		for _, i := range sub.Units {
+			ulist = append(ulist, strconv.Itoa(i))
+		}
+		courseDisplayData["Units"] = ulist
+	} else if c, ok := cp.(*base.Course); ok {
+		ulist := []string{}
+		for _, lref := range c.Lessons {
+			//l := DB.Elements[lref].(*base.Lesson)
+			l := elcast[*base.Lesson](lref)
+			ulist = append(ulist, strconv.Itoa(l.Duration))
+		}
+		courseDisplayData["Units"] = ulist
+	} else {
+		//TODO
+		panic("Unexpected element")
+	}
 
+	// Lesson lengths
+	// This is more difficult? A normal course has a list of lesson lengths,
+	// but what should be shown for a subcourse?
+	// What about just calling this lengths, which could mean either lessons
+	// or units/weeks? The block-nature would be shown either in this cell
+	// (e.g. with a special symbol) or in the Properties column.
+	courseDisplayData["Units"] = []string{}
+
+	// Properties
+	// What should be shown here?
+
+	courseDisplayData["Properties"] = []string{}
+	// Room – can be real room, choice or group
+	room := cp.GetRoom()
+	courseDisplayData["Room"] = room[0]
+	courseDisplayData["RoomName"] = room[1]
+	return courseDisplayData
+
+	//TODO: Maybe all field values should be strings rather than lists?
+
+	//TODO: Gather totals for info line
+}
+
+// TODO: Is this useful?
+func elcast[T any](ref Ref) T {
+	ep, ok := DB.Elements[ref]
+	if !ok {
+		//TODO
+		panic("Not an element ref: " + ref)
+	}
+	e, ok := ep.(T)
+	if !ok {
+		//TODO
+		panic(fmt.Sprintf("Element not of type %T, ref: %s", e, ref))
+	}
+	return e
 }
 
 func coursesForTeacher(tindex int) {
 	courses := []map[string]any{}
 	//TODO: get tref from tindex
+	tref := courseState.items[courseState.tableShow]
 	for _, cp := range DB.Courses {
 		if slices.Contains(cp.Teachers, tref) {
 			// Include this course
