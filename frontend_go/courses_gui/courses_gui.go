@@ -27,6 +27,32 @@ const (
 	h0 = 700
 )
 
+type EditForm struct {
+	Widget  *fltk.Grid
+	Entries map[string]fltk.Widget
+}
+
+func NewEditForm(lines int) EditForm {
+	editPanel := fltk.NewGrid(0, 0, 300, 0)
+	editPanel.SetLayout(lines, 2, 3, 3)
+	editPanel.SetBox(fltk.BORDER_FRAME)
+	//	editPanel.End()
+	return EditForm{editPanel, map[string]fltk.Widget{}}
+}
+
+func (editform EditForm) AddTextline(name string, label string) {
+	entry := fltk.NewButton(0, 0, 0, 0)
+	entry.SetAlign(fltk.ALIGN_LEFT | fltk.ALIGN_INSIDE)
+	entry.SetBox(fltk.PLASTIC_DOWN_BOX)
+	entry.SetColor(fltk.ColorFromRgb(255, 255, 200))
+	entry.SetCallback(func() { fmt.Println("Clicked") })
+	editform.Widget.SetWidget(entry, 0, 1, fltk.GridFill)
+	editform.Widget.SetWidget(
+		fltk.NewBox(fltk.NO_BOX, 0, 0, 0, 0, label),
+		0, 0, fltk.GridFill)
+	editform.Entries[name] = entry
+}
+
 func Ui() {
 	CourseWidgets = map[string]fltk.Widget{}
 	win := fltk.NewWindow(w0, h0)
@@ -64,6 +90,8 @@ func Ui() {
 	// overwriting anything to the left of the widget, so add padding.
 	pad := fltk.NewBox(fltk.NO_BOX, 0, 0, 0, 0)
 	tableTotals := fltk.NewOutput(0, 0, 0, 0)
+	tableTotals.SetColor(fltk.ColorFromRgb(255, 255, 200))
+	//tableTotals.SetCallback(func() { fmt.Println("Hello there!") })
 	tableTotals.SetValue("Read only ˝Öößŋħĸ€")
 	tableTotals.ClearVisibleFocus() // no cursor, but text cannot be copied
 	tableTotals.SetLabel("Total lessons:")
@@ -79,14 +107,13 @@ func Ui() {
 
 	table := fltk.NewTableRow(0, 0, 0, 0)
 	table.EnableColumnHeaders()
-	table.EnableRowHeaders()
+	table.DisableRowHeaders()
 	table.SetColumnCount(ncols)
 	table.SetRowCount(nrows)
 
 	table.SetColumnWidthAll(200)
 	table.SetRowHeightAll(50)
 	table.SetColumnHeaderHeight(40)
-	table.DisableRowHeaders()
 	table.SetType(fltk.SelectSingle)
 
 	table.SetDrawCellCallback(func(tc fltk.TableContext, row, col, x, y, w, h int) {
@@ -120,8 +147,35 @@ func Ui() {
 
 	courses_box.SetWidget(table, 1, 0, fltk.GridFill)
 
-	b2 := fltk.NewBox(fltk.BORDER_BOX, 0, 0, 300, 0, "Right Panel")
-	courses_box.SetWidget(b2, 1, 1, fltk.GridFill)
+	// The editing form (right panel)
+	editPanel := NewEditForm(6)
+	editPanel.AddTextline("CourseBlock", "Course Block")
+
+	/*
+		editPanel := fltk.NewGrid(0, 0, 300, 0, "Edit Panel")
+		editPanel.SetLayout(6, 2, 3, 3)
+		editPanel.SetBox(fltk.BORDER_FRAME)
+		//editPanel.SetColor(fltk.WHITE)
+
+		courseBlock := fltk.NewButton(0, 0, 0, 0, "A course")
+		courseBlock.SetAlign(fltk.ALIGN_LEFT | fltk.ALIGN_INSIDE)
+		courseBlock.SetBox(fltk.PLASTIC_DOWN_BOX)
+		courseBlock.SetColor(fltk.ColorFromRgb(255, 255, 200))
+		courseBlock.SetCallback(func() { fmt.Println("Clicked") })
+		editPanel.SetWidget(courseBlock, 0, 1, fltk.GridFill)
+		editPanel.SetWidget(
+			fltk.NewBox(fltk.NO_BOX, 0, 0, 0, 0, "Course Block"),
+			0, 0, fltk.GridFill)
+		editPanel.End()
+	*/
+	editPanel.Widget.End()
+	//editPanel.Entries["CourseBlock"].(*fltk.Button).Deactivate()
+	editPanel.Entries["CourseBlock"].(*fltk.Button).SetLabel("This entry is really rather long")
+
+	courses_box.SetWidget(editPanel.Widget, 1, 1, fltk.GridFill)
+
+	//b2 := fltk.NewBox(fltk.BORDER_BOX, 0, 0, 300, 0, "Right Panel")
+	//courses_box.SetWidget(b2, 1, 1, fltk.GridFill)
 
 	courses_box.SetColumnWeight(1, 0)
 	courses_box.SetRowWeight(0, 0)
