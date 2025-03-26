@@ -13,12 +13,6 @@ class CourseTable : public Fl_Table_Row
     std::vector<std::vector<std::string>> data; // data array for cells
     std::vector<std::string> headers;
 
-    // Draw the (row/)col headings
-    void DrawHeader(const char *s, int X, int Y, int W, int H);
-
-    // Draw the cell data
-    void DrawData(const char *s, int X, int Y, int W, int H);
-
     // Handle drawing table's cells
     //     Fl_Table calls this function to draw each visible cell in the
     //     table. It's up to us to use FLTK's drawing functions to draw
@@ -32,6 +26,11 @@ class CourseTable : public Fl_Table_Row
                    int W = 0,
                    int H = 0) FL_OVERRIDE;
 
+    static void _row_cb(Fl_Widget* w, void* a);
+    void row_cb(void* a);
+
+    void size_columns();
+
 public:
     CourseTable();
 };
@@ -41,7 +40,7 @@ class CoursesGui : public Fl_Flex
 public:
     CoursesGui();
 
-    std::map<std::string, Fl_Widget *> Widgets;
+    std::map<std::string, Fl_Widget*> Widgets;
 };
 
 #endif // COURSES_GUI_H

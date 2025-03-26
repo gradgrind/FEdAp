@@ -3,6 +3,8 @@
 #include <FL/Fl_Output.H>
 #include <FL/fl_draw.H>
 
+#include <iostream>
+
 CoursesGui::CoursesGui()
     : Fl_Flex(0, 0, 0, 0)
 {
@@ -76,6 +78,21 @@ CoursesGui::CoursesGui()
     end();
 }
 
+void CourseTable::_row_cb(
+    Fl_Widget* w, void* a)
+{
+    ((CourseTable*) w)->row_cb(a);
+}
+
+void CourseTable::row_cb(
+    void* a)
+{
+    int r = callback_row();
+    std::cout << "ROW: " << r << std::endl;
+
+    select_row(r, 1);
+}
+
 //TODO: Adjust cols to fit space, but with a set minimum size
 CourseTable::CourseTable()
     : Fl_Table_Row(0, 0, 0, 0)
@@ -99,34 +116,11 @@ CourseTable::CourseTable()
     data = {{"Fr", "11.A", "PM", "fs1", "1, 1, 1", ""},
             {"Fr", "11.B", "PM", "fs1", "1, 1, 1", ""},
             {"Ma", "11", "AH", "k11", "3, 3", "HU"},
-            {"Ma", "11.A", "AH", "fs1", "1, 1", ""},
-            {"Fr", "11.B", "AH", "fs1", "1, 1", ""}};
-}
+            {"Ma", "11.A", "AH", "k11", "1, 1", ""},
+            {"Fr", "11.B", "AH", "k11", "1, 1", ""}};
 
-void CourseTable::DrawHeader(
-    const char *s, int X, int Y, int W, int H)
-{
-    fl_push_clip(X, Y, W, H);
-    fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, row_header_color());
-    fl_color(FL_BLACK);
-    fl_draw(s, X, Y, W, H, FL_ALIGN_CENTER);
-    fl_pop_clip();
-}
-
-void CourseTable::DrawData(
-    const char *s, int X, int Y, int W, int H)
-{
-    fl_push_clip(X, Y, W, H);
-    // Draw cell bg
-    fl_color(FL_WHITE);
-    fl_rectf(X, Y, W, H);
-    // Draw cell data
-    fl_color(FL_GRAY0);
-    fl_draw(s, X, Y, W, H, FL_ALIGN_CENTER);
-    // Draw box border
-    fl_color(color());
-    fl_rect(X, Y, W, H);
-    fl_pop_clip();
+    callback(_row_cb);
+    when(FL_WHEN_RELEASE_ALWAYS);
 }
 
 void CourseTable::draw_cell(
@@ -136,19 +130,48 @@ void CourseTable::draw_cell(
     switch (context) {
     case CONTEXT_STARTPAGE: // before page is drawn..
         //fl_font(FL_HELVETICA, 16); // set the font for our drawing operations
+
+        std::cout << "tow: " << tow << std::endl;
+        std::cout << "tiw: " << tiw << std::endl;
         return;
-    case CONTEXT_COL_HEADER:         // Draw column headers
-        sprintf(s, "%c", 'A' + COL); // "A", "B", "C", etc.
-        DrawHeader(headers[COL].c_str(), X, Y, W, H);
+    case CONTEXT_COL_HEADER: // Draw column headers
+        fl_push_clip(X, Y, W, H);
+        fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, row_header_color());
+        fl_color(FL_BLACK);
+        fl_draw(headers[COL].c_str(), X, Y, W, H, FL_ALIGN_CENTER);
+        fl_pop_clip();
         return;
     //case CONTEXT_ROW_HEADER:      // Draw row headers
-    //    sprintf(s, "%03d:", ROW); // "001:", "002:", etc
-    //    DrawHeader(s, X, Y, W, H);
     //    return;
     case CONTEXT_CELL: // Draw data in cells
-        DrawData(data[ROW][COL].c_str(), X, Y, W, H);
+        fl_push_clip(X, Y, W, H);
+        // Draw cell bg
+        if (row_selected(ROW)) {
+            fl_color(FL_YELLOW);
+        } else {
+            fl_color(FL_WHITE);
+        }
+        fl_rectf(X, Y, W, H);
+        // Draw cell data
+        fl_color(FL_GRAY0);
+        fl_draw(data[ROW][COL].c_str(), X, Y, W, H, FL_ALIGN_CENTER);
+        // Draw box border
+        fl_color(color());
+        fl_rect(X, Y, W, H);
+        fl_pop_clip();
         return;
     default:
         return;
+    }
+}
+
+void CourseTable::size_columns()
+{
+    int ncols = cols();
+    int nrows = rows();
+    for (int c = 0; c < ncols; ++c) {
+        //int w = headers[c];
+        for (int r = 0; r < nrows; ++r) {
+        }
     }
 }
