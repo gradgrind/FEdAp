@@ -4,23 +4,22 @@
 #include <FL/fl_draw.H>
 
 CoursesGui::CoursesGui()
-    : Fl_Grid(0, 0, 0, 0)
+    : Fl_Flex(0, 0, 0, 0)
 {
-    layout(2, 2, 3, 3);
-    row_weight(0, 0);
+    gap(3);
     color(FL_YELLOW);
 
-    // Top Panel
-    auto topPanel = new Fl_Flex(0, 0, 0, 0);
+    // *** Top Panel ***
 
     // Top Panel – whatever is still needed ...
     auto todo = new Fl_Box(FL_FLAT_BOX, 0, 0, 0, 0, "TODO");
-    topPanel->fixed(todo, 100);
+    fixed(todo, 50);
 
     // Top Panel – the selectors and totals info, at the panel bottom
     auto panelBox = new Fl_Flex(0, 0, 0, 0);
     panelBox->type(Fl_Flex::ROW);
     panelBox->margin(5, 5);
+    fixed(panelBox, 40);
 
     auto tableType = new Fl_Choice(0, 0, 0, 0);
     tableType->clear_visible_focus();
@@ -54,25 +53,30 @@ CoursesGui::CoursesGui()
 
     panelBox->end();
 
-    topPanel->fixed(panelBox, 40);
-
     // Top Panel – end
-    topPanel->end();
-    widget(topPanel, 0, 0, 1, 2, FL_GRID_FILL);
 
-    // The course list/table
+    // *** The course list/table and course editor ***
+    auto mainview = new Fl_Flex(0, 0, 0, 0);
+    mainview->type(Fl_Flex::ROW);
+    mainview->gap(3);
+    //mainview->margin(5, 5);
+
     auto table = new CourseTable();
     Widgets["Table"] = table;
-    widget(table, 1, 0, FL_GRID_FILL);
 
     // The course editor form
     //TODO ...
     auto todo2 = new Fl_Box(FL_FLAT_BOX, 0, 0, 0, 0, "TODO");
-    widget(todo2, 1, 1, FL_GRID_FILL);
 
+    // End of mainview
+    mainview->fixed(todo2, 300);
+    mainview->end();
+
+    // End of CoursesGui
     end();
 }
 
+//TODO: Adjust cols to fit space, but with a set minimum size
 CourseTable::CourseTable()
     : Fl_Table_Row(0, 0, 0, 0)
 {

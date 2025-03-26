@@ -3,7 +3,6 @@
 
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Flex.H>
-#include <FL/Fl_Grid.H>
 #include <FL/Fl_Table_Row.H>
 #include <map>
 #include <string>
@@ -37,7 +36,7 @@ public:
     CourseTable();
 };
 
-class CoursesGui : public Fl_Grid
+class CoursesGui : public Fl_Flex
 {
 public:
     CoursesGui();
