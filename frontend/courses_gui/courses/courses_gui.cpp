@@ -3,6 +3,7 @@
 #include <FL/Fl_Output.H>
 #include <FL/fl_draw.H>
 
+#include <algorithm>
 #include <iostream>
 
 CoursesGui::CoursesGui()
@@ -90,6 +91,7 @@ void CourseTable::row_cb(
     int r = callback_row();
     std::cout << "ROW: " << r << std::endl;
 
+    // Hack to let visible selection follow arrow-key changes
     select_row(r, 1);
 }
 
@@ -131,8 +133,8 @@ void CourseTable::draw_cell(
     case CONTEXT_STARTPAGE: // before page is drawn..
         //fl_font(FL_HELVETICA, 16); // set the font for our drawing operations
 
-        std::cout << "tow: " << tow << std::endl;
-        std::cout << "tiw: " << tiw << std::endl;
+        // Adjust column widths
+        size_columns();
         return;
     case CONTEXT_COL_HEADER: // Draw column headers
         fl_push_clip(X, Y, W, H);
@@ -165,13 +167,57 @@ void CourseTable::draw_cell(
     }
 }
 
+//TODO: Do I need to set font (fl_font()) before using fl_measure()?
 void CourseTable::size_columns()
 {
+    struct colwidth
+    {
+        int col, width;
+    };
+    std::vector<colwidth> colwidths;
+
     int ncols = cols();
     int nrows = rows();
+    int w, h, wmax;
     for (int c = 0; c < ncols; ++c) {
-        //int w = headers[c];
+        w = 0;
+        fl_measure(headers[c].c_str(), w, h, 0);
+        wmax = w;
         for (int r = 0; r < nrows; ++r) {
+            w = 0;
+            fl_measure(data[r][c].c_str(), w, h, 0);
+            if (w > wmax)
+                wmax = w;
+        }
+        colwidths.push_back(colwidth{c, wmax});
+    }
+    std::sort(colwidths.begin(), colwidths.end(), [](colwidth a, colwidth b) {
+        return a.width < b.width;
+    });
+
+    //for (auto i : colwidths)
+    //    std::cout << "$ " << i.col << ": " << i.width << std::endl;
+
+    int restwid = wiw;
+    int cols = ncols;
+    const int padwidth = 4;
+    for (colwidth cw : colwidths) {
+        if (cols == 1) {
+            if (cw.width + padwidth < restwid) {
+                col_width(cw.col, restwid);
+            } else {
+                col_width(cw.col, cw.width + padwidth);
+            }
+        } else {
+            int defwid = restwid / cols;
+            --cols;
+            if (cw.width + padwidth < defwid) {
+                col_width(cw.col, defwid);
+                restwid -= defwid;
+            } else {
+                col_width(cw.col, cw.width + padwidth);
+                restwid -= cw.width + padwidth;
+            }
         }
     }
 }
