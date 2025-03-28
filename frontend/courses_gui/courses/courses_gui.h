@@ -26,8 +26,9 @@ class CourseTable : public Fl_Table_Row
                    int W = 0,
                    int H = 0) FL_OVERRIDE;
 
-    static void _row_cb(Fl_Widget* w, void* a);
-    void row_cb(void* a);
+    static void _row_cb(void* table);
+
+    int _current_row = -1;
 
     void size_columns();
 

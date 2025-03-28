@@ -1,4 +1,5 @@
 #include "courses_gui.h"
+#include <FL/Fl.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Output.H>
 #include <FL/fl_draw.H>
@@ -80,22 +81,12 @@ CoursesGui::CoursesGui()
 }
 
 void CourseTable::_row_cb(
-    Fl_Widget* w, void* a)
+    void* table)
 {
-    ((CourseTable*) w)->row_cb(a);
+    //TODO
+    std::cout << "§§§ " << ((CourseTable*) table)->_current_row << std::endl;
 }
 
-void CourseTable::row_cb(
-    void* a)
-{
-    int r = callback_row();
-    std::cout << "ROW: " << r << std::endl;
-
-    // Hack to let visible selection follow arrow-key changes
-    select_row(r, 1);
-}
-
-//TODO: Adjust cols to fit space, but with a set minimum size
 CourseTable::CourseTable()
     : Fl_Table_Row(0, 0, 0, 0)
 {
@@ -121,8 +112,8 @@ CourseTable::CourseTable()
             {"Ma", "11.A", "AH", "k11", "1, 1", ""},
             {"Fr", "11.B", "AH", "k11", "1, 1", ""}};
 
-    callback(_row_cb);
-    when(FL_WHEN_RELEASE_ALWAYS);
+    //callback(_row_cb);
+    //when(FL_WHEN_RELEASE_ALWAYS);
 }
 
 void CourseTable::draw_cell(
@@ -135,6 +126,13 @@ void CourseTable::draw_cell(
 
         // Adjust column widths
         size_columns();
+
+        // Handle change of selected row
+        if (Fl_Table::select_row != _current_row) {
+            select_row(Fl_Table::select_row);
+            _current_row = Fl_Table::select_row;
+            Fl::add_timeout(0.0, _row_cb, this);
+        }
         return;
     case CONTEXT_COL_HEADER: // Draw column headers
         fl_push_clip(X, Y, W, H);
@@ -149,6 +147,8 @@ void CourseTable::draw_cell(
         fl_push_clip(X, Y, W, H);
         // Draw cell bg
         if (row_selected(ROW)) {
+            //if (ROW == selected_row) {
+            //if (ROW >= _row_top && ROW <= _row_bot) {
             fl_color(FL_YELLOW);
         } else {
             fl_color(FL_WHITE);
