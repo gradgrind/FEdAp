@@ -9,6 +9,7 @@ find_package(FLTK 1.4 CONFIG REQUIRED)
 
 add_executable(courses_gui main.cpp
     courses/courses_gui.cpp courses/courses_gui.h
+    courses/editform.h courses/editform.cpp
 
 )
 

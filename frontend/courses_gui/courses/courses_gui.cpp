@@ -1,4 +1,5 @@
 #include "courses_gui.h"
+#include "editform.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Output.H>
@@ -8,7 +9,7 @@
 #include <iostream>
 
 CoursesGui::CoursesGui()
-    : Fl_Flex(0, 0, 0, 0)
+    : Fl_Flex(Fl_Flex::COLUMN)
 {
     gap(3);
     color(FL_YELLOW);
@@ -20,8 +21,7 @@ CoursesGui::CoursesGui()
     fixed(todo, 50);
 
     // Top Panel – the selectors and totals info, at the panel bottom
-    auto panelBox = new Fl_Flex(0, 0, 0, 0);
-    panelBox->type(Fl_Flex::ROW);
+    auto panelBox = new Fl_Flex(Fl_Flex::ROW);
     panelBox->margin(5, 5);
     fixed(panelBox, 40);
 
@@ -60,20 +60,26 @@ CoursesGui::CoursesGui()
     // Top Panel – end
 
     // *** The course list/table and course editor ***
-    auto mainview = new Fl_Flex(0, 0, 0, 0);
-    mainview->type(Fl_Flex::ROW);
+    auto mainview = new Fl_Flex(Fl_Flex::ROW);
     mainview->gap(3);
     //mainview->margin(5, 5);
 
     auto table = new CourseTable();
     Widgets["Table"] = table;
 
-    // The course editor form
+    // *** The course editor form ***
     //TODO ...
-    auto todo2 = new Fl_Box(FL_FLAT_BOX, 0, 0, 0, 0, "TODO");
+    auto editpanel = new EditForm();
+    editpanel->add_value("Course Block");
+    editpanel->add_value("Block Subject");
+    editpanel->add_separator();
+    editpanel->add_value("A very very long label");
+
+    editpanel->do_layout();
+    // End of course editor form
 
     // End of mainview
-    mainview->fixed(todo2, 300);
+    mainview->fixed(editpanel, 300);
     mainview->end();
 
     // End of CoursesGui
@@ -99,8 +105,9 @@ CourseTable::CourseTable()
     cols(6);               // how many columns
     col_header(1);         // enable column headers (along top)
     col_header_height(30); // enable column headers (along top)
-    col_width_all(150);    // default width of columns
-    col_resize(0);         // enable column resizing
+    //col_width_all(150);    // default width of columns
+    col_resize(0); // disable column resizing
+    col_header_color(fl_rgb_color(230, 230, 255));
     type(Fl_Table_Row::SELECT_SINGLE);
     end(); // end the Fl_Table group
 
@@ -111,9 +118,6 @@ CourseTable::CourseTable()
             {"Ma", "11", "AH", "k11", "3, 3", "HU"},
             {"Ma", "11.A", "AH", "k11", "1, 1", ""},
             {"Fr", "11.B", "AH", "k11", "1, 1", ""}};
-
-    //callback(_row_cb);
-    //when(FL_WHEN_RELEASE_ALWAYS);
 }
 
 void CourseTable::draw_cell(
@@ -136,7 +140,7 @@ void CourseTable::draw_cell(
         return;
     case CONTEXT_COL_HEADER: // Draw column headers
         fl_push_clip(X, Y, W, H);
-        fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, row_header_color());
+        fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, col_header_color());
         fl_color(FL_BLACK);
         fl_draw(headers[COL].c_str(), X, Y, W, H, FL_ALIGN_CENTER);
         fl_pop_clip();
@@ -147,8 +151,7 @@ void CourseTable::draw_cell(
         fl_push_clip(X, Y, W, H);
         // Draw cell bg
         if (row_selected(ROW)) {
-            //if (ROW == selected_row) {
-            //if (ROW >= _row_top && ROW <= _row_bot) {
+            //if (ROW == _current_row) {
             fl_color(FL_YELLOW);
         } else {
             fl_color(FL_WHITE);
