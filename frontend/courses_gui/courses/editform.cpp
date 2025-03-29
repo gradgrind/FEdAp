@@ -4,9 +4,6 @@
 #include <iostream>
 #include <ostream>
 
-//TODO: Try a version based on Fl_Grid – it might make it easier to
-// have column-spanning items.
-
 EditForm::EditForm()
     : Fl_Grid(0, 0, 0, 0)
 {
@@ -38,7 +35,6 @@ void EditForm::add_value(
 
     //auto v = new EditFormValue(label);
     entries.push_back(EditFormEntry{
-        .container = e1,
         .widget = e1,
         .name = name,
     });
@@ -52,19 +48,14 @@ bool growable;
 void EditForm::add_separator()
 {
     auto e1 = new Fl_Box(FL_BORDER_FRAME, 0, 0, 0, 1, "");
-    entries.push_back(
-        EditFormEntry{.container = e1, .widget = e1, .spanning = true});
+    entries.push_back(EditFormEntry{.widget = e1, .spanning = true});
 }
 
 void EditForm::add_list(
     const char* name, const char* label)
 {
-    auto b1 = new Fl_Flex(0, 0, 0, 120);
-    auto p1 = new Fl_Box(0, 0, 0, 0);
-    b1->fixed(p1, 20);
     auto e1 = new Fl_Select_Browser(0, 0, 0, 0, label);
     e1->end();
-    b1->end();
     e1->align(FL_ALIGN_TOP_LEFT);
     e1->color(fl_rgb_color(255, 255, 200));
 
@@ -81,46 +72,43 @@ void EditForm::add_list(
 
     //e1->vertical_label_margin(5);
 
-    entries.push_back(EditFormEntry{.container = b1,
-                                    .widget = b1,
+    entries.push_back(EditFormEntry{.widget = e1,
                                     .name = name,
+                                    .padabove = 30,
                                     .spanning = true,
                                     .growable = true});
 }
 
 void EditForm::do_layout()
 {
-    int labwidth = 0;
+    int labwidth = 0; // for measuring the max. label width
     int wl, hl;
     int n_entries = entries.size();
     layout(n_entries, 2);
     for (int i = 0; i < n_entries; ++i) {
         auto e = entries[i];
-        add(e.container);
+        add(e.widget);
         if (e.spanning) {
-            widget(e.container, i, 0, 1, 2);
+            widget(e.widget, i, 0, 1, 2);
         } else {
-            widget(e.container, i, 1);
+            widget(e.widget, i, 1);
         }
         if (!e.growable) {
             row_weight(i, 0);
-        } else {
-            row_gap(i - 1, 25);
+        }
+        if (e.padabove != 0) {
+            if (i == 0) {
+                margin(-1, e.padabove);
+            } else {
+                row_gap(i - 1, e.padabove);
+            }
         }
 
         wl = 0;
-
-        //std::cout << "§ " << i << std::endl;
-        //auto l = e.widget->label();
-        //std::cout << "§+ " << l << std::endl;
-
         e.widget->measure_label(wl, hl);
-        //std::cout << "§++ " << wl << std::endl;
         if (wl > labwidth)
             labwidth = wl;
     }
-    //col_width(0, labwidth + 15);
-    //col_width(0, 0);
     col_weight(0, 0);
     col_gap(0, labwidth + 15);
 }

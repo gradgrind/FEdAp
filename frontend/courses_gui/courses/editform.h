@@ -10,9 +10,9 @@
 
 struct EditFormEntry
 {
-    Fl_Widget *container;
     Fl_Widget *widget;
     std::string name;
+    int padabove;
     bool spanning;
     bool growable;
 };
