@@ -2,27 +2,31 @@
 #define EDITFORM_H
 
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Flex.H>
+#include <FL/Fl_Grid.H>
 #include <FL/Fl_Output.H>
+#include <FL/Fl_Select_Browser.H>
+#include <string>
+#include <vector>
 
-class EditForm : public Fl_Flex
+struct EditFormEntry
 {
-    int label_width;
-
-public:
-    EditForm();
-    Fl_Output *add_value(const char *label);
-    void add_separator();
-    void do_layout();
+    Fl_Widget *container;
+    Fl_Widget *widget;
+    std::string name;
+    bool spanning;
+    bool growable;
 };
 
-class EditFormSeparator : public Fl_Box
+class EditForm : public Fl_Grid
 {
-    void draw() FL_OVERRIDE;
-    int *p_label_width;
-
 public:
-    EditFormSeparator(int *label_width);
+    std::vector<EditFormEntry> entries;
+
+    EditForm();
+    void add_value(const char *name, const char *label);
+    void add_separator();
+    void add_list(const char *name, const char *label);
+    void do_layout();
 };
 
 #endif // EDITFORM_H

@@ -70,12 +70,24 @@ CoursesGui::CoursesGui()
     // *** The course editor form ***
     //TODO ...
     auto editpanel = new EditForm();
-    editpanel->add_value("Course Block");
-    editpanel->add_value("Block Subject");
+    current(NULL);
+    editpanel->add_value("CourseBlock", "Course Block");   //->value("");
+    editpanel->add_value("BlockSubject", "Block Subject"); //->deactivate();
+    //editpanel->add_value("Block Subject")->hide();
+
     editpanel->add_separator();
-    editpanel->add_value("A very very long label");
+    editpanel->add_value("Subject", "Subject");
+    editpanel->add_value("Teachers", "Teachers");
+    editpanel->add_value("Rooms", "Rooms");
+    editpanel->add_value("Units", "Units");
+    editpanel->add_list("Constraints", "Constraints");
+
+    // "Properties"
 
     editpanel->do_layout();
+
+    editpanel->entries[1].widget->deactivate(); //->hide();
+
     // End of course editor form
 
     // End of mainview
