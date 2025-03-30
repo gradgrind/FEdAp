@@ -3,10 +3,16 @@
 
 using namespace std;
 
+// +++ DoubleWindow
 DoubleWindow::DoubleWindow(
     string_view name, int width, int height)
     : Widget(name, new Fl_Double_Window(width, height))
 {}
+
+const string_view DoubleWindow::widget_type()
+{
+    return string_view{wtype};
+}
 
 void newDoubleWindow(
     string_view name, json data)
@@ -22,11 +28,18 @@ void newDoubleWindow(
     new DoubleWindow(name, w, h);
 }
 
+// --- DoubleWindow
+
+// +++ Flex
+
 Flex::Flex(
     string_view name, bool horizontal)
     : Widget(name, new Fl_Flex(horizontal ? Fl_Flex::ROW : Fl_Flex::COLUMN))
+{}
+
+const string_view Flex::widget_type()
 {
-    cout << "Flex " << this << endl;
+    return string_view{wtype};
 }
 
 void newFlex(
@@ -45,6 +58,8 @@ void add_function(
     }
     Gui::FunctionMap.emplace(name, f);
 }
+
+// --- Flex
 
 //TODO: It should be possible to get the class names for the classes
 // which are constructed ...

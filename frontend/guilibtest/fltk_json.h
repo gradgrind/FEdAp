@@ -4,7 +4,6 @@
 #include <FL/Fl_Flex.H>
 #include <fmt/format.h>
 #include <functional>
-#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -12,6 +11,30 @@
 using json = nlohmann::json;
 
 using namespace std;
+
+// The reason I was using classes with multiple inheritance was
+// primarily so that deletion of a widget (especially as a result
+// of deleting its group) could allow removal of the Widget entry
+// in the widget table, and releasing of its space.
+// Without this there can be dangling pointers.
+// Another advantage is that the fltk widget has effectively access
+// to the full Widget data.
+
+// Could something like this work?
+class _Flex : public Fl_Flex
+{
+    inline static const std::string wtype{"Flex"};
+
+    // WidgitData wdata;
+
+public:
+    _Flex(
+        string_view name, bool horizontal)
+        : Fl_Flex(horizontal ? Fl_Flex::ROW : Fl_Flex::COLUMN)
+    {}
+
+    ~_Flex() {}
+};
 
 class Gui
 {
@@ -28,57 +51,40 @@ class Widget
     Fl_Widget *widget;
 
 protected:
-    Widget(
-        std::string_view _name, Fl_Widget *_widget)
-        : name{_name}
-        , widget{_widget}
-    {
-        //TODO: Would unnamed widgets be useful? I could skip the
-        // use of the map (also on delete).
-
-        if (WidgetMap.contains(name)) {
-            throw fmt::format("Widget name already exists: %s", name);
-        }
-        //WidgetMap.insert({name, this});
-        WidgetMap.emplace(name, this);
-        cout << "Widget " << this << endl;
-    }
-
-    ~Widget() { WidgetMap.erase(name); }
+    Widget(std::string_view _name, Fl_Widget *_widget);
+    ~Widget();
 
 public:
     virtual const string_view widget_type() = 0;
 
-    static Widget *get(
-        std::string_view name)
-    {
-        return WidgetMap.at(name);
-    }
-
-    static Fl_Widget *get_flwidget(
-        std::string_view name)
-    {
-        return WidgetMap.at(name)->widget;
-    }
+    static Widget *get(std::string_view name);
+    static Fl_Widget *get_flwidget(std::string_view name);
 };
 
-//TODO: Change the constructors to take "standard" arguments, so that
+//TODO???: Change the constructors to take "standard" arguments, so that
 // no extra constructor-functions are necessary? With parent as
 // widget argument? Or "" ... using the automatic add-to-group, or
 // blocking that feature (set current group to 0). Other parameters
 // as JSON?
+
 class DoubleWindow : public Widget
 {
+    inline static const std::string wtype{"Window:Double"};
+
 public:
     DoubleWindow(string_view name, int width = 800, int height = 600);
-    const string_view widget_type() { return string_view{"Window:Double"}; }
+    const string_view widget_type();
 };
+
+void newDoubleWindow(string_view name, json data);
 
 class Flex : public Widget
 {
+    inline static const std::string wtype{"Flex"};
+
 public:
     Flex(string_view name, bool horizontal = false);
-    const string_view widget_type() { return string_view{"Flex"}; }
+    const string_view widget_type();
 };
 
 // In this case, the widget (name) is the new name

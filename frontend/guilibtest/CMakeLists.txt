@@ -9,7 +9,8 @@ find_package(FLTK 1.4 CONFIG REQUIRED)
 
 add_executable(guilibtest main.cpp
     fltk_json.h
-    layout.cpp)
+    layout.cpp
+    widget.cpp)
 
 include(GNUInstallDirs)
 install(TARGETS guilibtest
