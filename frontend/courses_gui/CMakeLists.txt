@@ -20,3 +20,4 @@ install(TARGETS courses_gui
 )
 
 target_link_libraries(courses_gui PRIVATE fltk::fltk)
+target_include_directories(courses_gui PRIVATE ../_lib)
