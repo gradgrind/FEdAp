@@ -60,16 +60,16 @@ int main()
 
     int w0 = 1000;
     int h0 = 700;
-    auto win = new Fl_Double_Window(w0, h0);
+    auto win = new Fl_Double_Window(0, 0);
+    win->size(w0, h0);
     win->color(FL_WHITE);
 
-    auto f1 = new Flex("F1");
+    newFlex("F1", json{});
     auto f1a = (Fl_Flex *) Widget::get_flwidget("F1");
     cout << "? " << Widget::get("F1")->widget_type() << endl;
-    cout << "?? " << f1->widget_type() << endl;
     f1a->size(w0, h0);
     f1a->box(FL_BORDER_BOX);
-    ((Fl_Flex *) f1a)->color(FL_GREEN);
+    f1a->color(FL_GREEN);
     auto vbox1 = new Fl_Box(FL_BORDER_BOX, 0, 0, 0, 0, "B1");
     vbox1->color(FL_RED);
     f1a->fixed(vbox1, 200);
