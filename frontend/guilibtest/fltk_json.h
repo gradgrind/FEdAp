@@ -67,7 +67,9 @@ class _Flex : public Fl_Flex
     std::string wname;
 
 public:
-    inline static const std::string wtype{"Flex"};
+    //TODO: This won't be generally available. As it stands, it
+    // is necessary to cast the object to (in this case) _Flex*.
+    constexpr static const std::string_view wtype{"Flex"};
 
     static _Flex *make(string_view name, json data);
 

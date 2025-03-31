@@ -70,7 +70,7 @@ int main()
     //auto f1a = (Fl_Flex *) Widget::get_flwidget("F1");
     auto f1a = (Fl_Flex *) widgit_map.get("F1");
 
-    //cout << "? " << Widget::get("F1")->widget_type() << endl;
+    cout << "? " << ((_Flex *) f1a)->wtype << endl;
     f1a->size(w0, h0);
     f1a->box(FL_BORDER_BOX);
     f1a->color(FL_GREEN);
