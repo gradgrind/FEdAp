@@ -60,15 +60,15 @@ int main()
 
     int w0 = 1000;
     int h0 = 700;
-    auto win = new Fl_Double_Window(0, 0);
-    win->size(w0, h0);
+    newWindow("W0", {{"WIDTH", 1000}, {"HEIGHT", 700}});
+    auto win = (Fl_Double_Window *) widget_map.at("W0");
     win->color(FL_WHITE);
 
-    // Test creation and deletion
+    //* Test creation and deletion - CRASHING!
     newFlex("F0", json{});
     auto f0a = widget_map.at("F0");
     delete f0a;
-    //--
+    //*/
 
     newFlex("F1", json{});
     for (auto const &[k, v] : widget_map) {
