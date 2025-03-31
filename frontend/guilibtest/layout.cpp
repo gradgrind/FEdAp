@@ -4,8 +4,20 @@
 
 using namespace std;
 
-WidgitMap widgit_map;
+void newFlex(
+    string_view name, json data)
+{
+    auto hz = data.contains("HORIZONTAL") && data["HORIZONTAL"];
+    auto w = new Fl_Flex(hz ? Fl_Flex::ROW : Fl_Flex::COLUMN);
+    //TODO: w->end(), or null current group, or ...?
+    new WidgetData("Flex", name, w);
+}
 
+// ***
+
+WidgetMap widget_map;
+
+/*
 // +++ DoubleWindow
 DoubleWindow::DoubleWindow(
     string_view name, int width, int height)
@@ -35,27 +47,7 @@ void newDoubleWindow(
 
 // +++ Flex
 
-_Flex *_Flex::make(
-    string_view name, json data)
-{
-    auto hz = data.contains("HORIZONTAL") && data["HORIZONTAL"];
-    return new _Flex(name, hz);
-}
-
-_Flex::_Flex(
-    string_view name, bool horizontal)
-    : Fl_Flex(horizontal ? Fl_Flex::ROW : Fl_Flex::COLUMN)
-    , wname{name}
-{
-    widgit_map.add(wname, this);
-}
-
-_Flex::~_Flex()
-{
-    widgit_map.remove(wname);
-}
-
-//***
+// ***
 
 Flex::Flex(
     string_view name, bool horizontal)
@@ -105,3 +97,4 @@ void AddFunctions()
     add_function("Window:Double", w1);
     add_function("Flex", newFlex);
 }
+*/

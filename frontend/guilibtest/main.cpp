@@ -64,16 +64,17 @@ int main()
     win->size(w0, h0);
     win->color(FL_WHITE);
 
-    //newFlex("F1", json{});
-    //auto f1a0 = (Fl_Flex *) _Flex::make("F1", json{});
-    auto f1a = (Fl_Flex *) Flex::make("F1", json{});
+    //TODO: This is not working
+    newFlex("F0", json{});
+    auto f0a = widget_name_map.at("F0");
+    delete f0a;
+    //--
 
-    auto f1aX = Widget::get("F1");
-    cout << "?X " << f1aX << endl;
-    //Doesn't work    << ((Widget *) f1aX)->wname << endl;
-    //auto f1a = (Fl_Flex *) widgit_map.get("F1");
+    newFlex("F1", json{});
 
-    cout << "? " << ((_Flex *) f1a)->wtype << " @ " << f1a << endl;
+    auto f1a = (Fl_Flex *) widget_name_map.at("F1");
+    auto ud = (WidgetData *) f1a->user_data();
+    cout << "? " << ud->wname << " @ " << ud->wtype << endl;
     f1a->size(w0, h0);
     f1a->box(FL_BORDER_BOX);
     f1a->color(FL_GREEN);

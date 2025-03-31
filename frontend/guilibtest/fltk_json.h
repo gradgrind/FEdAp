@@ -12,6 +12,8 @@ using json = nlohmann::json;
 
 using namespace std;
 
+extern unordered_map<string_view, Fl_Widget *> widget_name_map;
+
 // Maybe the user_data in Fl_Widget can do what I need, which is
 // to provide extra data fields. I could use a Fl_Callback_User_Data
 // subclass, which has a virtual destructor.
@@ -34,7 +36,7 @@ using namespace std;
  * expected to be held in the widget.
  */
 
-class WidgitMap : public unordered_map<string_view, Fl_Widget *>
+class WidgetMap : public unordered_map<string_view, Fl_Widget *>
 {
 public:
     void add(
@@ -67,7 +69,36 @@ public:
     }
 };
 
-extern WidgitMap widgit_map;
+//??
+extern WidgetMap widget_map;
+
+class WidgetData : public Fl_Callback_User_Data
+{
+    //static WidgetMap widget_map;
+    //static vector<Fl_Widget *> widget_vec;
+    //static vector<string_view> type_names;
+
+public: // TODO actually, these should be private
+    // Widget name, used for look-up, etc.
+    std::string wname;
+    // Widget type, which can be used to access a type's member
+    // functions, also the name of the type.
+    int wtype;
+    // Substitute for Fl_Widget's user_data
+    void *user_data;
+    bool auto_delete_user_data;
+
+public:
+    WidgetData(std::string_view type, std::string_view name, Fl_Widget *widget);
+    ~WidgetData() override;
+
+    void add_widget(Fl_Widget *w);
+    void remove_widget(std::string_view name);
+};
+
+void newFlex(string_view name, json data);
+
+// ***
 
 class _Flex : public Fl_Flex
 {
