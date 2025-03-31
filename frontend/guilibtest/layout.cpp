@@ -3,6 +3,8 @@
 
 using namespace std;
 
+WidgitMap widgit_map;
+
 // +++ DoubleWindow
 DoubleWindow::DoubleWindow(
     string_view name, int width, int height)
@@ -31,6 +33,28 @@ void newDoubleWindow(
 // --- DoubleWindow
 
 // +++ Flex
+
+_Flex *_Flex::make(
+    string_view name, json data)
+{
+    auto hz = data.contains("HORIZONTAL") && data["HORIZONTAL"];
+    return new _Flex(name, hz);
+}
+
+_Flex::_Flex(
+    string_view name, bool horizontal)
+    : Fl_Flex(horizontal ? Fl_Flex::ROW : Fl_Flex::COLUMN)
+    , wname{name}
+{
+    widgit_map.add(wname, this);
+}
+
+_Flex::~_Flex()
+{
+    widgit_map.remove(wname);
+}
+
+//***
 
 Flex::Flex(
     string_view name, bool horizontal)

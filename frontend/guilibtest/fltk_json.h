@@ -21,20 +21,62 @@ using namespace std;
 // to the full Widget data.
 
 // Could something like this work?
+
+/* This class handles mapping widget names to their actual widgets.
+ * Note that the keys are string_view, so the underlying string is
+ * expected to be held in the widget.
+ */
+
+class WidgitMap : public unordered_map<string_view, Fl_Widget *>
+{
+public:
+    void add(
+        string_view name, Fl_Widget *widget)
+    {
+        // Allow unnamed widgets. These are not placed in the map.
+        if (name.empty())
+            return;
+
+        if (contains(name)) {
+            throw fmt::format("Widget name already exists: %s", name);
+        }
+        //insert({name, widget}); ... or ...
+        emplace(name, widget);
+    }
+
+    void remove(
+        string_view name)
+    {
+        // Allow unnamed widgets. These are not placed in the map.
+        if (name.empty())
+            return;
+        erase(name);
+    }
+
+    Fl_Widget *get(
+        string_view name)
+    {
+        return at(name);
+    }
+};
+
+extern WidgitMap widgit_map;
+
 class _Flex : public Fl_Flex
 {
-    inline static const std::string wtype{"Flex"};
-
-    // WidgitData wdata;
+    std::string wname;
 
 public:
-    _Flex(
-        string_view name, bool horizontal)
-        : Fl_Flex(horizontal ? Fl_Flex::ROW : Fl_Flex::COLUMN)
-    {}
+    inline static const std::string wtype{"Flex"};
 
-    ~_Flex() {}
+    static _Flex *make(string_view name, json data);
+
+    _Flex(string_view name, bool horizontal);
+
+    ~_Flex();
 };
+
+// ---
 
 class Gui
 {

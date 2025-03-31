@@ -64,9 +64,13 @@ int main()
     win->size(w0, h0);
     win->color(FL_WHITE);
 
-    newFlex("F1", json{});
-    auto f1a = (Fl_Flex *) Widget::get_flwidget("F1");
-    cout << "? " << Widget::get("F1")->widget_type() << endl;
+    //newFlex("F1", json{});
+    auto f1a0 = (Fl_Flex *) _Flex::make("F1", json{});
+
+    //auto f1a = (Fl_Flex *) Widget::get_flwidget("F1");
+    auto f1a = (Fl_Flex *) widgit_map.get("F1");
+
+    //cout << "? " << Widget::get("F1")->widget_type() << endl;
     f1a->size(w0, h0);
     f1a->box(FL_BORDER_BOX);
     f1a->color(FL_GREEN);
