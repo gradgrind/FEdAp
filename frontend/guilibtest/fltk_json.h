@@ -12,7 +12,40 @@ using json = nlohmann::json;
 
 using namespace std;
 
-extern unordered_map<string_view, Fl_Widget *> widget_name_map;
+// The user_data in Fl_Widget is used to store additional fields,
+// primarily the widget's name and type. As this feature is now no
+// longer available to the programmer, another field (user_data) is
+// provided within the WidgetData subclass of Fl_Callback_User_Data
+// which is referred to by the original user data field.
+
+extern unordered_map<string_view, Fl_Widget *> widget_map;
+
+class WidgetData : public Fl_Callback_User_Data
+{
+    // Widget name, used for look-up, etc.
+    string wname;
+    // Widget type, which can be used to access a type's member
+    // functions, also the name of the type.
+    int wtype;
+    // Substitute for Fl_Widget's user_data
+    void *user_data;
+    bool auto_delete_user_data;
+
+public:
+    WidgetData(std::string_view type, std::string_view name, Fl_Widget *widget);
+    ~WidgetData() override;
+
+    void add_widget(Fl_Widget *w);
+    void remove_widget(std::string_view name);
+
+    string_view widget_name();
+    int widget_type();
+    string_view widget_type_name();
+};
+
+void newFlex(string_view name, json data);
+
+// ***
 
 // Maybe the user_data in Fl_Widget can do what I need, which is
 // to provide extra data fields. I could use a Fl_Callback_User_Data
@@ -69,36 +102,6 @@ public:
     }
 };
 
-//??
-extern WidgetMap widget_map;
-
-class WidgetData : public Fl_Callback_User_Data
-{
-    //static WidgetMap widget_map;
-    //static vector<Fl_Widget *> widget_vec;
-    //static vector<string_view> type_names;
-
-public: // TODO actually, these should be private
-    // Widget name, used for look-up, etc.
-    std::string wname;
-    // Widget type, which can be used to access a type's member
-    // functions, also the name of the type.
-    int wtype;
-    // Substitute for Fl_Widget's user_data
-    void *user_data;
-    bool auto_delete_user_data;
-
-public:
-    WidgetData(std::string_view type, std::string_view name, Fl_Widget *widget);
-    ~WidgetData() override;
-
-    void add_widget(Fl_Widget *w);
-    void remove_widget(std::string_view name);
-};
-
-void newFlex(string_view name, json data);
-
-// ***
 
 class _Flex : public Fl_Flex
 {

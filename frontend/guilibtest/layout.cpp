@@ -15,7 +15,6 @@ void newFlex(
 
 // ***
 
-WidgetMap widget_map;
 
 /*
 // +++ DoubleWindow

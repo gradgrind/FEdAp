@@ -64,17 +64,21 @@ int main()
     win->size(w0, h0);
     win->color(FL_WHITE);
 
-    //TODO: This is not working
+    // Test creation and deletion
     newFlex("F0", json{});
-    auto f0a = widget_name_map.at("F0");
+    auto f0a = widget_map.at("F0");
     delete f0a;
     //--
 
     newFlex("F1", json{});
+    for (auto const &[k, v] : widget_map) {
+        cout << "??? " << k << " @ " << v << endl;
+    }
 
-    auto f1a = (Fl_Flex *) widget_name_map.at("F1");
+    auto f1a = (Fl_Flex *) widget_map.at("F1");
     auto ud = (WidgetData *) f1a->user_data();
-    cout << "? " << ud->wname << " @ " << ud->wtype << endl;
+    cout << "? " << ud->widget_name() << " @ " << ud->widget_type() << " ~ "
+         << ud->widget_type_name() << endl;
     f1a->size(w0, h0);
     f1a->box(FL_BORDER_BOX);
     f1a->color(FL_GREEN);
