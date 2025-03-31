@@ -1,5 +1,6 @@
 #include "fltk_json.h"
 #include <FL/Fl_Double_Window.H>
+#include <iostream>
 
 using namespace std;
 
@@ -8,7 +9,7 @@ WidgitMap widgit_map;
 // +++ DoubleWindow
 DoubleWindow::DoubleWindow(
     string_view name, int width, int height)
-    : Widget(name, new Fl_Double_Window(width, height))
+    : Widget(name)
 {}
 
 const string_view DoubleWindow::widget_type()
@@ -58,12 +59,23 @@ _Flex::~_Flex()
 
 Flex::Flex(
     string_view name, bool horizontal)
-    : Widget(name, new Fl_Flex(horizontal ? Fl_Flex::ROW : Fl_Flex::COLUMN))
-{}
+    : Fl_Flex(horizontal ? Fl_Flex::ROW : Fl_Flex::COLUMN)
+    , Widget(name)
+{
+    cout << "Flex.this " << this << endl;
+    WidgetMap.emplace(wname, this);
+}
 
 const string_view Flex::widget_type()
 {
     return string_view{wtype};
+}
+
+Flex *Flex::make(
+    string_view name, json data)
+{
+    auto hz = data.contains("HORIZONTAL") && data["HORIZONTAL"];
+    return new Flex(name, hz);
 }
 
 void newFlex(

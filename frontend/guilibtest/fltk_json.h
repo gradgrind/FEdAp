@@ -12,6 +12,10 @@ using json = nlohmann::json;
 
 using namespace std;
 
+// Maybe the user_data in Fl_Widget can do what I need, which is
+// to provide extra data fields. I could use a Fl_Callback_User_Data
+// subclass, which has a virtual destructor.
+
 // The reason I was using classes with multiple inheritance was
 // primarily so that deletion of a widget (especially as a result
 // of deleting its group) could allow removal of the Widget entry
@@ -19,6 +23,9 @@ using namespace std;
 // Without this there can be dangling pointers.
 // Another advantage is that the fltk widget has effectively access
 // to the full Widget data.
+// HOWEVER, I couldn't get that to work properly ... I guess it
+// might have something to do with the structure of the class
+// representations, casting wasn't doing what I might have expected.
 
 // Could something like this work?
 
@@ -89,20 +96,17 @@ public:
 
 class Widget
 {
-    inline static unordered_map<string_view, Widget *> WidgetMap;
-
-    std::string name;
-    Fl_Widget *widget;
-
 protected:
-    Widget(std::string_view _name, Fl_Widget *_widget);
-    ~Widget();
+    std::string wname;
+    inline static unordered_map<string_view, void *> WidgetMap;
+
+    Widget(std::string_view name);
+    virtual ~Widget();
 
 public:
     virtual const string_view widget_type() = 0;
-
-    static Widget *get(std::string_view name);
-    static Fl_Widget *get_flwidget(std::string_view name);
+    //?? const string_view widget_name();
+    static void *get(std::string_view name);
 };
 
 //TODO???: Change the constructors to take "standard" arguments, so that
@@ -122,13 +126,14 @@ public:
 
 void newDoubleWindow(string_view name, json data);
 
-class Flex : public Widget
+class Flex : public Fl_Flex, Widget
 {
     inline static const std::string wtype{"Flex"};
 
 public:
-    Flex(string_view name, bool horizontal = false);
-    const string_view widget_type();
+    static Flex *make(string_view name, json data);
+    Flex(string_view name, bool horizontal);
+    const string_view widget_type() override;
 };
 
 // In this case, the widget (name) is the new name

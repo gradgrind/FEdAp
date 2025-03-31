@@ -1,33 +1,42 @@
 #include "fltk_json.h"
+#include <iostream>
 
 Widget::Widget(
-    std::string_view _name, Fl_Widget *_widget)
-    : name{_name}
-    , widget{_widget}
+    std::string_view name)
+    : wname{name}
 {
-    //TODO: Would unnamed widgets be useful? I could skip the
-    // use of the map (also on delete).
+    // Allow unnamed widgets. These are not placed in the map.
+    if (wname.empty())
+        return;
 
-    if (WidgetMap.contains(name)) {
-        throw fmt::format("Widget name already exists: %s", name);
+    if (WidgetMap.contains(wname)) {
+        throw fmt::format("Widget name already exists: %s", wname);
     }
+
+    //TODO: I think this may be wrong ... maybe this needs to be
+    // done in the main constructor?
+    cout << "Widget.this " << this << endl;
     //WidgetMap.insert({name, this}); ... or ...
-    WidgetMap.emplace(name, this);
+    //WidgetMap.emplace(name, this);
 }
 
 Widget::~Widget()
 {
-    WidgetMap.erase(name);
+    // Allow unnamed widgets. These are not placed in the map.
+    if (wname.empty())
+        return;
+    WidgetMap.erase(wname);
 }
 
-Widget *Widget::get(
+void *Widget::get(
     std::string_view name)
 {
     return WidgetMap.at(name);
 }
 
-Fl_Widget *Widget::get_flwidget(
-    std::string_view name)
+/* seems not to work ...
+const string_view Widget::widget_name()
 {
-    return WidgetMap.at(name)->widget;
+    return wname;
 }
+*/
