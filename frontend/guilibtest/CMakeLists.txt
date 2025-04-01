@@ -11,7 +11,9 @@ add_executable(guilibtest main.cpp
     fltk_json.h
     layout.cpp
     widget.cpp
-    dispatcher.cpp)
+    dispatcher.cpp
+    widget_methods.cpp
+    widget_methods.h)
 
 include(GNUInstallDirs)
 install(TARGETS guilibtest

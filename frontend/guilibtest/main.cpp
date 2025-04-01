@@ -1,4 +1,4 @@
-#include "fltk_json.h"
+#include "widget_methods.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
@@ -78,9 +78,14 @@ int main()
         auto ud = (WidgetData *) f1a->user_data();
         cout << "? " << ud->widget_name() << " @ " << ud->widget_type() << " ~ "
              << ud->widget_type_name() << endl;
-        f1a->size(w0, h0);
+        //f1a->size(w0, h0);
+        widget_size("F1", {{"WIDTH", w0}, {"HEIGHT", h0}});
         f1a->box(FL_BORDER_BOX);
-        f1a->color(FL_GREEN);
+
+        const Fl_Color c{
+            static_cast<Fl_Color>(stoi("FFffaa", nullptr, 16) * 256)};
+        f1a->color(c);
+        //f1a->color(0x00ff0000);
         auto vbox1 = new Fl_Box(FL_BORDER_BOX, 0, 0, 0, 0, "B1");
         vbox1->color(FL_RED);
         f1a->fixed(vbox1, 200);
