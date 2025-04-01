@@ -80,12 +80,10 @@ int main()
              << ud->widget_type_name() << endl;
         //f1a->size(w0, h0);
         widget_size("F1", {{"WIDTH", w0}, {"HEIGHT", h0}});
-        f1a->box(FL_BORDER_BOX);
-
-        const Fl_Color c{
-            static_cast<Fl_Color>(stoi("FFffaa", nullptr, 16) * 256)};
-        f1a->color(c);
+        //f1a->box(FL_BORDER_BOX);
+        widget_set_box("F1", {{"BOXTYPE", "FL_BORDER_BOX"}});
         //f1a->color(0x00ff0000);
+        widget_set_color("F1", {{"COLOR", "00FF00"}});
         auto vbox1 = new Fl_Box(FL_BORDER_BOX, 0, 0, 0, 0, "B1");
         vbox1->color(FL_RED);
         f1a->fixed(vbox1, 200);
