@@ -5,8 +5,8 @@
 
 // "Group" widgets
 
-void newWindow(
-    string_view name, json data)
+void new_window(
+    string_view name, string_view parent, json data)
 {
     int w = 800;
     if (data.contains("WIDTH")) {
@@ -21,8 +21,8 @@ void newWindow(
     new WidgetData("Group:Window:Double", name, widg);
 }
 
-void newFlex(
-    string_view name, json data)
+void new_flex(
+    string_view name, string_view parent, json data)
 {
     auto hz = data.contains("HORIZONTAL") && data["HORIZONTAL"];
     auto widg = new Fl_Flex(hz ? Fl_Flex::ROW : Fl_Flex::COLUMN);
@@ -30,8 +30,8 @@ void newFlex(
     new WidgetData("Group:Flex", name, widg);
 }
 
-void newGrid(
-    string_view name, json data)
+void new_grid(
+    string_view name, string_view parent, json data)
 {
     auto widg = new Fl_Grid(0, 0, 0, 0);
     //TODO: widg->end(), or null current group, or ...?

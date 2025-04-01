@@ -6,7 +6,6 @@
 #include <fmt/format.h>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 
 #include <json.hpp>
 using json = nlohmann::json;
@@ -19,7 +18,9 @@ using namespace std;
 // is provided within the WidgetData subclass of Fl_Callback_User_Data
 // which is referred to by the original user data field.
 
-extern unordered_map<string_view, Fl_Widget *> widget_map;
+//extern unordered_map<string_view, Fl_Widget *> widget_map;
+Fl_Widget *get_widget(string_view name);
+json list_widgets();
 
 class WidgetData : public Fl_Callback_User_Data
 {
@@ -44,8 +45,12 @@ public:
     string_view widget_type_name();
 };
 
-void newWindow(string_view name, json data);
-void newFlex(string_view name, json data);
-void newGrid(string_view name, json data);
+void gui_new(string_view name,
+             string_view widget_type,
+             string_view parent,
+             json data);
+void new_window(string_view name, string_view parent, json data);
+void new_flex(string_view name, string_view parent, json data);
+void new_grid(string_view name, string_view parent, json data);
 
 #endif // FLTK_JSON_H
