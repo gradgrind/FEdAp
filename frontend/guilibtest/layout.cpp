@@ -1,8 +1,9 @@
 #include "fltk_json.h"
 #include <FL/Fl_Double_Window.H>
-#include <iostream>
+#include <FL/Fl_Flex.H>
+#include <FL/Fl_Grid.H>
 
-using namespace std;
+// "Group" widgets
 
 void newWindow(
     string_view name, json data)
@@ -17,7 +18,7 @@ void newWindow(
     }
     auto widg = new Fl_Double_Window(w, h);
     //TODO: widg->end(), or null current group, or ...?
-    new WidgetData("Window:Double", name, widg);
+    new WidgetData("Group:Window:Double", name, widg);
 }
 
 void newFlex(
@@ -26,5 +27,13 @@ void newFlex(
     auto hz = data.contains("HORIZONTAL") && data["HORIZONTAL"];
     auto widg = new Fl_Flex(hz ? Fl_Flex::ROW : Fl_Flex::COLUMN);
     //TODO: widg->end(), or null current group, or ...?
-    new WidgetData("Flex", name, widg);
+    new WidgetData("Group:Flex", name, widg);
+}
+
+void newGrid(
+    string_view name, json data)
+{
+    auto widg = new Fl_Grid(0, 0, 0, 0);
+    //TODO: widg->end(), or null current group, or ...?
+    new WidgetData("Group:Grid", name, widg);
 }

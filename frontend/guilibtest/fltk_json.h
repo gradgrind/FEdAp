@@ -1,9 +1,11 @@
 #ifndef FLTK_JSON_H
 #define FLTK_JSON_H
 
-#include <FL/Fl_Flex.H>
+#include <FL/Fl_Widget.H>
+
 #include <fmt/format.h>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include <json.hpp>
@@ -13,8 +15,8 @@ using namespace std;
 
 // The user_data in Fl_Widget is used to store additional fields,
 // primarily the widget's name and type. As this feature is now no
-// longer available to the programmer, another field (user_data) is
-// provided within the WidgetData subclass of Fl_Callback_User_Data
+// longer directly available to the programmer, another field (user_data)
+// is provided within the WidgetData subclass of Fl_Callback_User_Data
 // which is referred to by the original user data field.
 
 extern unordered_map<string_view, Fl_Widget *> widget_map;
@@ -44,5 +46,6 @@ public:
 
 void newWindow(string_view name, json data);
 void newFlex(string_view name, json data);
+void newGrid(string_view name, json data);
 
 #endif // FLTK_JSON_H

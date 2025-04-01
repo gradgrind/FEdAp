@@ -1,14 +1,13 @@
 #include "fltk_json.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Flex.H>
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
 
 #include <fmt/format.h>
 
 #include <iostream>
-
-using namespace std;
 
 void main_callback(
     Fl_Widget *, void *)
