@@ -1,7 +1,5 @@
 #include "fltk_json.h"
 
-typedef map<string_view, void *> member_map; // TODO
-
 unordered_map<string_view, int> widget_type_map;
 vector<string_view> widget_type_names;
 vector<member_map> widget_type_vec;
@@ -90,4 +88,12 @@ string_view WidgetData::widget_type_name()
 {
     auto i = widget_type();
     return widget_type_names[i];
+}
+
+void WidgetData::do_method(
+    Fl_Widget *widget, string_view name, json data)
+{
+    auto members = widget_type_vec.at(wtype);
+    auto m = members.at(name);
+    m(widget, data);
 }

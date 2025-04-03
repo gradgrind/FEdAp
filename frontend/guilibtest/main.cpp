@@ -82,7 +82,7 @@ int main()
         cout << "? " << ud->widget_name() << " @ " << ud->widget_type() << " ~ "
              << ud->widget_type_name() << endl;
         //f1a->size(w0, h0);
-        widget_size("F1", {{"WIDTH", w0}, {"HEIGHT", h0}});
+        widget_set_size("F1", {{"WIDTH", w0}, {"HEIGHT", h0}});
         //f1a->box(FL_BORDER_BOX);
         widget_set_box("F1", {{"BOXTYPE", "FL_BORDER_BOX"}});
         //f1a->color(0x00ff0000);

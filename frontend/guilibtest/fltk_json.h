@@ -17,6 +17,9 @@ using jobj = json::object_t;
 
 using namespace std;
 
+using method = function<void(Fl_Widget *, json)>;
+using member_map = map<string_view, method>;
+
 // The user_data in Fl_Widget is used to store additional fields,
 // primarily the widget's name and type. As this feature is now no
 // longer directly available to the programmer, another field (user_data)
@@ -39,15 +42,16 @@ class WidgetData : public Fl_Callback_User_Data
     bool auto_delete_user_data = false;
 
 public:
-    WidgetData(std::string_view type, std::string_view name, Fl_Widget *widget);
+    WidgetData(string_view type, string_view name, Fl_Widget *widget);
     ~WidgetData() override;
 
     void add_widget(Fl_Widget *w);
-    void remove_widget(std::string_view name);
+    void remove_widget(string_view name);
 
     string_view widget_name();
     int widget_type();
     string_view widget_type_name();
+    void do_method(Fl_Widget *widget, string_view name, json data);
 };
 
 bool get_json_string(json data, string_view key, string &value);

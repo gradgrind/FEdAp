@@ -56,7 +56,8 @@ Fl_Boxtype _get_boxtype(
 
 // ---
 
-void widget_size(
+//OLD--
+void widget_set_size(
     string_view name, json data)
 {
     auto w = get_widget(name);
@@ -76,3 +77,28 @@ void widget_set_color(
     auto w = get_widget(name);
     w->color(_get_color(data));
 }
+
+//NEW++
+void _widget_set_size(
+    Fl_Widget* w, json data)
+{
+    w->size(get_json_int(data, "WIDTH"), get_json_int(data, "HEIGHT"));
+}
+
+void _widget_set_box(
+    Fl_Widget* w, json data)
+{
+    w->box(_get_boxtype(data));
+}
+
+void _widget_set_color(
+    Fl_Widget* w, json data)
+{
+    w->color(_get_color(data));
+}
+
+member_map widget_methods{{"set_size", _widget_set_size},
+                          {"set_box", _widget_set_box},
+                          {"set_color", _widget_set_color}};
+// Each subclass has its own map, constructed by COPYING the parent class
+// map and adding its own methods

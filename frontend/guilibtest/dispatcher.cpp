@@ -5,10 +5,8 @@
 using new_widget_func
     = function<void(string_view name, string_view parent, json data)>;
 // Create the map object
-unordered_map<string_view, new_widget_func> function_map{{"Window", new_window},
-                                                         {"Flex", new_flex},
-                                                         {"Grid", new_grid},
-                                                         {"Box", new_box}};
+using function_map = unordered_map<string_view, new_widget_func>;
+function_map fmap{{"Window", new_window}, {"Flex", new_flex}, {"Grid", new_grid}, {"Box", new_box}};
 
 // Call a method of a given widget, passing any parameters as a JSON object.
 void gui(
@@ -42,7 +40,7 @@ void gui_new(
     string_view name, string_view widget_type, string_view parent, json data)
 {
     try {
-        auto fn = function_map.at(widget_type);
+        auto fn = fmap.at(widget_type);
         fn(name, parent, data);
     } catch (const std::out_of_range& e) {
         throw fmt::format("Unknown widget type: {} ({})", widget_type, e.what());
@@ -51,20 +49,18 @@ void gui_new(
 
 // NEW ...
 using _new_widget_func = function<void(json data)>;
-unordered_map<string_view, _new_widget_func> _function_map{};
+using _function_map = unordered_map<string_view, _new_widget_func>;
+_function_map fn_map{};
 
 void widget_method(
     Fl_Widget* w, json obj)
 {
+    auto wd{static_cast<WidgetData*>(w->user_data())};
     string m;
     if (get_json_string(obj, "M", m)) {
-        try {
-            auto wd{static_cast<WidgetData*>(w->user_data())};
-            //            auto fn = _function_map.at(fw);
-            //fn(obj);
-        } catch (const std::out_of_range& e) {
-            //            throw fmt::format("Unknown function: {} ({})", fw, e.what());
-        }
+        wd->do_method(w, m, obj);
+    } else {
+        throw fmt::format("Invalid method on {}: {}", wd->widget_name(), obj);
     }
 }
 
@@ -74,7 +70,7 @@ void GUI(
     string fw;
     if (get_json_string(obj, "F", fw)) {
         try {
-            auto fn = _function_map.at(fw);
+            auto fn = fn_map.at(fw);
             fn(obj);
         } catch (const std::out_of_range& e) {
             throw fmt::format("Unknown function: {} ({})", fw, e.what());
@@ -83,10 +79,10 @@ void GUI(
         auto w = get_widget(fw);
         json::array_t mlist = obj.at("DO");
         for (const auto& m : mlist) {
-            //TODO: widget_method(w, m);
+            widget_method(w, m);
         }
     } else {
-        throw fmt::format("Invalid GUI data: {}", obj);
+        throw fmt::format("Invalid GUI parameters: {}", obj);
     }
 }
 
