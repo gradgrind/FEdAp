@@ -37,3 +37,31 @@ void new_grid(
     //TODO: widg->end(), or null current group, or ...?
     new WidgetData("Group:Grid", name, widg);
 }
+
+void _parm_widget_name(
+    const json data, string &name)
+{
+    if (!get_json_string(data, "NAME", name)) {
+        throw fmt::format("Function '{}':\n no 'NAME' field", data);
+    }
+}
+
+void _parm_set_parent(
+    const json data, Fl_Widget *widg)
+{
+    string parent;
+    if (get_json_string(data, "PARENT", parent) && !parent.empty()) {
+        static_cast<Fl_Group *>(get_widget(parent))->add(widg);
+    }
+}
+
+void _new_grid(
+    json data)
+{
+    string name;
+    _parm_widget_name(data, name);
+    auto widg = new Fl_Grid(0, 0, 0, 0);
+    Fl_Group::current(0);
+    new WidgetData("Group:Grid", name, widg);
+    _parm_set_parent(data, widg);
+}

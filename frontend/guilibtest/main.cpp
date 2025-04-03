@@ -43,6 +43,9 @@ public:
 
 int main()
 {
+    string _bt1{"FL_NO_BOX"};
+    cout << _bt1 << ": " << magic_enum::enum_cast<Fl_Boxtype>(_bt1).value() << endl;
+
     //FL_NORMAL_SIZE = 16;
     //Fl::set_font(FL_HELVETICA, "DejaVu Serif");
     auto s = fmt::format("? {:>10} {}", "This", 3);
@@ -62,20 +65,20 @@ int main()
         int w0 = 1000;
         int h0 = 700;
         gui_new("W0", "Window", "", {{"WIDTH", w0}, {"HEIGHT", h0}});
-        auto win = (Fl_Double_Window *) get_widget("W0");
+        auto win = static_cast<Fl_Double_Window *>(get_widget("W0"));
         win->color(FL_WHITE);
 
         //* Test creation and deletion
-        gui_new("F0", "Flex", "", json{});
+        gui_new("F0", "Flex", "", {});
         auto f0a = get_widget("F0");
         delete f0a;
         //*/
 
-        gui_new("F1", "Flex", "", json{});
+        gui_new("F1", "Flex", "", {});
         cout << "??? " << list_widgets() << endl;
 
-        auto f1a = (Fl_Flex *) get_widget("F1");
-        auto ud = (WidgetData *) f1a->user_data();
+        auto f1a = static_cast<Fl_Flex *>(get_widget("F1"));
+        auto ud = static_cast<WidgetData *>(f1a->user_data());
         cout << "? " << ud->widget_name() << " @ " << ud->widget_type() << " ~ "
              << ud->widget_type_name() << endl;
         //f1a->size(w0, h0);
@@ -84,6 +87,11 @@ int main()
         widget_set_box("F1", {{"BOXTYPE", "FL_BORDER_BOX"}});
         //f1a->color(0x00ff0000);
         widget_set_color("F1", {{"COLOR", "00FF00"}});
+
+        gui_new("B1",
+                "Box",
+                "",
+                {{"LABEL", "B1"}, {"BOXTYPE", "FL_ENGRAVED_BOX"}});
         auto vbox1 = new Fl_Box(FL_BORDER_BOX, 0, 0, 0, 0, "B1");
         vbox1->color(FL_RED);
         f1a->fixed(vbox1, 200);

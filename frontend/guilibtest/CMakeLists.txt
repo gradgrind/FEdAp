@@ -13,7 +13,8 @@ add_executable(guilibtest main.cpp
     widget.cpp
     dispatcher.cpp
     widget_methods.cpp
-    widget_methods.h)
+    widget_methods.h
+    widgets.cpp)
 
 include(GNUInstallDirs)
 install(TARGETS guilibtest

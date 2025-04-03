@@ -73,7 +73,7 @@ WidgetData::~WidgetData()
 {
     remove_widget(wname);
     if (auto_delete_user_data && user_data)
-        delete (Fl_Callback_User_Data *) user_data;
+        delete static_cast<Fl_Callback_User_Data *>(user_data);
 }
 
 string_view WidgetData::widget_name()

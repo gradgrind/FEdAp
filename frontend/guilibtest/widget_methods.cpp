@@ -1,5 +1,4 @@
 #include "widget_methods.h"
-#include "magic_enum/magic_enum.hpp"
 
 //TODO: move somewhere more appropriate ...
 int get_json_int(
@@ -22,6 +21,18 @@ string get_json_string(
     }
 }
 
+// This version sets the referenced string argument if the key exists.
+// Return true if successful.
+bool get_json_string(
+    json data, string_view key, string &value)
+{
+    auto it = data.find(key);
+    if (it == data.end())
+        return false;
+    value = it.value();
+    return true;
+}
+
 Fl_Color _get_color(
     json data)
 {
@@ -35,10 +46,10 @@ Fl_Color _get_color(
 Fl_Boxtype _get_boxtype(
     json data)
 {
-    auto s = get_json_string(data, "BOXTYPE");
-    try {
+    string s;
+    if (get_json_string(data, "BOXTYPE", s)) {
         return magic_enum::enum_cast<Fl_Boxtype>(s).value();
-    } catch (...) {
+    } else {
         throw fmt::format("Invalid box type: '{}'", s);
     }
 }

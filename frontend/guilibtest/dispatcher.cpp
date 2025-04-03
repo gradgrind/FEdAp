@@ -5,10 +5,10 @@
 using new_widget_func
     = function<void(string_view name, string_view parent, json data)>;
 // Create the map object
-unordered_map<string_view, new_widget_func> new_widget_map{{"Window",
-                                                            new_window},
-                                                           {"Flex", new_flex},
-                                                           {"Grid", new_grid}};
+unordered_map<string_view, new_widget_func> function_map{{"Window", new_window},
+                                                         {"Flex", new_flex},
+                                                         {"Grid", new_grid},
+                                                         {"Box", new_box}};
 
 // Call a method of a given widget, passing any parameters as a JSON object.
 void gui(
@@ -42,15 +42,85 @@ void gui_new(
     string_view name, string_view widget_type, string_view parent, json data)
 {
     try {
-        auto fn = new_widget_map.at(widget_type);
+        auto fn = function_map.at(widget_type);
         fn(name, parent, data);
     } catch (const std::out_of_range& e) {
         throw fmt::format("Unknown widget type: {} ({})", widget_type, e.what());
     }
 }
 
+// NEW ...
+using _new_widget_func = function<void(json data)>;
+unordered_map<string_view, _new_widget_func> _function_map{};
+
+void widget_method(
+    Fl_Widget* w, json obj)
+{
+    string m;
+    if (get_json_string(obj, "M", m)) {
+        try {
+            auto wd{static_cast<WidgetData*>(w->user_data())};
+            //            auto fn = _function_map.at(fw);
+            //fn(obj);
+        } catch (const std::out_of_range& e) {
+            //            throw fmt::format("Unknown function: {} ({})", fw, e.what());
+        }
+    }
+}
+
+void GUI(
+    json obj)
+{
+    string fw;
+    if (get_json_string(obj, "F", fw)) {
+        try {
+            auto fn = _function_map.at(fw);
+            fn(obj);
+        } catch (const std::out_of_range& e) {
+            throw fmt::format("Unknown function: {} ({})", fw, e.what());
+        }
+    } else if (get_json_string(obj, "W", fw)) {
+        auto w = get_widget(fw);
+        json::array_t mlist = obj.at("DO");
+        for (const auto& m : mlist) {
+            //TODO: widget_method(w, m);
+        }
+    } else {
+        throw fmt::format("Invalid GUI data: {}", obj);
+    }
+}
+
 // Pass a message to the back-end. This can be an event/callback, the
 // reponse to a query, or whatever.
-void message(
+
+// There need to be two kinds of "message":
+// 1) Let's call this a virtual override. It is a call to the back-end,
+//    perhaps with a result (like 0 or 1 for event handlers), and is
+//    blocking – so it should execute quickly. Unfortunately this seems
+//    very difficult to implement, because it might also need to query
+//    the front-end or perform other gui operations. Thus it entails
+//    a calling back and forth between back-end and front-end.
+// 2) Let's call this a trigger. It sets an operation in the back-end
+//    going, but doesn't wait for it to finish. Any resulting calls to
+//    the front-end could be picked up by an idle function.
+
+//TODO
+json message(
     json data)
-{}
+{
+    return data;
+}
+
+json to_back_end(
+    json data)
+{
+    json result = message(data);
+    auto it = result.find("DO");
+    if (it != data.end()) {
+        for (const auto& cmd : it.value()) {
+            GUI(cmd);
+        }
+    }
+
+    return result;
+}

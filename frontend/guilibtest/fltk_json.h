@@ -9,6 +9,11 @@
 
 #include <json.hpp>
 using json = nlohmann::json;
+using jobj = json::object_t;
+
+#define MAGIC_ENUM_RANGE_MIN 0
+#define MAGIC_ENUM_RANGE_MAX 255
+#include "magic_enum/magic_enum.hpp"
 
 using namespace std;
 
@@ -45,12 +50,18 @@ public:
     string_view widget_type_name();
 };
 
+bool get_json_string(json data, string_view key, string &value);
+string get_json_string(json data, string_view key);
+int get_json_int(json data, string_view key);
+
 void gui_new(string_view name,
              string_view widget_type,
              string_view parent,
              json data);
+
 void new_window(string_view name, string_view parent, json data);
 void new_flex(string_view name, string_view parent, json data);
 void new_grid(string_view name, string_view parent, json data);
+void new_box(string_view name, string_view parent, json data);
 
 #endif // FLTK_JSON_H
