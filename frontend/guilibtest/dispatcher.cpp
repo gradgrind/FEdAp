@@ -99,6 +99,9 @@ void GUI(
 // 2) Let's call this a trigger. It sets an operation in the back-end
 //    going, but doesn't wait for it to finish. Any resulting calls to
 //    the front-end could be picked up by an idle function.
+// For the moment I would like to implement just normal callbacks, i.e.
+// asynchronous calls. Where event handlers are necessary, I would first
+// consider extending the C++ widgets.
 
 //TODO
 json message(
@@ -107,7 +110,7 @@ json message(
     return data;
 }
 
-json to_back_end(
+void to_back_end(
     json data)
 {
     json result = message(data);
@@ -117,6 +120,10 @@ json to_back_end(
             GUI(cmd);
         }
     }
-
-    return result;
+    // Any back-end function which can take more than about 100ms should
+    // initiate a timeout leading to a modal "progress" dialog.
+    // Any data generated while such a callback is operating (i.e. before
+    // it returns a completion code) should be fetched and run by an idle
+    // handler. Any data generated outside of this period is probably an
+    // error – the back-end should not be doing anything then!
 }

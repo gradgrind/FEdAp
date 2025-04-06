@@ -9,6 +9,30 @@
 
 #include <iostream>
 
+#include <chrono>
+
+chrono::time_point<std::chrono::steady_clock> t0;
+
+void timetest_cb(
+    void *a)
+{
+    const auto end = std::chrono::steady_clock::now();
+    cout << "Tick " << std::chrono::duration_cast<std::chrono::microseconds>(end - t0) << " ≈ "
+         << (end - t0) / 1ms << "ms" << endl;
+    t0 = end;
+    //Fl::add_timeout(0.1, timetest_cb); // retrigger timeout
+    // or use repeat_timeout for more regular intervals
+    // (probably hardly any difference)
+    Fl::repeat_timeout(2.0, timetest_cb);
+}
+
+void timetest()
+{
+    using namespace std::literals;
+    t0 = std::chrono::steady_clock::now();
+    Fl::add_timeout(1.0, timetest_cb);
+}
+
 void main_callback(
     Fl_Widget *, void *)
 {
@@ -43,6 +67,8 @@ public:
 
 int main()
 {
+    timetest();
+
     string _bt1{"FL_NO_BOX"};
     cout << _bt1 << ": " << magic_enum::enum_cast<Fl_Boxtype>(_bt1).value() << endl;
 

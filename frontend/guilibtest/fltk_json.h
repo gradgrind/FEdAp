@@ -15,10 +15,8 @@ using jobj = json::object_t;
 #define MAGIC_ENUM_RANGE_MAX 255
 #include "magic_enum/magic_enum.hpp"
 
-using namespace std;
-
-using method = function<void(Fl_Widget *, json)>;
-using member_map = map<string_view, method>;
+using method = std::function<void(Fl_Widget *, json)>;
+using member_map = std::map<std::string_view, method>;
 
 // The user_data in Fl_Widget is used to store additional fields,
 // primarily the widget's name and type. As this feature is now no
@@ -27,13 +25,13 @@ using member_map = map<string_view, method>;
 // which is referred to by the original user data field.
 
 //extern unordered_map<string_view, Fl_Widget *> widget_map;
-Fl_Widget *get_widget(string_view name);
+Fl_Widget *get_widget(std::string_view name);
 json list_widgets();
 
 class WidgetData : public Fl_Callback_User_Data
 {
     // Widget name, used for look-up, etc.
-    string wname;
+    std::string wname;
     // Widget type, which can be used to access a type's member
     // functions, also the name of the type.
     int wtype;
@@ -42,30 +40,30 @@ class WidgetData : public Fl_Callback_User_Data
     bool auto_delete_user_data = false;
 
 public:
-    WidgetData(string_view type, string_view name, Fl_Widget *widget);
+    WidgetData(std::string_view type, std::string_view name, Fl_Widget *widget);
     ~WidgetData() override;
 
     void add_widget(Fl_Widget *w);
-    void remove_widget(string_view name);
+    void remove_widget(std::string_view name);
 
-    string_view widget_name();
+    std::string_view widget_name();
     int widget_type();
-    string_view widget_type_name();
-    void do_method(Fl_Widget *widget, string_view name, json data);
+    std::string_view widget_type_name();
+    void do_method(Fl_Widget *widget, std::string_view name, json data);
 };
 
-bool get_json_string(json data, string_view key, string &value);
-string get_json_string(json data, string_view key);
-int get_json_int(json data, string_view key);
+bool get_json_string(json data, std::string_view key, std::string &value);
+std::string get_json_string(json data, std::string_view key);
+int get_json_int(json data, std::string_view key);
 
-void gui_new(string_view name,
-             string_view widget_type,
-             string_view parent,
+void gui_new(std::string_view name,
+             std::string_view widget_type,
+             std::string_view parent,
              json data);
 
-void new_window(string_view name, string_view parent, json data);
-void new_flex(string_view name, string_view parent, json data);
-void new_grid(string_view name, string_view parent, json data);
-void new_box(string_view name, string_view parent, json data);
+void new_window(std::string_view name, std::string_view parent, json data);
+void new_flex(std::string_view name, std::string_view parent, json data);
+void new_grid(std::string_view name, std::string_view parent, json data);
+void new_box(std::string_view name, std::string_view parent, json data);
 
 #endif // FLTK_JSON_H
