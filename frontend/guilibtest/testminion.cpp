@@ -16,7 +16,7 @@ void readfile(
     std::ifstream file(filepath);
 
     if (file) {
-        data.assign((istreambuf_iterator<Char>(file)), istreambuf_iterator<Char>());
+        data.assign((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
     } else {
         cerr << "Error opening file: " << filepath << endl;
     }
@@ -96,12 +96,13 @@ private:
     int iter_i;
     int line_i;
     Char ch_pending;
+    Char separator;
 
     Char read_ch(bool instring);
     void unread_ch(Char ch);
     json get_item();
     json get_list();
-    bool get_map(json::object_t &jmap, Char terminator);
+    json get_map(Char terminator);
     json get_string();
     json macro_replace(json item);
     void to_json(string &json_string, bool compact);
@@ -137,7 +138,7 @@ MinionParser::MinionParser(
     , iter_i{0}
     , line_i{1}
 {
-    get_map(top_level, QChar());
+    top_level = get_map(0);
     if (minion_error.empty()) {
         return;
     }
@@ -148,15 +149,18 @@ MinionParser::MinionParser(
     }
 }
 
-//?
 json MinionParser::macro_replace(
     json item)
 {
     if (item.is_string()) {
         string s{item};
-        try {
-            return top_level.at(s);
-        } catch (...) {
+        if (s.starts_with('&')) {
+            try {
+                return top_level.at(s);
+            } catch (...) {
+                error_message.append(
+                    fmt::format("Undefined macro ({}) used in line {}\n", s, line_i - 1));
+            }
         }
     }
     return item;
@@ -221,13 +225,14 @@ void MinionParser::unread_ch(
  *
  * Return a json value, which may be a string, an "array" (list) or
  * an "object" (map). If no value could be read (end of input) or there
- * was an error during reading, a null value will be returned and an error
- * message added.
+ * was an error during reading, a null value will be returned.
+ * If there was an error, an error message will be added for it.
  */
 json MinionParser::get_item()
 {
     string udstring;
     Char ch;
+    separator = 0;
     while (true) {
         ch = read_ch(false);
         if (!udstring.empty()) {
@@ -292,41 +297,41 @@ json MinionParser::get_item()
         }
         // list
         if (ch == u'[') {
-            return get_list();
+            json jlist = get_list();
+            if (jlist.is_null()) {
+                // I don't think this is sensibly recoverable
+                throw "Invalid list/array";
+            }
+            return jlist;
         }
         // map
         if (ch == u'{') {
-            QJsonObject jmap;
-            if (get_map(jmap, u'}')) {
-                return QJsonValue(jmap);
+            json jmap = get_map('}');
+            if (jmap.is_null()) {
+                // I don't think this is sensibly recoverable
+                throw "Invalid map";
             }
-            break;
+            return jmap;
         }
         // further structural symbols
         if (ch == u']' || ch == u'}' || ch == u':') {
-            unread_ch(ch);
+            separator = ch;
             break;
         }
         udstring += ch;
-    } // End of main loop
-    return json{};
+    } // End of item-seeking loop
+    return json{nullptr};
 }
 
-/*!
- * \fn QJsonValue MinionParser::get_string()
- * \brief Read a delimited string (terminated by '"') from the input.
+/* Read a delimited string (terminated by '"') from the input.
  *
  * It is entered after the initial '"' has been read, so the next character
  * will be the first of the string.
  *
  * Escapes, introduced by '\', are possible – see MINION specification.
  *
- * Return the string as a \c QJsonValue.
- * If an error was encountered, \c minion_error will be non-empty and a
- * null value will be returned.
- *
- * It uses the \c MinionParser instance variables \c line_i and
- * \c minion_error.
+ * Return the string as a json value.
+ * If an error was encountered, an error message will be added.
  */
 json MinionParser::get_string()
 {
@@ -423,28 +428,22 @@ json MinionParser::get_string()
     return json{dstring};
 }
 
-/*!
- * \fn QJsonValue MinionParser::get_list()
- * \brief Read a "list" as a JSON array from the input.
+/* Read a "list" as a JSON array from the input.
  *
  * It is entered after the initial '[' has been read, so the search for the
  * next item will begin the following character.
  *
- * Return the list as a \c QJsonValue (array type).
- * If an error was encountered, \c minion_error will be non-empty and a
- * null value will be returned.
- *
- * It uses the \c MinionParser instance variables \c line_i and
- * \c minion_error.
+ * Return the list as a json value (array type).
+ * If an error was encountered, an error message will be added.
  */
-QJsonValue MinionParser::get_list()
+json MinionParser::get_list()
 {
     int start_line = line_i;
-    QJsonArray jlist;
-    QJsonValue item;
+    json jlist;
+    json item;
     while (true) {
         item = get_item();
-        if (item.isNull()) {
+        if (item.is_null()) {
             if (minion_error.isEmpty()) {
                 // check terminator
                 QChar ch = read_ch(false);
@@ -463,7 +462,7 @@ QJsonValue MinionParser::get_list()
                     minion_error.append(QString::number(start_line));
                 }
             }
-            return QJsonValue();
+            return json{nullptr};
         }
         jlist.append(macro_replace(item));
     }
@@ -473,90 +472,79 @@ QJsonValue MinionParser::get_list()
 /* Read a "map" as a JSON object from the input.
  *
  * It is entered after the initial '{' has been read, so the search for the
- * next item will begin the following character. The parameter is
+ * next item will begin with the following character. The parameter is
  * '}', except for the top-level map, which has a null terminator.
  *
- * Return true if the map was read successfully. If the result is false
- * \c minion_error will be non-empty. The actual map is built as a
- * \c QJsonObject in \c jmap.
- *
- * It uses the \c MinionParser instance variables \c line_i and
- * \c minion_error.
+ * If the map was read successfully, it will be returned. If not, a null
+ * item will be returned.
  */
-bool MinionParser::get_map(
-    json jmap, Char terminator)
+json MinionParser::get_map(
+    Char terminator)
 {
+    json jmap{{}};
     int start_line = line_i;
     int item_line;
-    QChar ch;
-    QString key;
-    QJsonValue item;
+    Char ch;
+    string key;
+    json item;
     while (true) {
         // Read key
         item_line = line_i;
         item = get_item();
-        if (item.isNull()) {
-            if (minion_error.isEmpty()) {
-                ch = read_ch(false);
-                if (ch == terminator) {
-                    return true;
-                }
-                minion_error.append(tr("MINION: Reading map starting in"
-                                       " line %1. Item at line %2, expected key string"));
-                minion_error.append(QString::number(start_line));
-                minion_error.append(QString::number(item_line));
+        if (item.is_null()) {
+            // No valid key found
+            if (separator == terminator) {
+                return jmap;
             }
-            break;
+            error_message.append(fmt::format(("Reading map starting in line {}."
+                                              " Item at line {}: expected key string\n"),
+                                             start_line - 1,
+                                             item_line - 1));
+            return json{nullptr};
         }
-        if (!item.isString()) {
-            if (minion_error.isEmpty()) {
-                minion_error.append(tr("MINION: Reading map starting in"
-                                       " line %1. Item at line %2, expected key string"));
-                minion_error.append(QString::number(start_line));
-                minion_error.append(QString::number(item_line));
-            }
-            break;
+        if (!item.is_string()) {
+            error_message.append(fmt::format(("Reading map starting in line {}."
+                                              " Item at line {}: expected key string,\n"
+                                              "Found: {}\n"),
+                                             start_line - 1,
+                                             item_line - 1,
+                                             item.dump()));
+            return json{nullptr};
         }
-        key = item.toString();
-        // Read ':' separator
+        key = item;
+        // Expect ':'
         item_line = line_i;
         item = get_item();
-        ch = read_ch(false);
-        if (!item.isNull() || ch != u':') {
-            if (minion_error.isEmpty()) {
-                minion_error.append(tr("MINION: Reading map starting in"
-                                       " line %1. Expected key-separator ':' at line %2"));
-                minion_error.append(QString::number(start_line));
-                minion_error.append(QString::number(item_line));
-            }
-            break;
+        if (item.is_null() && separator == ':') {
+            //TODO: OK, read value
+        } else {
+            error_message.append(fmt::format(("Reading map starting in line {}."
+                                              " Item at line {}: expected ':'\n"),
+                                             start_line - 1,
+                                             item_line - 1));
+            return json{nullptr};
         }
-        // Read value
         item_line = line_i;
         item = get_item();
-        if (item.isNull()) {
-            if (minion_error.isEmpty()) {
-                minion_error.append(tr("MINION: Reading map starting in"
-                                       " line %1. Expecting value for key '%2' at line %3"));
-                minion_error.append(QString::number(start_line));
-                minion_error.append(key);
-                minion_error.append(QString::number(item_line));
-            }
-            break;
+        if (item.is_null()) {
+            error_message.append(fmt::format(("Reading map starting in line {}."
+                                              " Item at line {}: expected value"
+                                              " for key \"{}\"\n"),
+                                             start_line - 1,
+                                             item_line - 1,
+                                             key));
+            return json{nullptr};
         }
         if (jmap.contains(key)) {
-            Q_ASSERT(minion_error.isEmpty());
-            minion_error.append(tr("MINION: Reading map starting in"
-                                   " line %1. Key '%2' repeated at line %3"));
-            minion_error.append(QString::number(start_line));
-            minion_error.append(key);
-            minion_error.append(QString::number(item_line));
-            break;
+            error_message.append(fmt::format(("Reading map starting in line {}."
+                                              " Key \"{}\" repeated at line {}\n"),
+                                             start_line - 1,
+                                             key,
+                                             item_line - 1));
+            return json{nullptr};
         }
         jmap[key] = macro_replace(item);
     } // end of loop
-    Q_ASSERT(!minion_error.isEmpty());
-    return false;
 }
 
 } // namespace Minion
