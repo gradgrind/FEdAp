@@ -1,4 +1,5 @@
 #include "widget_methods.h"
+using namespace std;
 
 //TODO: move somewhere more appropriate ...
 int get_json_int(

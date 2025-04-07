@@ -1,5 +1,6 @@
 #include "fltk_json.h"
 #include <FL/Fl_Box.H>
+using namespace std;
 
 void new_box(
     string_view name, string_view parent, json data)

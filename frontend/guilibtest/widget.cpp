@@ -1,4 +1,5 @@
 #include "fltk_json.h"
+using namespace std;
 
 unordered_map<string_view, int> widget_type_map;
 vector<string_view> widget_type_names;

@@ -1,4 +1,5 @@
 #include "fltk_json.h"
+using namespace std;
 
 // *** Dispatch table for widget-creation functions
 // First create a function template

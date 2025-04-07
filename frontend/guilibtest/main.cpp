@@ -9,7 +9,11 @@
 
 #include <iostream>
 
+#include "minion.h"
+
 #include <chrono>
+
+using namespace std;
 
 chrono::time_point<std::chrono::steady_clock> t0;
 
@@ -67,7 +71,10 @@ public:
 
 int main()
 {
-    timetest();
+    //timetest();
+
+    testminion();
+    return 0;
 
     string _bt1{"FL_NO_BOX"};
     cout << _bt1 << ": " << magic_enum::enum_cast<Fl_Boxtype>(_bt1).value() << endl;

@@ -1,17 +1,13 @@
 #include "minion.h"
-#include <json.hpp>
-using json = nlohmann::json;
-using jobj = json::object_t;
 #include <chrono>
 #include <fmt/format.h>
 #include <fstream>
 #include <iostream>
 using namespace std;
 using namespace std::chrono;
-using Char = unsigned char;
 
 void readfile(
-    string &data, string &filepath)
+    string &data, const string &filepath)
 {
     std::ifstream file(filepath);
 
@@ -22,12 +18,29 @@ void readfile(
     }
 }
 
+void writefile(
+    const string &data, const string &filepath)
+{
+    std::ofstream file(filepath);
+    if (file) {
+        file << data;
+        file.close();
+    } else {
+        cerr << "Error opening file: " << filepath << endl;
+    }
+}
+
 void testminion()
 {
+    string idata;
+    readfile(idata, "_data/test0.minion");
+
     // Use auto keyword to avoid typing long
     // type definitions to get the timepoint
     // at this instant use function now()
     auto start = high_resolution_clock::now();
+
+    Minion::MinionParser mp(idata);
 
     // After function call
     auto stop = high_resolution_clock::now();
@@ -42,11 +55,17 @@ void testminion()
     // To get the value of duration use the count()
     // member function on the duration object
     cout << duration.count() << endl;
+
+    if (mp.error_message.empty()) {
+        string odata;
+        mp.to_json(odata, false);
+        writefile(odata, "_data/test0.json");
+    } else {
+        cout << "ERROR:\n" << mp.error_message << endl;
+    }
 }
 
-void minion_parse(
-    string_view in)
-{}
+namespace Minion {
 
 // Convert a unicode code point (as hex string) to a UTF-8 string
 bool unicode_utf8(
@@ -80,41 +99,6 @@ bool unicode_utf8(
     return true;
 }
 
-namespace Minion {
-
-class MinionParser
-{
-public:
-    MinionParser(string_view source);
-
-    json top_level;       // collect the top-level map here
-    string error_message; // if not empty, explain failure
-
-private:
-    const string_view minion_string; // the source string
-    const size_t source_size;
-    int iter_i;
-    int line_i;
-    Char ch_pending;
-    Char separator;
-
-    Char read_ch(bool instring);
-    void unread_ch(Char ch);
-    json get_item();
-    json get_list();
-    json get_map(Char terminator);
-    json get_string();
-    json macro_replace(json item);
-    void to_json(string &json_string, bool compact);
-};
-
-json parse_minion(
-    string &minion_text)
-{
-    MinionParser mparse(minion_text);
-    return MinionResult{mparse.top_level, mparse.error_message};
-}
-
 /* Generate a JSON string from the parsed object.
  * If "compact" is false, an indented structure will be produced.
 */
@@ -139,14 +123,6 @@ MinionParser::MinionParser(
     , line_i{1}
 {
     top_level = get_map(0);
-    if (minion_error.empty()) {
-        return;
-    }
-    error_message = minion_error.join("\n");
-    error_message = minion_error.takeFirst();
-    while (!minion_error.empty()) {
-        error_message = error_message.arg(minion_error.takeFirst());
-    }
 }
 
 json MinionParser::macro_replace(
@@ -439,34 +415,25 @@ json MinionParser::get_string()
 json MinionParser::get_list()
 {
     int start_line = line_i;
+    int item_line;
     json jlist;
     json item;
     while (true) {
+        item_line = line_i;
         item = get_item();
         if (item.is_null()) {
-            if (minion_error.isEmpty()) {
-                // check terminator
-                QChar ch = read_ch(false);
-                if (ch == u']') {
-                    return QJsonValue(jlist);
-                }
-                if (ch.isNull()) {
-                    minion_error.append(tr("MINION: Unterminated list,"
-                                           " starting at line %1"));
-                    minion_error.append(QString::number(start_line));
-                } else {
-                    minion_error.append(tr("MINION: Unexpected symbol ('%2')"
-                                           " in line %1 while parsing list starting in lne %3"));
-                    minion_error.append(QString::number(line_i));
-                    minion_error.append(ch);
-                    minion_error.append(QString::number(start_line));
-                }
+            // No item found
+            if (separator == ']') {
+                return jlist;
             }
+            error_message.append(fmt::format(("Reading array starting in line {}."
+                                              " In line {}: expected ']' or value\n"),
+                                             start_line - 1,
+                                             item_line - 1));
             return json{nullptr};
         }
-        jlist.append(macro_replace(item));
+        jlist.push_back(macro_replace(item));
     }
-    Q_ASSERT(false);
 }
 
 /* Read a "map" as a JSON object from the input.
