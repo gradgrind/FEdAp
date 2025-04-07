@@ -32,8 +32,10 @@ void writefile(
 
 void testminion()
 {
-    string idata;
+    string idata{};
     readfile(idata, "_data/test0.minion");
+
+    cout << "§FILE: " << idata << endl;
 
     // Use auto keyword to avoid typing long
     // type definitions to get the timepoint
@@ -54,7 +56,7 @@ void testminion()
 
     // To get the value of duration use the count()
     // member function on the duration object
-    cout << duration.count() << endl;
+    cout << "TIME: " << duration.count() << endl;
 
     if (mp.error_message.empty()) {
         string odata;
@@ -122,7 +124,8 @@ MinionParser::MinionParser(
     , iter_i{0}
     , line_i{1}
 {
-    top_level = get_map(0);
+    ch_pending = 0;
+    get_map(top_level, 0);
 }
 
 json MinionParser::macro_replace(
@@ -161,6 +164,7 @@ Char MinionParser::read_ch(
     }
     if (iter_i < source_size) {
         Char ch = minion_string.at(iter_i++);
+        //cout << "[CH: " << ch << "]" << endl;
         if (ch == '\n') {
             ++line_i; // increment line counter
             // These are not acceptable within strings:
@@ -204,11 +208,12 @@ void MinionParser::unread_ch(
  * was an error during reading, a null value will be returned.
  * If there was an error, an error message will be added for it.
  */
-json MinionParser::get_item()
+Char MinionParser::get_item(
+    json &j)
 {
-    string udstring;
+    string udstring{};
     Char ch;
-    separator = 0;
+    separator = '*';
     while (true) {
         ch = read_ch(false);
         if (!udstring.empty()) {
@@ -223,10 +228,16 @@ json MinionParser::get_item()
                 udstring += ch;
                 ch = read_ch(false);
             }
-            return json{udstring};
+            j = json(udstring);
+            //cout << "§2 " << udstring << endl;
+            //cout << " :: " << j << endl;
+            return ' ';
         }
         // Look for start of next item
         if (ch == 0) {
+            j = json();
+            return 0;
+            separator = 0;
             break; // End of input => no further items
         }
         if (ch == ' ' || ch == '\n') {
@@ -269,34 +280,36 @@ json MinionParser::get_item()
         }
         // Delimited string
         if (ch == u'"') {
-            return get_string();
+            get_string(j);
+            return ' ';
         }
         // list
         if (ch == u'[') {
-            json jlist = get_list();
-            if (jlist.is_null()) {
+            get_list(j);
+            if (j.is_null()) {
                 // I don't think this is sensibly recoverable
                 throw "Invalid list/array";
             }
-            return jlist;
+            return ' ';
         }
         // map
         if (ch == u'{') {
-            json jmap = get_map('}');
-            if (jmap.is_null()) {
+            get_map(j, '}');
+            if (j.is_null()) {
                 // I don't think this is sensibly recoverable
                 throw "Invalid map";
             }
-            return jmap;
+            return ' ';
         }
         // further structural symbols
         if (ch == u']' || ch == u'}' || ch == u':') {
-            separator = ch;
-            break;
+            j = json();
+            return ch;
         }
+        //cout << "§0 " << int(ch) << endl;
         udstring += ch;
     } // End of item-seeking loop
-    return json{nullptr};
+    cout << "BUG" << endl;
 }
 
 /* Read a delimited string (terminated by '"') from the input.
@@ -309,7 +322,8 @@ json MinionParser::get_item()
  * Return the string as a json value.
  * If an error was encountered, an error message will be added.
  */
-json MinionParser::get_string()
+void MinionParser::get_string(
+    json &j)
 {
     string dstring;
     Char ch;
@@ -401,7 +415,7 @@ json MinionParser::get_string()
         dstring += ch;
         // Loop ... read next character
     } // end of main loop
-    return json{dstring};
+    j = json(dstring);
 }
 
 /* Read a "list" as a JSON array from the input.
@@ -412,25 +426,28 @@ json MinionParser::get_string()
  * Return the list as a json value (array type).
  * If an error was encountered, an error message will be added.
  */
-json MinionParser::get_list()
+void MinionParser::get_list(
+    json &j)
 {
     int start_line = line_i;
     int item_line;
-    json jlist;
+    json::array_t jlist;
     json item;
     while (true) {
         item_line = line_i;
-        item = get_item();
+        Char sep = get_item(item);
         if (item.is_null()) {
             // No item found
-            if (separator == ']') {
-                return jlist;
+            if (sep == ']') {
+                j = jlist;
+                return;
             }
             error_message.append(fmt::format(("Reading array starting in line {}."
                                               " In line {}: expected ']' or value\n"),
                                              start_line - 1,
                                              item_line - 1));
-            return json{nullptr};
+            j = json();
+            return;
         }
         jlist.push_back(macro_replace(item));
     }
@@ -445,10 +462,10 @@ json MinionParser::get_list()
  * If the map was read successfully, it will be returned. If not, a null
  * item will be returned.
  */
-json MinionParser::get_map(
-    Char terminator)
+void MinionParser::get_map(
+    json &j, Char terminator)
 {
-    json jmap{{}};
+    json::object_t jmap;
     int start_line = line_i;
     int item_line;
     Char ch;
@@ -457,42 +474,49 @@ json MinionParser::get_map(
     while (true) {
         // Read key
         item_line = line_i;
-        item = get_item();
+        Char sep = get_item(item);
+        //cout << "§1 " << ((sep == 0) ? 0 : sep) << endl;
+        //cout << " :: " << item << endl;
         if (item.is_null()) {
             // No valid key found
-            if (separator == terminator) {
-                return jmap;
+            if (sep == terminator) {
+                j = jmap;
+                return;
             }
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string\n"),
                                              start_line - 1,
                                              item_line - 1));
-            return json{nullptr};
+            j = json();
+            return;
         }
         if (!item.is_string()) {
+            //cout << item << endl;
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string,\n"
                                               "Found: {}\n"),
                                              start_line - 1,
                                              item_line - 1,
                                              item.dump()));
-            return json{nullptr};
+            j = json();
+            return;
         }
         key = item;
         // Expect ':'
         item_line = line_i;
-        item = get_item();
-        if (item.is_null() && separator == ':') {
+        sep = get_item(item);
+        if (item.is_null() && sep == ':') {
             //TODO: OK, read value
         } else {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected ':'\n"),
                                              start_line - 1,
                                              item_line - 1));
-            return json{nullptr};
+            j = json();
+            return;
         }
         item_line = line_i;
-        item = get_item();
+        get_item(item);
         if (item.is_null()) {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected value"
@@ -500,7 +524,8 @@ json MinionParser::get_map(
                                              start_line - 1,
                                              item_line - 1,
                                              key));
-            return json{nullptr};
+            j = json();
+            return;
         }
         if (jmap.contains(key)) {
             error_message.append(fmt::format(("Reading map starting in line {}."
@@ -508,7 +533,8 @@ json MinionParser::get_map(
                                              start_line - 1,
                                              key,
                                              item_line - 1));
-            return json{nullptr};
+            j = json();
+            return;
         }
         jmap[key] = macro_replace(item);
     } // end of loop

@@ -23,14 +23,14 @@ private:
     int iter_i;
     int line_i;
     Char ch_pending;
-    Char separator;
+    Char separator; // TODO: deprecated?
 
     Char read_ch(bool instring);
     void unread_ch(Char ch);
-    json get_item();
-    json get_list();
-    json get_map(Char terminator);
-    json get_string();
+    Char get_item(json &j);
+    void get_list(json &j);
+    void get_map(json &j, Char terminator);
+    void get_string(json &j);
     json macro_replace(json item);
 };
 
