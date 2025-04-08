@@ -2,7 +2,6 @@
 #include <chrono>
 #include <fmt/format.h>
 #include <iostream>
-#include <variant>
 using namespace std;
 using namespace std::chrono;
 
@@ -74,48 +73,41 @@ void testminion2()
 
 namespace minion {
 
-// The basic minion types
-class MinionMap;
-class MinionList;
-// use pointer?
-using MinionValue = variant<const string *, const MinionList *, const MinionMap *>;
-// The map class should preserve input order
-struct MinionMapPair
+MinionValue Minion::new_string(
+    const std::string &s)
 {
-    const string key;
-    const MinionValue value;
-};
-class MinionMap
-{
-    vector<MinionMapPair> data;
-    map<const string *, const int> associate;
+    int i = strings.size();
+    strings.push_back(s);
+    return MinionValue{M_STRING, i};
+}
 
-public:
-    void add(
-        const string &key, const string &s)
-    {
-        int i = data.size();
-        auto _s = new string(s);
-        MinionMapPair mp{key, _s};
-        associate.emplace(&mp.key, i);
-    }
-    void add(
-        const string &key, const MinionList *l)
-    {
-        int i = data.size();
-        MinionMapPair mp{key, l};
-        associate.emplace(&mp.key, i);
-    }
-    void add(
-        const string &key, const MinionMap *m)
-    {
-        int i = data.size();
-        MinionMapPair mp{key, m};
-        associate.emplace(&mp.key, i);
-    }
-};
-class MinionList : public vector<MinionValue>
-{};
+MinionValue Minion::new_map()
+{
+    int i = maps.size();
+    maps.push_back(MinionMap());
+    return MinionValue{M_MAP, i};
+}
+
+MinionValue Minion::new_list()
+{
+    int i = lists.size();
+    lists.push_back(MinionList());
+    return MinionValue{M_LIST, i};
+}
+
+void map_add(
+    MinionMap *mmap, string &key, MinionValue mval)
+{
+    int i = mmap->data.size();
+    mmap->data.push_back(MinionMapPair{key, mval});
+    mmap->associate.emplace(&(mmap->data.at(i).key), i);
+}
+
+void list_add(
+    MinionList *mlist, MinionValue mval)
+{
+    mlist->push_back(mval);
+}
 
 /* Generate a JSON string from the parsed object.
  * If "compact" is false, an indented structure will be produced.

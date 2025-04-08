@@ -36,6 +36,30 @@ private:
     json macro_replace(json item);
 };
 
+// The basic minion types
+enum value_type { M_STRING, M_MAP, M_LIST };
+struct MinionValue
+{
+    value_type vtype;
+    int index;
+};
+
+// The map class should preserve input order
+struct MinionMapPair
+{
+    const std::string key;
+    const MinionValue value;
+};
+
+struct MinionMap
+{
+    std::vector<MinionMapPair> data;
+    std::map<const std::string *, const int> associate;
+};
+
+struct MinionList : public std::vector<MinionValue>
+{};
+
 class Minion
 {
 public:
@@ -45,8 +69,16 @@ public:
     json top_level;            // collect the top-level map here
     std::string error_message; // if not empty, explain failure
 
+    MinionValue new_string(const std::string &s);
+    MinionValue new_map();
+    MinionValue new_list();
+
 private:
     const std::string_view minion_string; // the source string
+    std::vector<std::string> strings;
+    std::vector<MinionMap> maps;
+    std::vector<MinionList> lists;
+
     const size_t source_size;
     int iter_i;
     int line_i;
