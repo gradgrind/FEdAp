@@ -6,6 +6,13 @@
 using namespace std;
 using namespace std::chrono;
 
+// *** Reading to nlohmann json object
+// The minion reader seems quicker for small inputs, but slower for
+// larger ones, even though the json is a lot larger than the minion.
+//  Unoptimized, the difference is not so great (more for small inputs),
+// but optimized nlohmann is about twice as fast for large inputs.
+// By using strings as input, the time for I/O is factored out.
+
 void readfile(
     string &data, const string &filepath)
 {
@@ -30,12 +37,13 @@ void writefile(
     }
 }
 
-void testminion()
+void testminion1(
+    const string &filepath)
 {
     string idata{};
-    readfile(idata, "_data/test0.minion");
+    readfile(idata, filepath);
 
-    cout << "§FILE: " << idata << endl;
+    cout << "FILE: " << filepath << endl;
 
     // Use auto keyword to avoid typing long
     // type definitions to get the timepoint
@@ -56,15 +64,40 @@ void testminion()
 
     // To get the value of duration use the count()
     // member function on the duration object
-    cout << "TIME: " << duration.count() << endl;
+    cout << "TIME: " << duration.count() << " microseconds" << endl;
 
+    string odata;
     if (mp.error_message.empty()) {
-        string odata;
         mp.to_json(odata, false);
-        writefile(odata, "_data/test0.json");
+
+        auto p = filepath.rfind(".");
+        string f;
+        if (p == string::npos) {
+            f = filepath;
+        } else {
+            f = filepath.substr(0, p);
+        }
+        string f1 = f + ".json";
+        writefile(odata, f);
+        cout << " --> " << f << endl;
     } else {
         cout << "ERROR:\n" << mp.error_message << endl;
+        return;
     }
+
+    // Compare parsing with nlohmann
+    start = high_resolution_clock::now();
+    json data = json::parse(odata);
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+    cout << "TIME json: " << duration.count() << " microseconds" << endl;
+}
+
+void testminion()
+{
+    testminion1("_data/test0.minion");
+    testminion1("_data/test1.minion");
+    testminion1("_data/test2.minion");
 }
 
 namespace Minion {
@@ -113,7 +146,7 @@ void MinionParser::to_json(
     if (compact) {
         json_string = top_level.dump();
     } else {
-        json_string = top_level.dump(4);
+        json_string = top_level.dump(2);
     }
 }
 
@@ -125,6 +158,7 @@ MinionParser::MinionParser(
     , line_i{1}
 {
     ch_pending = 0;
+    top_level = json::object();
     get_map(top_level, 0);
 }
 
@@ -138,7 +172,7 @@ json MinionParser::macro_replace(
                 return top_level.at(s);
             } catch (...) {
                 error_message.append(
-                    fmt::format("Undefined macro ({}) used in line {}\n", s, line_i - 1));
+                    fmt::format("Undefined macro ({}) used in line {}\n", s, line_i));
             }
         }
     }
@@ -160,6 +194,9 @@ Char MinionParser::read_ch(
     if (ch_pending != 0) {
         Char ch = ch_pending;
         ch_pending = 0;
+        if (ch == '\n') {
+            ++line_i;
+        }
         return ch;
     }
     if (iter_i < source_size) {
@@ -285,6 +322,7 @@ Char MinionParser::get_item(
         }
         // list
         if (ch == u'[') {
+            j = json::array();
             get_list(j);
             if (j.is_null()) {
                 // I don't think this is sensibly recoverable
@@ -294,6 +332,7 @@ Char MinionParser::get_item(
         }
         // map
         if (ch == u'{') {
+            j = json::object();
             get_map(j, '}');
             if (j.is_null()) {
                 // I don't think this is sensibly recoverable
@@ -431,7 +470,6 @@ void MinionParser::get_list(
 {
     int start_line = line_i;
     int item_line;
-    json::array_t jlist;
     json item;
     while (true) {
         item_line = line_i;
@@ -439,7 +477,6 @@ void MinionParser::get_list(
         if (item.is_null()) {
             // No item found
             if (sep == ']') {
-                j = jlist;
                 return;
             }
             error_message.append(fmt::format(("Reading array starting in line {}."
@@ -449,7 +486,7 @@ void MinionParser::get_list(
             j = json();
             return;
         }
-        jlist.push_back(macro_replace(item));
+        j.push_back(macro_replace(item));
     }
 }
 
@@ -465,7 +502,6 @@ void MinionParser::get_list(
 void MinionParser::get_map(
     json &j, Char terminator)
 {
-    json::object_t jmap;
     int start_line = line_i;
     int item_line;
     Char ch;
@@ -480,14 +516,13 @@ void MinionParser::get_map(
         if (item.is_null()) {
             // No valid key found
             if (sep == terminator) {
-                j = jmap;
                 return;
             }
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string\n"),
                                              start_line - 1,
                                              item_line - 1));
-            j = json();
+            j = json::object();
             return;
         }
         if (!item.is_string()) {
@@ -498,7 +533,7 @@ void MinionParser::get_map(
                                              start_line - 1,
                                              item_line - 1,
                                              item.dump()));
-            j = json();
+            j = json::object();
             return;
         }
         key = item;
@@ -512,7 +547,7 @@ void MinionParser::get_map(
                                               " Item at line {}: expected ':'\n"),
                                              start_line - 1,
                                              item_line - 1));
-            j = json();
+            j = json::object();
             return;
         }
         item_line = line_i;
@@ -524,19 +559,19 @@ void MinionParser::get_map(
                                              start_line - 1,
                                              item_line - 1,
                                              key));
-            j = json();
+            j = json::object();
             return;
         }
-        if (jmap.contains(key)) {
+        if (j.contains(key)) {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Key \"{}\" repeated at line {}\n"),
                                              start_line - 1,
                                              key,
                                              item_line - 1));
-            j = json();
+            j = json::object();
             return;
         }
-        jmap[key] = macro_replace(item);
+        j[key] = macro_replace(item);
     } // end of loop
 }
 
