@@ -1,44 +1,15 @@
 #include "minion.h"
 #include <chrono>
 #include <fmt/format.h>
-#include <fstream>
 #include <iostream>
 #include <variant>
 using namespace std;
 using namespace std::chrono;
 
-// *** Reading to nlohmann json object
-// The minion reader seems quicker for small inputs, but slower for
-// larger ones, even though the json is a lot larger than the minion.
-//  Unoptimized, the difference is not so great (more for small inputs),
-// but optimized nlohmann is about twice as fast for large inputs.
-// By using strings as input, the time for I/O is factored out.
+// *** Reading to custom object. This version is (still) using only
+// string as the basic data type.
 
-void readfile(
-    string &data, const string &filepath)
-{
-    std::ifstream file(filepath);
-
-    if (file) {
-        data.assign((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
-    } else {
-        cerr << "Error opening file: " << filepath << endl;
-    }
-}
-
-void writefile(
-    const string &data, const string &filepath)
-{
-    std::ofstream file(filepath);
-    if (file) {
-        file << data;
-        file.close();
-    } else {
-        cerr << "Error opening file: " << filepath << endl;
-    }
-}
-
-void testminion1(
+void testminion20(
     const string &filepath)
 {
     string idata{};
@@ -51,7 +22,7 @@ void testminion1(
     // at this instant use function now()
     auto start = high_resolution_clock::now();
 
-    minion::MinionParser mp(idata);
+    minion::Minion mp(idata);
 
     // After function call
     auto stop = high_resolution_clock::now();
@@ -94,90 +65,62 @@ void testminion1(
     cout << "TIME json: " << duration.count() << " microseconds" << endl;
 }
 
-void testminion()
+void testminion2()
 {
-    testminion1("_data/test0.minion");
-    testminion1("_data/test1.minion");
-    testminion1("_data/test2.minion");
-
-    string s1{""};
-    cout << "$ s1: " << sizeof(s1) << endl;
-    string s2{"A long string to see if there's a difference"};
-    cout << "$ s2: " << sizeof(s2) << endl;
-    int *p1;
-    cout << "$ p1: " << sizeof(p1) << endl;
-    map<string, string> *p2;
-    cout << "$ p2: " << sizeof(p2) << endl;
-    map<string, string> m1;
-    cout << "$ m1: " << sizeof(m1) << endl;
-    map<int, int> m2;
-    cout << "$ m2: " << sizeof(m2) << endl;
-    vector<int> v1;
-    cout << "$ v1: " << sizeof(v1) << endl;
-    vector<map<string, string>> v2;
-    cout << "$ v2: " << sizeof(v2) << endl;
-    variant<string, map<int, int>, vector<int>> vv1;
-    cout << "$ vv1: " << sizeof(vv1) << endl;
-    variant<string *, map<int, int> *, vector<int> *> vv2;
-    cout << "$ vv2: " << sizeof(vv2) << endl;
-    class X : public map<int *, int *>
-    {
-        vector<int *> v;
-    };
-    class Y : public vector<int>
-    {};
-    variant<string, X, Y> vv3;
-    cout << "$ vv3: " << sizeof(vv3) << endl;
-    class C
-    {
-        variant<string *, map<int, int> *, vector<int> *> v;
-
-    public:
-        C() {};
-        ~C() {};
-    };
-    C c1;
-    cout << "$ c1: " << sizeof(c1) << endl;
+    testminion20("_data/test0.minion");
+    testminion20("_data/test1.minion");
+    testminion20("_data/test2.minion");
 }
 
 namespace minion {
 
-// Convert a unicode code point (as hex string) to a UTF-8 string
-bool unicode_utf8(
-    string &utf8, const string &unicode)
+// The basic minion types
+class MinionMap;
+class MinionList;
+// use pointer?
+using MinionValue = variant<const string *, const MinionList *, const MinionMap *>;
+// The map class should preserve input order
+struct MinionMapPair
 {
-    // Convert the unicode to an integer
-    unsigned int code_point;
-    stringstream ss;
-    ss << hex << unicode;
-    ss >> code_point;
+    const string key;
+    const MinionValue value;
+};
+class MinionMap
+{
+    vector<MinionMapPair> data;
+    map<const string *, const int> associate;
 
-    // Convert the code point to a UTF-8 string
-    if (code_point <= 0x7F) {
-        utf8 += static_cast<Char>(code_point);
-    } else if (code_point <= 0x7FF) {
-        utf8 += static_cast<Char>((code_point >> 6) | 0xC0);
-        utf8 += static_cast<Char>((code_point & 0x3F) | 0x80);
-    } else if (code_point <= 0xFFFF) {
-        utf8 += static_cast<Char>((code_point >> 12) | 0xE0);
-        utf8 += static_cast<Char>(((code_point >> 6) & 0x3F) | 0x80);
-        utf8 += static_cast<Char>((code_point & 0x3F) | 0x80);
-    } else if (code_point <= 0x10FFFF) {
-        utf8 += static_cast<Char>((code_point >> 18) | 0xF0);
-        utf8 += static_cast<Char>(((code_point >> 12) & 0x3F) | 0x80);
-        utf8 += static_cast<Char>(((code_point >> 6) & 0x3F) | 0x80);
-        utf8 += static_cast<Char>((code_point & 0x3F) | 0x80);
-    } else {
-        // Invalid input
-        return false;
+public:
+    void add(
+        const string &key, const string &s)
+    {
+        int i = data.size();
+        auto _s = new string(s);
+        MinionMapPair mp{key, _s};
+        associate.emplace(&mp.key, i);
     }
-    return true;
-}
+    void add(
+        const string &key, const MinionList *l)
+    {
+        int i = data.size();
+        MinionMapPair mp{key, l};
+        associate.emplace(&mp.key, i);
+    }
+    void add(
+        const string &key, const MinionMap *m)
+    {
+        int i = data.size();
+        MinionMapPair mp{key, m};
+        associate.emplace(&mp.key, i);
+    }
+};
+class MinionList : public vector<MinionValue>
+{};
 
 /* Generate a JSON string from the parsed object.
  * If "compact" is false, an indented structure will be produced.
 */
-void MinionParser::to_json(
+void Minion::to_json(
     string &json_string, bool compact)
 {
     if (top_level.size() == 0) {
@@ -190,7 +133,7 @@ void MinionParser::to_json(
     }
 }
 
-MinionParser::MinionParser(
+Minion::Minion(
     const string &source)
     : minion_string{source}
     , source_size{source.size()}
@@ -202,7 +145,7 @@ MinionParser::MinionParser(
     get_map(top_level, 0);
 }
 
-json MinionParser::macro_replace(
+json Minion::macro_replace(
     json item)
 {
     if (item.is_string()) {
@@ -228,7 +171,7 @@ json MinionParser::macro_replace(
  * If an illegal character is read an error report is added and a space
  * character is returned.
  */
-Char MinionParser::read_ch(
+Char Minion::read_ch(
     bool instring)
 {
     if (ch_pending != 0) {
@@ -266,7 +209,7 @@ Char MinionParser::read_ch(
     return 0;
 }
 
-void MinionParser::unread_ch(
+void Minion::unread_ch(
     Char ch)
 {
     if (ch_pending != 0) {
@@ -285,7 +228,7 @@ void MinionParser::unread_ch(
  * was an error during reading, a null value will be returned.
  * If there was an error, an error message will be added for it.
  */
-Char MinionParser::get_item(
+Char Minion::get_item(
     json &j)
 {
     string udstring{};
@@ -401,7 +344,7 @@ Char MinionParser::get_item(
  * Return the string as a json value.
  * If an error was encountered, an error message will be added.
  */
-void MinionParser::get_string(
+void Minion::get_string(
     json &j)
 {
     string dstring;
@@ -505,7 +448,7 @@ void MinionParser::get_string(
  * Return the list as a json value (array type).
  * If an error was encountered, an error message will be added.
  */
-void MinionParser::get_list(
+void Minion::get_list(
     json &j)
 {
     int start_line = line_i;
@@ -539,7 +482,7 @@ void MinionParser::get_list(
  * If the map was read successfully, it will be returned. If not, a null
  * item will be returned.
  */
-void MinionParser::get_map(
+void Minion::get_map(
     json &j, Char terminator)
 {
     int start_line = line_i;
