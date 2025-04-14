@@ -21,8 +21,8 @@ void timetest_cb(
     void *a)
 {
     const auto end = std::chrono::steady_clock::now();
-    cout << "Tick " << std::chrono::duration_cast<std::chrono::microseconds>(end - t0) << " ≈ "
-         << (end - t0) / 1ms << "ms" << endl;
+    //cout << "Tick " << std::chrono::duration_cast<std::chrono::microseconds>(end - t0) << " ≈ "
+    //     << (end - t0) / 1ms << "ms" << endl;
     t0 = end;
     //Fl::add_timeout(0.1, timetest_cb); // retrigger timeout
     // or use repeat_timeout for more regular intervals

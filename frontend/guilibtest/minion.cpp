@@ -76,37 +76,29 @@ namespace minion {
 MinionValue Minion::new_string(
     const std::string &s)
 {
-    int i = strings.size();
-    strings.push_back(s);
-    return MinionValue{M_STRING, i};
+    return MinionValue{s};
 }
 
 MinionValue Minion::new_map()
 {
-    int i = maps.size();
-    maps.push_back(MinionMap());
-    return MinionValue{M_MAP, i};
+    return MinionValue{MinionMap()};
+    //? return MinionValue{MinionMap{}};
 }
 
 MinionValue Minion::new_list()
 {
-    int i = lists.size();
-    lists.push_back(MinionList());
-    return MinionValue{M_LIST, i};
+    return MinionValue{MinionList()};
+    //? return MinionValue{MinionList{}};
 }
 
-void map_add(
-    MinionMap *mmap, string &key, MinionValue mval)
+void MinionMap::add(string &key, MinionValue mval)
 {
-    int i = mmap->data.size();
-    mmap->data.push_back(MinionMapPair{key, mval});
-    mmap->associate.emplace(&(mmap->data.at(i).key), i);
+    push_back(MinionMapPair{key, mval});
 }
 
-void list_add(
-    MinionList *mlist, MinionValue mval)
+void MinionList::add(MinionValue mval)
 {
-    mlist->push_back(mval);
+    push_back(mval);
 }
 
 /* Generate a JSON string from the parsed object.
@@ -133,15 +125,16 @@ Minion::Minion(
     , line_i{1}
 {
     ch_pending = 0;
-    top_level = json::object();
+    top_level = MinionMap();
+    map<string, MinionValue> macros; //???
     get_map(top_level, 0);
 }
 
-json Minion::macro_replace(
-    json item)
+MinionValue Minion::macro_replace(
+    MinionValue item)
 {
-    if (item.is_string()) {
-        string s{item};
+    if (holds_alternative<string>(item)) {
+        string s{get<string>(item)};
         if (s.starts_with('&')) {
             try {
                 return top_level.at(s);
@@ -215,13 +208,13 @@ void Minion::unread_ch(
 
 /* Read the next "item" from the input.
  *
- * Return a json value, which may be a string, an "array" (list) or
- * an "object" (map). If no value could be read (end of input) or there
- * was an error during reading, a null value will be returned.
+ * Return a MinionValue, which may be a string, an "array" (list) or an
+ * "object" (map). If no value could be read (end of input) or there was an
+ * error during reading, a null value will be returned (m.index() == 0).
  * If there was an error, an error message will be added for it.
  */
 Char Minion::get_item(
-    json &j)
+    MinionValue &m)
 {
     string udstring{};
     Char ch;
@@ -240,14 +233,14 @@ Char Minion::get_item(
                 udstring += ch;
                 ch = read_ch(false);
             }
-            j = json(udstring);
+            m = MinionValue{udstring};
             //cout << "§2 " << udstring << endl;
             //cout << " :: " << j << endl;
             return ' ';
         }
         // Look for start of next item
         if (ch == 0) {
-            j = json();
+            m = MinionValue{};
             return 0;
             separator = 0;
             break; // End of input => no further items
@@ -292,14 +285,14 @@ Char Minion::get_item(
         }
         // Delimited string
         if (ch == u'"') {
-            get_string(j);
+            get_string(m);
             return ' ';
         }
         // list
         if (ch == u'[') {
-            j = json::array();
-            get_list(j);
-            if (j.is_null()) {
+            m = MinionList{};
+            get_list(m);
+            if (m.index() == 0) {
                 // I don't think this is sensibly recoverable
                 throw "Invalid list/array";
             }
@@ -307,9 +300,9 @@ Char Minion::get_item(
         }
         // map
         if (ch == u'{') {
-            j = json::object();
-            get_map(j, '}');
-            if (j.is_null()) {
+            m = MinionValue{MinionMap()};
+            get_map(m, '}');
+            if (m.index() == 0) {
                 // I don't think this is sensibly recoverable
                 throw "Invalid map";
             }
@@ -317,7 +310,7 @@ Char Minion::get_item(
         }
         // further structural symbols
         if (ch == u']' || ch == u'}' || ch == u':') {
-            j = json();
+            m = MinionValue{};
             return ch;
         }
         //cout << "§0 " << int(ch) << endl;
@@ -333,11 +326,11 @@ Char Minion::get_item(
  *
  * Escapes, introduced by '\', are possible – see MINION specification.
  *
- * Return the string as a json value.
+ * Return the string as a MinionValue.
  * If an error was encountered, an error message will be added.
  */
 void Minion::get_string(
-    json &j)
+    MinionValue &m)
 {
     string dstring;
     Char ch;
@@ -429,10 +422,10 @@ void Minion::get_string(
         dstring += ch;
         // Loop ... read next character
     } // end of main loop
-    j = json(dstring);
+    m = MinionValue{dstring};
 }
 
-/* Read a "list" as a JSON array from the input.
+/* Read a "list" as a MinionValue (MinionList) from the input.
  *
  * It is entered after the initial '[' has been read, so the search for the
  * next item will begin the following character.
@@ -441,66 +434,71 @@ void Minion::get_string(
  * If an error was encountered, an error message will be added.
  */
 void Minion::get_list(
-    json &j)
+    MinionValue &m)
 {
     int start_line = line_i;
     int item_line;
-    json item;
+    MinionValue item;
+    MinionList l;
     while (true) {
         item_line = line_i;
         Char sep = get_item(item);
-        if (item.is_null()) {
+        if (item.index() == 0) {
             // No item found
             if (sep == ']') {
+                m.emplace<MinionList>(l);
                 return;
             }
             error_message.append(fmt::format(("Reading array starting in line {}."
                                               " In line {}: expected ']' or value\n"),
                                              start_line - 1,
                                              item_line - 1));
-            j = json();
+            m.emplace<0>();
             return;
         }
-        j.push_back(macro_replace(item));
+        l.push_back(macro_replace(item));
     }
 }
 
-/* Read a "map" as a JSON object from the input.
+/* Read a "map" as a MinionValue (MinionMap) from the input.
  *
- * It is entered after the initial '{' has been read, so the search for the
- * next item will begin with the following character. The parameter is
- * '}', except for the top-level map, which has a null terminator.
+ * This method is entered after the initial '{' has been read, so the search
+ * for the next item will begin with the following character. The parameter
+ * is '}', except for the top-level map, which has a null terminator.
  *
  * If the map was read successfully, it will be returned. If not, a null
  * item will be returned.
  */
 void Minion::get_map(
-    json &j, Char terminator)
+    MinionValue &m, Char terminator)
 {
     int start_line = line_i;
     int item_line;
     Char ch;
     string key;
-    json item;
+    MinionValue item;
+    MinionMap map;
     while (true) {
         // Read key
         item_line = line_i;
         Char sep = get_item(item);
         //cout << "§1 " << ((sep == 0) ? 0 : sep) << endl;
         //cout << " :: " << item << endl;
-        if (item.is_null()) {
+        if (item.index() == 0) {
             // No valid key found
             if (sep == terminator) {
+                m.emplace<MinionMap>(map);
+                //m = MinionValue{map};
                 return;
             }
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string\n"),
                                              start_line - 1,
                                              item_line - 1));
-            j = json::object();
+            m = MinionValue{};
             return;
         }
-        if (!item.is_string()) {
+        if (!holds_alternative<string>(item)) {
             //cout << item << endl;
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string,\n"
@@ -508,45 +506,45 @@ void Minion::get_map(
                                              start_line - 1,
                                              item_line - 1,
                                              item.dump()));
-            j = json::object();
+            m.emplace<0>();
             return;
         }
-        key = item;
+        key = get<string>(item);
         // Expect ':'
         item_line = line_i;
         sep = get_item(item);
-        if (item.is_null() && sep == ':') {
+        if (item.index() == 0 && sep == ':') {
             //TODO: OK, read value
         } else {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected ':'\n"),
                                              start_line - 1,
                                              item_line - 1));
-            j = json::object();
+            m.emplace<0>();
             return;
         }
         item_line = line_i;
         get_item(item);
-        if (item.is_null()) {
+        if (item.index() == 0) {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected value"
                                               " for key \"{}\"\n"),
                                              start_line - 1,
                                              item_line - 1,
                                              key));
-            j = json::object();
+            m.emplace<0>();
             return;
         }
-        if (j.contains(key)) {
+        if (map.contains(key)) {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Key \"{}\" repeated at line {}\n"),
                                              start_line - 1,
                                              key,
                                              item_line - 1));
-            j = json::object();
+            m.emplace<0>();
             return;
         }
-        j[key] = macro_replace(item);
+        map.add(key, macro_replace(item));
     } // end of loop
 }
 
