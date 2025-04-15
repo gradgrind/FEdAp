@@ -54,6 +54,7 @@ class MinionMap : public std::vector<MinionMapPair>
 {
 public:
     void add(std::string &key, MinionValue mval);
+    MinionValue get(std::string & key);
 };
 
 class MinionList : public std::vector<MinionValue>
@@ -92,13 +93,14 @@ private:
     int iter_i;
     int line_i;
     Char ch_pending;
-    Char separator; // TODO: deprecated?
+    std::map<std::string, MinionValue> macros;
 
     Char read_ch(bool instring);
     void unread_ch(Char ch);
     Char get_item(MinionValue &m);
     void get_list(MinionValue &m);
-    void get_map(MinionValue &m, Char terminator);
+    bool get_map(MinionMap &m, Char terminator);
+
     void get_string(MinionValue &m);
     json macro_replace(MinionValue item);
 };

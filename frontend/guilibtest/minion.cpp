@@ -96,6 +96,17 @@ void MinionMap::add(string &key, MinionValue mval)
     push_back(MinionMapPair{key, mval});
 }
 
+// This is, of course, rather inefficient for maps which are not very short.
+// Making a map out of this would make the MinionValues a bit larger and lose
+// the ordering, unless a more complicated map structure is used.
+MinionValue MinionMap::get(std::string & key)
+{
+    for (const auto &mmp : *this) {
+        if (mmp.key == key) return mmp.value;
+    }
+    return MinionValue{};
+}
+
 void MinionList::add(MinionValue mval)
 {
     push_back(mval);
@@ -126,7 +137,6 @@ Minion::Minion(
 {
     ch_pending = 0;
     top_level = MinionMap();
-    map<string, MinionValue> macros; //???
     get_map(top_level, 0);
 }
 
@@ -222,7 +232,7 @@ Char Minion::get_item(
     while (true) {
         ch = read_ch(false);
         if (!udstring.empty()) {
-            // An item has already been started
+            // An undelimited string item has already been started
             while (true) {
                 // Test for an item-terminating character
                 if (ch == 0 || ch == ' ' || ch == '\n' || ch == '#' || ch == '"' || ch == '['
@@ -240,13 +250,11 @@ Char Minion::get_item(
         }
         // Look for start of next item
         if (ch == 0) {
-            m = MinionValue{};
+            m = MinionValue{}; // end of input, no next item
             return 0;
-            separator = 0;
-            break; // End of input => no further items
         }
         if (ch == ' ' || ch == '\n') {
-            continue;
+            continue; // continue seeking start of item
         }
         if (ch == u'#') {
             // Start comment
@@ -281,7 +289,7 @@ Char Minion::get_item(
                     ch = read_ch(false);
                 }
             }
-            continue;
+            continue; // continue seeking item
         }
         // Delimited string
         if (ch == u'"') {
@@ -311,10 +319,10 @@ Char Minion::get_item(
         // further structural symbols
         if (ch == u']' || ch == u'}' || ch == u':') {
             m = MinionValue{};
-            return ch;
+            return ch; // no item, but significant terminator
         }
         //cout << "§0 " << int(ch) << endl;
-        udstring += ch;
+        udstring += ch; // start undelimited string
     } // End of item-seeking loop
     cout << "BUG" << endl;
 }
@@ -460,24 +468,80 @@ void Minion::get_list(
     }
 }
 
-/* Read a "map" as a MinionValue (MinionMap) from the input.
+//TODO???
+/* Read a key-value pair into a MinionMap from the input.
  *
- * This method is entered after the initial '{' has been read, so the search
- * for the next item will begin with the following character. The parameter
- * is '}', except for the top-level map, which has a null terminator.
- *
- * If the map was read successfully, it will be returned. If not, a null
- * item will be returned.
+ * Return a terminator such that the caller can determine how to proceed –
+ * especially significant are '}' and 0 (end of data).
  */
-void Minion::get_map(
-    MinionValue &m, Char terminator)
+Char Minion::read_map(
+    MinionMap &m)
 {
     int start_line = line_i;
     int item_line;
     Char ch;
     string key;
     MinionValue item;
-    MinionMap map;
+    // Read key
+    item_line = line_i;
+    Char sep = get_item(item);
+    //cout << "§1 " << ((sep == 0) ? 0 : sep) << endl;
+    //cout << " :: " << item << endl;
+    if (item.index() == 0) {
+        // No valid key found
+        return sep;
+    }
+    if (!holds_alternative<string>(item)) {
+        //cout << item << endl;
+        error_message.append(fmt::format(("Reading map starting in line {}."
+                                          " Item at line {}: expected key string,\n"
+                                          "Found: {}\n"),
+                                          start_line - 1,
+                                          item_line - 1,
+                                          item.dump()));
+        return 0;
+    }
+    key = get<string>(item);
+    if (m.contains(key)) {
+        error_message.append(fmt::format(("Reading map starting in line {}."
+                                          " Key \"{}\" repeated at line {}\n"),
+                                         start_line - 1,
+                                         key,
+                                         item_line - 1));
+        return 0;
+    }
+    // Expect ':'
+    item_line = line_i;
+    sep = get_item(item);
+    if (item.index() != 0 || sep != ':') {
+        error_message.append(fmt::format(("Reading map starting in line {}."
+                                          " Item at line {}: expected ':'\n"),
+                                         start_line - 1,
+                                         item_line - 1));
+        return 0;
+    }
+    item_line = line_i;
+    get_item(item);
+    if (item.index() == 0) {
+        error_message.append(fmt::format(("Reading map starting in line {}."
+                                          " Item at line {}: expected value"
+                                          " for key \"{}\"\n"),
+                                         start_line - 1,
+                                         item_line - 1,
+                                         key));
+        return 0;
+    }
+    m.add(key, macro_replace(item));
+}
+
+bool Minion::get_map(
+    MinionMap &m, Char terminator)
+{
+    int start_line = line_i;
+    int item_line;
+    Char ch;
+    string key;
+    MinionValue item;
     while (true) {
         // Read key
         item_line = line_i;
@@ -487,16 +551,13 @@ void Minion::get_map(
         if (item.index() == 0) {
             // No valid key found
             if (sep == terminator) {
-                m.emplace<MinionMap>(map);
-                //m = MinionValue{map};
-                return;
+                return true;
             }
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string\n"),
                                              start_line - 1,
                                              item_line - 1));
-            m = MinionValue{};
-            return;
+            return false;
         }
         if (!holds_alternative<string>(item)) {
             //cout << item << endl;
@@ -506,22 +567,26 @@ void Minion::get_map(
                                              start_line - 1,
                                              item_line - 1,
                                              item.dump()));
-            m.emplace<0>();
-            return;
+            return false;
         }
         key = get<string>(item);
+        if (m.get(key).index() == 0) {
+            error_message.append(fmt::format(("Reading map starting in line {}."
+                                              " Key \"{}\" repeated at line {}\n"),
+                                             start_line - 1,
+                                             key,
+                                             item_line - 1));
+            return false;
+        }
         // Expect ':'
         item_line = line_i;
         sep = get_item(item);
-        if (item.index() == 0 && sep == ':') {
-            //TODO: OK, read value
-        } else {
+        if (item.index() != 0 || sep != ':') {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected ':'\n"),
                                              start_line - 1,
                                              item_line - 1));
-            m.emplace<0>();
-            return;
+            return false;
         }
         item_line = line_i;
         get_item(item);
@@ -532,20 +597,26 @@ void Minion::get_map(
                                              start_line - 1,
                                              item_line - 1,
                                              key));
-            m.emplace<0>();
-            return;
+            return false;
         }
-        if (map.contains(key)) {
-            error_message.append(fmt::format(("Reading map starting in line {}."
-                                              " Key \"{}\" repeated at line {}\n"),
-                                             start_line - 1,
-                                             key,
-                                             item_line - 1));
-            m.emplace<0>();
-            return;
-        }
-        map.add(key, macro_replace(item));
+        auto val = macro_replace(item);
+        if (key.starts_with('&')) macros[key] = val; else m.add(key, val);
     } // end of loop
+}
+
+// Dump the value as json.
+// If indent < 0, add no formatting/padding, otherwise format with the
+// given indentation.
+
+//TODO: as method of MinionValue or Minion?
+string dump(MinionValue m, int indent = -1)
+{
+    string s;
+    int indentation{0};
+    if (holds_alternative<string>(m)) {
+        //TODO: need to handle escapes
+        s += '"' + get<string>(m) + '"';
+    }
 }
 
 } // namespace minion
