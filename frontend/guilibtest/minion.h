@@ -54,29 +54,30 @@ class MinionMap : public std::vector<MinionMapPair>
 {
 public:
     void add(std::string &key, MinionValue mval);
-    MinionValue get(std::string & key);
+    MinionValue get(std::string &key);
 };
 
 class MinionList : public std::vector<MinionValue>
 {
 public:
     void add(MinionValue mval);
+    std::string dump_items(std::string &padding);
 };
 
 struct MinionMapPair
 {
-    const std::string key;
-    const MinionValue value;
+    std::string key;
+    MinionValue value;
 };
 
 
 class Minion
 {
 public:
-    Minion(const std::string &source);
-    void to_json(std::string &json_string, bool compact);
+    Minion(const std::string_view source);
+    //void to_json(std::string &json_string, bool compact);
 
-    MinionMap top_level;            // collect the top-level map here
+    MinionMap top_level;       // collect the top-level map here
     std::string error_message; // if not empty, explain failure
 
     MinionValue new_string(const std::string &s);
@@ -85,10 +86,6 @@ public:
 
 private:
     const std::string_view minion_string; // the source string
-    std::vector<std::string> strings;
-    std::vector<MinionMap> maps;
-    std::vector<MinionList> lists;
-
     const size_t source_size;
     int iter_i;
     int line_i;
@@ -100,14 +97,14 @@ private:
     Char get_item(MinionValue &m);
     void get_list(MinionValue &m);
     bool get_map(MinionMap &m, Char terminator);
-
     void get_string(MinionValue &m);
-    json macro_replace(MinionValue item);
+    MinionValue macro_replace(MinionValue item);
 };
 
 } // END namespace minion
 
 void testminion();
+void testminion2();
 void readfile(std::string &data, const std::string &filepath);
 void writefile(const std::string &data, const std::string &filepath);
 

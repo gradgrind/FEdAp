@@ -8,70 +8,108 @@ using namespace std::chrono;
 // *** Reading to custom object. This version is (still) using only
 // string as the basic data type.
 
-void testminion20(
-    const string &filepath)
-{
-    string idata{};
-    readfile(idata, filepath);
-
-    cout << "FILE: " << filepath << endl;
-
-    // Use auto keyword to avoid typing long
-    // type definitions to get the timepoint
-    // at this instant use function now()
-    auto start = high_resolution_clock::now();
-
-    minion::Minion mp(idata);
-
-    // After function call
-    auto stop = high_resolution_clock::now();
-
-    // Subtract stop and start timepoints and
-    // cast it to required unit. Predefined units
-    // are nanoseconds, microseconds, milliseconds,
-    // seconds, minutes, hours. Use duration_cast()
-    // function.
-    auto duration = duration_cast<microseconds>(stop - start);
-
-    // To get the value of duration use the count()
-    // member function on the duration object
-    cout << "TIME: " << duration.count() << " microseconds" << endl;
-
-    string odata;
-    if (mp.error_message.empty()) {
-        mp.to_json(odata, false);
-
-        auto p = filepath.rfind(".");
-        string f;
-        if (p == string::npos) {
-            f = filepath;
-        } else {
-            f = filepath.substr(0, p);
-        }
-        string f1 = f + ".json";
-        writefile(odata, f);
-        cout << " --> " << f << endl;
-    } else {
-        cout << "ERROR:\n" << mp.error_message << endl;
-        return;
-    }
-
-    // Compare parsing with nlohmann
-    start = high_resolution_clock::now();
-    json data = json::parse(odata);
-    stop = high_resolution_clock::now();
-    duration = duration_cast<microseconds>(stop - start);
-    cout << "TIME json: " << duration.count() << " microseconds" << endl;
-}
-
-void testminion2()
-{
-    testminion20("_data/test0.minion");
-    testminion20("_data/test1.minion");
-    testminion20("_data/test2.minion");
-}
-
 namespace minion {
+
+string dump_list_items(const MinionList m, int level);
+string dump_map_items(const MinionMap m, int level);
+void dump_string(
+    string &valstr, const string &s)
+{
+    valstr += '"';
+    for (const Char &ch : s) {
+        if (ch >= 32) {
+            if (ch == '"') {
+                valstr += "\\'";
+            } else if (ch == '\\') {
+                valstr += "\\/";
+            } else if (ch != 127) {
+                valstr += ch;
+            } else {
+                valstr += "\\{007F}";
+            }
+        } else if (ch == '\n') {
+            valstr += "\\n";
+        } else if (ch == '\t') {
+            valstr += "\\t";
+        } else {
+            valstr += fmt::format("\\{{{:#04x}}}", ch);
+        }
+    }
+    valstr += '"';
+}
+
+// Dump the value as MINION string.
+// If level < 0, add no formatting/padding, otherwise format with
+// indentation.
+const int indent_depth = 2;
+void dump(
+    string &valstr, MinionValue item, int level = -1)
+{
+    if (holds_alternative<string>(item)) {
+        auto s{get<string>(item)};
+        dump_string(valstr, s);
+    } else if (holds_alternative<MinionMap>(item)) {
+        auto m{get<MinionMap>(item)};
+        if (m.empty()) {
+            valstr += "{}";
+            return;
+        }
+        valstr += '{';
+        valstr += dump_map_items(m, (level < 0) ? -1 : level + 1);
+        if (level >= 0) {
+            valstr += '\n' + string(indent_depth * level, ' ');
+        }
+        valstr += '}';
+    } else if (holds_alternative<MinionList>(item)) {
+        auto m{get<MinionList>(item)};
+        if (m.empty()) {
+            valstr += "[]";
+            return;
+        }
+        valstr += '[';
+        valstr += dump_list_items(m, (level < 0) ? -1 : level + 1);
+        if (level >= 0) {
+            valstr += '\n' + string(indent_depth * level, ' ');
+        }
+        valstr += ']';
+    } else {
+        valstr += "NO_VALUE";
+    }
+}
+
+string dump_list_items(
+    MinionList m, int level)
+{
+    string padding;
+    if (level >= 0) {
+        padding += '\n' + string(indent_depth * level, ' ');
+    }
+    string valstr;
+    for (const auto item : m) {
+        valstr += padding;
+        dump(valstr, item, level);
+    }
+    return valstr;
+}
+
+string dump_map_items(
+    MinionMap m, int level)
+{
+    string padding;
+    string keysep{':'};
+    if (level >= 0) {
+        padding += '\n' + string(indent_depth * level, ' ');
+        keysep += ' ';
+    }
+    string valstr;
+    for (const auto item : m) {
+        valstr += padding;
+        dump_string(valstr, item.key);
+        valstr += keysep;
+        dump(valstr, item.value, level);
+    }
+    return valstr;
+}
 
 MinionValue Minion::new_string(
     const std::string &s)
@@ -112,9 +150,9 @@ void MinionList::add(MinionValue mval)
     push_back(mval);
 }
 
-/* Generate a JSON string from the parsed object.
- * If "compact" is false, an indented structure will be produced.
-*/
+/*
+// Generate a JSON string from the parsed object.
+// If "compact" is false, an indented structure will be produced.
 void Minion::to_json(
     string &json_string, bool compact)
 {
@@ -122,14 +160,15 @@ void Minion::to_json(
         cerr << "JSON object: no content" << endl;
     }
     if (compact) {
-        json_string = top_level.dump();
+        json_string = top_level.jdump();
     } else {
-        json_string = top_level.dump(2);
+        json_string = top_level.jdump(2);
     }
 }
+*/
 
 Minion::Minion(
-    const string &source)
+    const string_view source)
     : minion_string{source}
     , source_size{source.size()}
     , iter_i{0}
@@ -147,7 +186,7 @@ MinionValue Minion::macro_replace(
         string s{get<string>(item)};
         if (s.starts_with('&')) {
             try {
-                return top_level.at(s);
+                return macros.at(s);
             } catch (...) {
                 error_message.append(
                     fmt::format("Undefined macro ({}) used in line {}\n", s, line_i));
@@ -228,7 +267,6 @@ Char Minion::get_item(
 {
     string udstring{};
     Char ch;
-    separator = '*';
     while (true) {
         ch = read_ch(false);
         if (!udstring.empty()) {
@@ -308,12 +346,12 @@ Char Minion::get_item(
         }
         // map
         if (ch == u'{') {
-            m = MinionValue{MinionMap()};
-            get_map(m, '}');
-            if (m.index() == 0) {
+            MinionMap mm;
+            if (!get_map(mm, '}')) {
                 // I don't think this is sensibly recoverable
                 throw "Invalid map";
             }
+            m = MinionValue{mm};
             return ' ';
         }
         // further structural symbols
@@ -389,7 +427,7 @@ void Minion::get_string(
                         break;
                     }
                     if (ustr.size() > 5) {
-                        ustr += '?'; // ensure the string is invalid ...
+                        ustr += '?'; // ensure the unicode hex is invalid ...
                         break;
                     }
                     ustr += ch;
@@ -468,72 +506,6 @@ void Minion::get_list(
     }
 }
 
-//TODO???
-/* Read a key-value pair into a MinionMap from the input.
- *
- * Return a terminator such that the caller can determine how to proceed –
- * especially significant are '}' and 0 (end of data).
- */
-Char Minion::read_map(
-    MinionMap &m)
-{
-    int start_line = line_i;
-    int item_line;
-    Char ch;
-    string key;
-    MinionValue item;
-    // Read key
-    item_line = line_i;
-    Char sep = get_item(item);
-    //cout << "§1 " << ((sep == 0) ? 0 : sep) << endl;
-    //cout << " :: " << item << endl;
-    if (item.index() == 0) {
-        // No valid key found
-        return sep;
-    }
-    if (!holds_alternative<string>(item)) {
-        //cout << item << endl;
-        error_message.append(fmt::format(("Reading map starting in line {}."
-                                          " Item at line {}: expected key string,\n"
-                                          "Found: {}\n"),
-                                          start_line - 1,
-                                          item_line - 1,
-                                          item.dump()));
-        return 0;
-    }
-    key = get<string>(item);
-    if (m.contains(key)) {
-        error_message.append(fmt::format(("Reading map starting in line {}."
-                                          " Key \"{}\" repeated at line {}\n"),
-                                         start_line - 1,
-                                         key,
-                                         item_line - 1));
-        return 0;
-    }
-    // Expect ':'
-    item_line = line_i;
-    sep = get_item(item);
-    if (item.index() != 0 || sep != ':') {
-        error_message.append(fmt::format(("Reading map starting in line {}."
-                                          " Item at line {}: expected ':'\n"),
-                                         start_line - 1,
-                                         item_line - 1));
-        return 0;
-    }
-    item_line = line_i;
-    get_item(item);
-    if (item.index() == 0) {
-        error_message.append(fmt::format(("Reading map starting in line {}."
-                                          " Item at line {}: expected value"
-                                          " for key \"{}\"\n"),
-                                         start_line - 1,
-                                         item_line - 1,
-                                         key));
-        return 0;
-    }
-    m.add(key, macro_replace(item));
-}
-
 bool Minion::get_map(
     MinionMap &m, Char terminator)
 {
@@ -561,16 +533,18 @@ bool Minion::get_map(
         }
         if (!holds_alternative<string>(item)) {
             //cout << item << endl;
+            string itemstr;
+            dump(itemstr, item, -1);
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string,\n"
                                               "Found: {}\n"),
                                              start_line - 1,
                                              item_line - 1,
-                                             item.dump()));
+                                             itemstr));
             return false;
         }
         key = get<string>(item);
-        if (m.get(key).index() == 0) {
+        if (m.get(key).index() != 0) {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Key \"{}\" repeated at line {}\n"),
                                              start_line - 1,
@@ -604,22 +578,74 @@ bool Minion::get_map(
     } // end of loop
 }
 
-// Dump the value as json.
-// If indent < 0, add no formatting/padding, otherwise format with the
-// given indentation.
+} // namespace minion
 
-//TODO: as method of MinionValue or Minion?
-string dump(MinionValue m, int indent = -1)
+void testminion20(
+    const string &filepath)
 {
-    string s;
-    int indentation{0};
-    if (holds_alternative<string>(m)) {
-        //TODO: need to handle escapes
-        s += '"' + get<string>(m) + '"';
+    string idata{};
+    readfile(idata, filepath);
+
+    cout << "FILE: " << filepath << endl;
+
+    // Use auto keyword to avoid typing long
+    // type definitions to get the timepoint
+    // at this instant use function now()
+    auto start = high_resolution_clock::now();
+
+    minion::Minion mp(idata);
+
+    // After function call
+    auto stop = high_resolution_clock::now();
+
+    // Subtract stop and start timepoints and
+    // cast it to required unit. Predefined units
+    // are nanoseconds, microseconds, milliseconds,
+    // seconds, minutes, hours. Use duration_cast()
+    // function.
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    // To get the value of duration use the count()
+    // member function on the duration object
+    cout << "TIME: " << duration.count() << " microseconds" << endl;
+
+    string odata;
+    if (mp.error_message.empty()) {
+        //mp.to_json(odata, false);
+        //cout << " >>> " << dump_map_items(mp.top_level, 0) << endl;
+
+        /*
+        auto p = filepath.rfind(".");
+        string f;
+        if (p == string::npos) {
+            f = filepath;
+        } else {
+            f = filepath.substr(0, p);
+        }
+        string f1 = f + ".json";
+        writefile(odata, f);
+        cout << " --> " << f << endl;
+        */
+    } else {
+        cout << "ERROR:\n" << mp.error_message << endl;
+        return;
     }
+
+    /* Compare parsing with nlohmann
+    start = high_resolution_clock::now();
+    json data = json::parse(odata);
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+    cout << "TIME json: " << duration.count() << " microseconds" << endl;
+    */
 }
 
-} // namespace minion
+void testminion2()
+{
+    testminion20("_data/test0.minion");
+    testminion20("_data/test1.minion");
+    testminion20("_data/test2.minion");
+}
 
 /*
  * MINION: MINImal Object Notation, v.4

@@ -74,6 +74,8 @@ int main()
     //timetest();
 
     testminion();
+    cout << "\n  +++++++++++++++++++\n" << endl;
+    testminion2();
     return 0;
 
     string _bt1{"FL_NO_BOX"};
