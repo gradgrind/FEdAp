@@ -76,6 +76,8 @@ int main()
     testminion();
     cout << "\n  +++++++++++++++++++\n" << endl;
     testminion2();
+    cout << "\n  *******************\n" << endl;
+    testminion3();
     return 0;
 
     string _bt1{"FL_NO_BOX"};

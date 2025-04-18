@@ -8,7 +8,7 @@ using namespace std::chrono;
 // *** Reading to custom object. This version is (still) using only
 // string as the basic data type.
 
-namespace minion {
+namespace minion_map2 {
 
 string dump_list_items(const MinionList m, int level);
 string dump_map_items(const MinionMap m, int level);
@@ -85,7 +85,7 @@ string dump_list_items(
         padding += '\n' + string(indent_depth * level, ' ');
     }
     string valstr;
-    for (const auto &item : m) {
+    for (const auto item : m) {
         valstr += padding;
         dump(valstr, item, level);
     }
@@ -102,11 +102,11 @@ string dump_map_items(
         keysep += ' ';
     }
     string valstr;
-    for (const auto &item : m) {
+    for (const auto &[key, value] : m) {
         valstr += padding;
-        dump_string(valstr, item.key);
+        dump_string(valstr, key);
         valstr += keysep;
-        dump(valstr, item.value, level);
+        dump(valstr, value, level);
     }
     return valstr;
 }
@@ -128,17 +128,6 @@ MinionValue Minion::new_list()
     return MinionValue{MinionList()};
     //? return MinionValue{MinionList{}};
 }
-
-// This is, of course, rather inefficient for maps which are not very short.
-// Making a map out of this would make the MinionValues a bit larger and lose
-// the ordering, unless a more complicated map structure is used.
-/*MinionValue MinionMap::get(std::string & key)
-{
-    for (const auto &mmp : *this) {
-        if (mmp.key == key) return mmp.value;
-    }
-    return MinionValue{};
-}*/
 
 /*
 // Generate a JSON string from the parsed object.
@@ -289,7 +278,7 @@ Char Minion::get_item(
             ch = read_ch(false);
             if (ch == u'[') {
                 // Extended comment: read to "]#"
-                //int comment_line = line_i;
+                int comment_line = line_i;
                 ch = read_ch(false);
                 while (true) {
                     if (ch == u']') {
@@ -370,7 +359,7 @@ void Minion::get_string(
 {
     string dstring;
     Char ch;
-    //int start_line = line_i;
+    int start_line = line_i;
     while (true) {
         ch = read_ch(true);
         if (ch == 0) {
@@ -422,7 +411,7 @@ void Minion::get_string(
                     }
                     ustr += ch;
                 }
-                if (!unicode_utf8(dstring, ustr)) {
+                if (!minion::unicode_utf8(dstring, ustr)) {
                     error_message.append(
                         fmt::format("Invalid unicode point ({}) in string in line {}\n",
                                     ustr,
@@ -534,15 +523,13 @@ bool Minion::get_map(
             return false;
         }
         key = get<string>(item);
-        for (const auto &mmp : m) {
-            if (mmp.key == key) {
-                error_message.append(fmt::format(("Reading map starting in line {}."
-                                                  " Key \"{}\" repeated at line {}\n"),
-                                                 start_line - 1,
-                                                 key,
-                                                 item_line - 1));
-                return false;
-            }
+        if (m.contains(key)) {
+            error_message.append(fmt::format(("Reading map starting in line {}."
+                                              " Key \"{}\" repeated at line {}\n"),
+                                             start_line - 1,
+                                             key,
+                                             item_line - 1));
+            return false;
         }
         // Expect ':'
         item_line = line_i;
@@ -567,16 +554,15 @@ bool Minion::get_map(
         }
         auto val = macro_replace(item);
         if (key.starts_with('&'))
-            macros.emplace(key, val);
+            macros[key] = val;
         else
-            m.emplace_back(MinionMapPair{key, val});
-        //m.push_back(MinionMapPair{key, val});
+            m.emplace(key, val);
     } // end of loop
 }
 
-} // namespace minion
+} // namespace minion_map2
 
-void testminion20(
+void testminion30(
     const string &filepath)
 {
     string idata{};
@@ -589,7 +575,7 @@ void testminion20(
     // at this instant use function now()
     auto start = high_resolution_clock::now();
 
-    minion::Minion mp(idata);
+    minion_map2::Minion mp(idata);
 
     // After function call
     auto stop = high_resolution_clock::now();
@@ -636,11 +622,11 @@ void testminion20(
     */
 }
 
-void testminion2()
+void testminion3()
 {
-    testminion20("_data/test0.minion");
-    testminion20("_data/test1.minion");
-    testminion20("_data/test2.minion");
+    testminion30("_data/test0.minion");
+    testminion30("_data/test1.minion");
+    testminion30("_data/test2.minion");
 }
 
 /*

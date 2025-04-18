@@ -17,7 +17,8 @@ add_executable(guilibtest main.cpp
     widgets.cpp
     testminion.cpp
     minion.h
-    minion.cpp)
+    minion.cpp
+    minion_map2.cpp)
 
 include(GNUInstallDirs)
 install(TARGETS guilibtest
