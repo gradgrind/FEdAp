@@ -1,4 +1,5 @@
 #include "minion.h"
+#include "iofile.h"
 #include <chrono>
 #include <fmt/format.h>
 #include <iostream>
@@ -9,6 +10,48 @@ using namespace std::chrono;
 // string as the basic data type.
 
 namespace minion {
+
+MinionMap read_minion(
+    string &minion_string)
+{
+    minion::Minion mp(minion_string);
+    if (mp.error_message.empty()) {
+        return mp.top_level;
+    }
+    throw minion::MinionException(mp.error_message);
+}
+
+// Convert a unicode code point (as hex string) to a UTF-8 string
+bool unicode_utf8(
+    string &utf8, const string &unicode)
+{
+    // Convert the unicode to an integer
+    unsigned int code_point;
+    stringstream ss;
+    ss << hex << unicode;
+    ss >> code_point;
+
+    // Convert the code point to a UTF-8 string
+    if (code_point <= 0x7F) {
+        utf8 += static_cast<Char>(code_point);
+    } else if (code_point <= 0x7FF) {
+        utf8 += static_cast<Char>((code_point >> 6) | 0xC0);
+        utf8 += static_cast<Char>((code_point & 0x3F) | 0x80);
+    } else if (code_point <= 0xFFFF) {
+        utf8 += static_cast<Char>((code_point >> 12) | 0xE0);
+        utf8 += static_cast<Char>(((code_point >> 6) & 0x3F) | 0x80);
+        utf8 += static_cast<Char>((code_point & 0x3F) | 0x80);
+    } else if (code_point <= 0x10FFFF) {
+        utf8 += static_cast<Char>((code_point >> 18) | 0xF0);
+        utf8 += static_cast<Char>(((code_point >> 12) & 0x3F) | 0x80);
+        utf8 += static_cast<Char>(((code_point >> 6) & 0x3F) | 0x80);
+        utf8 += static_cast<Char>((code_point & 0x3F) | 0x80);
+    } else {
+        // Invalid input
+        return false;
+    }
+    return true;
+}
 
 string dump_list_items(const MinionList m, int level);
 string dump_map_items(const MinionMap m, int level);
@@ -111,34 +154,17 @@ string dump_map_items(
     return valstr;
 }
 
-MinionValue Minion::new_string(
-    const std::string &s)
-{
-    return MinionValue{s};
-}
-
-MinionValue Minion::new_map()
-{
-    return MinionValue{MinionMap()};
-    //? return MinionValue{MinionMap{}};
-}
-
-MinionValue Minion::new_list()
-{
-    return MinionValue{MinionList()};
-    //? return MinionValue{MinionList{}};
-}
-
 // This is, of course, rather inefficient for maps which are not very short.
 // Making a map out of this would make the MinionValues a bit larger and lose
 // the ordering, unless a more complicated map structure is used.
-/*MinionValue MinionMap::get(std::string & key)
+MinionValue MinionMap::get(
+    string_view key)
 {
     for (const auto &mmp : *this) {
         if (mmp.key == key) return mmp.value;
     }
     return MinionValue{};
-}*/
+}
 
 /*
 // Generate a JSON string from the parsed object.
@@ -566,22 +592,24 @@ bool Minion::get_map(
             return false;
         }
         auto val = macro_replace(item);
-        if (key.starts_with('&'))
+        // Check for top-level &-keys
+        if (terminator == 0 && key.starts_with('&'))
             macros.emplace(key, val);
         else
             m.emplace_back(MinionMapPair{key, val});
-        //m.push_back(MinionMapPair{key, val});
     } // end of loop
 }
 
 } // namespace minion
 
-void testminion20(
+void test_minion(
     const string &filepath)
 {
-    string idata{};
-    readfile(idata, filepath);
-
+    string idata;
+    if (!readfile(idata, filepath)) {
+        cerr << "Error opening file: " << filepath << endl;
+        return;
+    }
     cout << "FILE: " << filepath << endl;
 
     // Use auto keyword to avoid typing long
@@ -619,28 +647,52 @@ void testminion20(
             f = filepath.substr(0, p);
         }
         string f1 = f + ".json";
-        writefile(odata, f);
+        if (!writefile(odata, f) {
+            cerr << "Error opening file: " << f << endl;
+            return;
+        }
         cout << " --> " << f << endl;
         */
     } else {
         cout << "ERROR:\n" << mp.error_message << endl;
         return;
     }
-
-    /* Compare parsing with nlohmann
-    start = high_resolution_clock::now();
-    json data = json::parse(odata);
-    stop = high_resolution_clock::now();
-    duration = duration_cast<microseconds>(stop - start);
-    cout << "TIME json: " << duration.count() << " microseconds" << endl;
-    */
 }
 
-void testminion2()
+void testminion()
 {
-    testminion20("_data/test0.minion");
-    testminion20("_data/test1.minion");
-    testminion20("_data/test2.minion");
+    test_minion("_data/test0.minion");
+    test_minion("_data/test1.minion");
+    test_minion("_data/test2.minion");
+
+    string idata;
+    string fp{"_data/test2e.minion"};
+    if (readfile(idata, fp)) {
+        cout << "Reading " << fp << endl;
+        try {
+            minion::read_minion(idata);
+        } catch (minion::MinionException &e) {
+            cerr << e.what() << endl;
+        }
+    } else {
+        cerr << "Error opening file: " << fp << endl;
+    }
+
+    /*
+    // Now look for leakages ...
+    string xdata;
+    string fpx{"_data/test2.minion"};
+    minion::MinionMap mmap;
+    minion::MinionValue mval;
+    if (readfile(xdata, fpx)) {
+        for (int i = 0; i < 40000; ++i) {
+            mmap = minion::read_minion(xdata);
+            mval = mmap.get("EXTRA_FIELD_WIDTHS");
+        }
+    } else {
+        cerr << "Error opening file: " << fpx << endl;
+    }
+    */
 }
 
 /*
@@ -715,6 +767,8 @@ void testminion2()
  *       ...
  *     DEF1: { X: &MACRO1 }
  *
+ * These macro keys are not included in the resulting data map.
+ * 
  * Note that keys beginning with '&' at lower levels will neither themselves
  * be replaced nor used to define replacement values.
 */
