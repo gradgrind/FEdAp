@@ -28,7 +28,7 @@ using member_map = std::map<std::string_view, method>;
 
 //extern unordered_map<string_view, Fl_Widget *> widget_map;
 Fl_Widget *get_widget(std::string_view name);
-mvalue list_widgets();
+mlist list_widgets();
 
 class WidgetData : public Fl_Callback_User_Data
 {
@@ -56,6 +56,7 @@ public:
 
 bool get_minion_string(mmap data, std::string_view key, std::string &value);
 std::string get_minion_string(mmap data, std::string_view key);
+bool get_minion_int(mmap data, std::string_view key, int &value);
 int get_minion_int(mmap data, std::string_view key);
 
 void gui_new(std::string_view name,

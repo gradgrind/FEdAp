@@ -7,32 +7,29 @@ using namespace std;
 // "Group" widgets
 
 void new_window(
-    string_view name, string_view parent, json data)
+    string_view name, string_view parent, mmap data)
 {
     int w = 800;
-    if (data.contains("WIDTH")) {
-        w = data["WIDTH"];
-    }
+    get_minion_int(data, "WIDTH", w);
     int h = 600;
-    if (data.contains("HEIGHT")) {
-        h = data["HEIGHT"];
-    }
+    get_minion_int(data, "HEIGHT", h);
     auto widg = new Fl_Double_Window(w, h);
     //TODO: widg->end(), or null current group, or ...?
     new WidgetData("Group:Window:Double", name, widg);
 }
 
 void new_flex(
-    string_view name, string_view parent, json data)
+    string_view name, string_view parent, mmap data)
 {
-    auto hz = data.contains("HORIZONTAL") && data["HORIZONTAL"];
-    auto widg = new Fl_Flex(hz ? Fl_Flex::ROW : Fl_Flex::COLUMN);
+    string orientation;
+    get_minion_string(data, "ORIENTATION", orientation);
+    auto widg = new Fl_Flex((orientation == "HORIZONTAL") ? Fl_Flex::ROW : Fl_Flex::COLUMN);
     //TODO: widg->end(), or null current group, or ...?
     new WidgetData("Group:Flex", name, widg);
 }
 
 void new_grid(
-    string_view name, string_view parent, json data)
+    string_view name, string_view parent, mmap data)
 {
     auto widg = new Fl_Grid(0, 0, 0, 0);
     //TODO: widg->end(), or null current group, or ...?
@@ -40,15 +37,15 @@ void new_grid(
 }
 
 void _parm_widget_name(
-    const json data, string &name)
+    const mmap data, string &name)
 {
-    if (!get_json_string(data, "NAME", name)) {
-        throw fmt::format("Function '{}':\n no 'NAME' field", data);
+    if (!get_minion_string(data, "NAME", name)) {
+        throw fmt::format("Function '{}':\n no 'NAME' field", minion::dump_map_items(data, -1));
     }
 }
 
 void _parm_set_parent(
-    const json data, Fl_Widget *widg)
+    const mmap data, Fl_Widget *widg)
 {
     string parent;
     if (get_minion_string(data, "PARENT", parent) && !parent.empty()) {
@@ -57,7 +54,7 @@ void _parm_set_parent(
 }
 
 void _new_grid(
-    json data)
+    mmap data)
 {
     string name;
     _parm_widget_name(data, name);

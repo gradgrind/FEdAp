@@ -16,7 +16,7 @@ Fl_Widget *get_widget(
     }
 }
 
-mvalue list_widgets()
+mlist list_widgets()
 {
     mlist keys;
     for (const auto &kv : widget_map) {

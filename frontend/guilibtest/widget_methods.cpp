@@ -13,6 +13,18 @@ int get_minion_int(
     throw fmt::format("Integer parameter '{}' expected", key);
 }
 
+bool get_minion_int(
+    mmap data, string_view key, int& value)
+{
+    auto s = data.get(key);
+    if (holds_alternative<string>(s)) {
+        // Read as integer
+        value = stoi(get<string>(s));
+        return true;
+    }
+    return false;
+}
+
 string get_minion_string(
     mmap data, string_view key)
 {

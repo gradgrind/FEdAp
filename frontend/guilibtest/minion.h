@@ -86,7 +86,7 @@ private:
     MinionValue macro_replace(MinionValue item);
 };
 
-MinionMap read_minion(std::string &minion_string);
+MinionMap read_minion(std::string_view minion_string);
 
 } // END namespace minion
 

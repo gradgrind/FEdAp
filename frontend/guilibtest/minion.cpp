@@ -12,7 +12,7 @@ using namespace std::chrono;
 namespace minion {
 
 MinionMap read_minion(
-    string &minion_string)
+    string_view minion_string)
 {
     minion::Minion mp(minion_string);
     if (mp.error_message.empty()) {

@@ -3,7 +3,7 @@
 using namespace std;
 
 void new_box(
-    string_view name, string_view parent, json data)
+    string_view name, string_view parent, mmap data)
 {    
     Fl_Box* widg;
     string label;

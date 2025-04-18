@@ -105,20 +105,21 @@ void GUI(
 // consider extending the C++ widgets.
 
 //TODO
-json message(
-    json data)
+mmap message(
+    mmap data)
 {
     return data;
 }
 
 void to_back_end(
-    json data)
+    mmap data)
 {
-    json result = message(data);
-    auto it = result.find("DO");
-    if (it != data.end()) {
-        for (const auto& cmd : it.value()) {
-            GUI(cmd);
+    mmap result = message(data);
+    auto dolist0 = data.get("DO");
+    if (holds_alternative<mlist>(dolist0)) {
+        auto dolist = get<mlist>(dolist0);
+        for (const auto& cmd : dolist) {
+            GUI(get<mmap>(cmd));
         }
     }
     // Any back-end function which can take more than about 100ms should
