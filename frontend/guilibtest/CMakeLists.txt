@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(FLTK 1.4 CONFIG REQUIRED)
 
 add_executable(guilibtest main.cpp
-    fltk_json.h
+    fltk_minion.h
     layout.cpp
     widget.cpp
     dispatcher.cpp

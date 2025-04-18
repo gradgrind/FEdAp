@@ -72,9 +72,8 @@ public:
 int main()
 {
     //timetest();
-
-    testminion();
-    return 0;
+    //testminion();
+    //return 0;
 
     string _bt1{"FL_NO_BOX"};
     cout << _bt1 << ": " << magic_enum::enum_cast<Fl_Boxtype>(_bt1).value() << endl;

@@ -1,4 +1,4 @@
-#include "fltk_json.h"
+#include "fltk_minion.h"
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Grid.H>
@@ -51,7 +51,7 @@ void _parm_set_parent(
     const json data, Fl_Widget *widg)
 {
     string parent;
-    if (get_json_string(data, "PARENT", parent) && !parent.empty()) {
+    if (get_minion_string(data, "PARENT", parent) && !parent.empty()) {
         static_cast<Fl_Group *>(get_widget(parent))->add(widg);
     }
 }

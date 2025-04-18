@@ -36,6 +36,9 @@ class MinionList;
 using MinionValue = std::variant<
     std::monostate, std::string, MinionMap, MinionList>;
 
+std::string dump_list_items(const MinionList m, int level);
+std::string dump_map_items(const MinionMap m, int level);
+
 // The map class should preserve input order, so it is implemented as a vector.
 // For very small maps this might be completely adequate, but if multiple
 // lookups to larger maps are required, a proper map should be built.

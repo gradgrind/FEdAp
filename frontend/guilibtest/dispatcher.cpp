@@ -1,17 +1,16 @@
-#include "fltk_json.h"
+#include "fltk_minion.h"
 using namespace std;
 
 // *** Dispatch table for widget-creation functions
 // First create a function template
-using new_widget_func
-    = function<void(string_view name, string_view parent, json data)>;
+using new_widget_func = function<void(string_view name, string_view parent, mmap data)>;
 // Create the map object
 using function_map = unordered_map<string_view, new_widget_func>;
 function_map fmap{{"Window", new_window}, {"Flex", new_flex}, {"Grid", new_grid}, {"Box", new_box}};
 
-// Call a method of a given widget, passing any parameters as a JSON object.
+// Call a method of a given widget, passing any parameters as a mmap object.
 void gui(
-    string_view widget, string_view method, json data)
+    string_view widget, string_view method, mmap data)
 {}
 
 // The widget-creation functions could be treated as methods
@@ -38,7 +37,7 @@ void gui(
 // That might be the most "logical", so let's do it for now.
 
 void gui_new(
-    string_view name, string_view widget_type, string_view parent, json data)
+    string_view name, string_view widget_type, string_view parent, mmap data)
 {
     try {
         auto fn = fmap.at(widget_type);
@@ -49,41 +48,42 @@ void gui_new(
 }
 
 // NEW ...
-using _new_widget_func = function<void(json data)>;
+using _new_widget_func = function<void(mmap data)>;
 using _function_map = unordered_map<string_view, _new_widget_func>;
 _function_map fn_map{};
 
 void widget_method(
-    Fl_Widget* w, json obj)
+    Fl_Widget* w, mmap obj)
 {
     auto wd{static_cast<WidgetData*>(w->user_data())};
     string m;
-    if (get_json_string(obj, "M", m)) {
+    if (get_minion_string(obj, "M", m)) {
         wd->do_method(w, m, obj);
     } else {
-        throw fmt::format("Invalid method on {}: {}", wd->widget_name(), obj);
+        throw fmt::format("Invalid method on {}: {}", wd->widget_name(), dump_map_items(obj, -1));
     }
 }
 
 void GUI(
-    json obj)
+    mmap obj)
 {
     string fw;
-    if (get_json_string(obj, "F", fw)) {
+    if (get_minion_string(obj, "F", fw)) {
         try {
             auto fn = fn_map.at(fw);
             fn(obj);
         } catch (const std::out_of_range& e) {
             throw fmt::format("Unknown function: {} ({})", fw, e.what());
         }
-    } else if (get_json_string(obj, "W", fw)) {
+    } else if (get_minion_string(obj, "W", fw)) {
         auto w = get_widget(fw);
-        json::array_t mlist = obj.at("DO");
-        for (const auto& m : mlist) {
-            widget_method(w, m);
+        mlist ml{get<mlist>(obj.get("DO"))};
+        for (const auto& m : ml) {
+            // This should throw an exception if not a map
+            widget_method(w, get<mmap>(m));
         }
     } else {
-        throw fmt::format("Invalid GUI parameters: {}", obj);
+        throw fmt::format("Invalid GUI parameters: {}", dump_map_items(obj, -1));
     }
 }
 

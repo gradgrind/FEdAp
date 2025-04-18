@@ -53,8 +53,6 @@ bool unicode_utf8(
     return true;
 }
 
-string dump_list_items(const MinionList m, int level);
-string dump_map_items(const MinionMap m, int level);
 void dump_string(
     string &valstr, const string &s)
 {
@@ -121,7 +119,7 @@ void dump(
 }
 
 string dump_list_items(
-    MinionList m, int level)
+    const MinionList m, int level)
 {
     string padding;
     if (level >= 0) {
@@ -136,7 +134,7 @@ string dump_list_items(
 }
 
 string dump_map_items(
-    MinionMap m, int level)
+    const MinionMap m, int level)
 {
     string padding;
     string keysep{':'};
@@ -518,7 +516,7 @@ void Minion::get_list(
             m.emplace<0>();
             return;
         }
-        l.push_back(macro_replace(item));
+        l.emplace_back(macro_replace(item));
     }
 }
 

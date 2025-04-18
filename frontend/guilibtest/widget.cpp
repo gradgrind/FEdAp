@@ -1,4 +1,4 @@
-#include "fltk_json.h"
+#include "fltk_minion.h"
 using namespace std;
 
 unordered_map<string_view, int> widget_type_map;
@@ -16,11 +16,11 @@ Fl_Widget *get_widget(
     }
 }
 
-json list_widgets()
+mvalue list_widgets()
 {
-    auto keys = json::array();
+    mlist keys;
     for (const auto &kv : widget_map) {
-        keys += kv.first;
+        keys.emplace_back(string{kv.first});
     }
     return keys;
 }
@@ -92,7 +92,7 @@ string_view WidgetData::widget_type_name()
 }
 
 void WidgetData::do_method(
-    Fl_Widget *widget, string_view name, json data)
+    Fl_Widget *widget, string_view name, mmap data)
 {
     auto members = widget_type_vec.at(wtype);
     auto m = members.at(name);
