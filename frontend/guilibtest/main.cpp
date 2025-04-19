@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+#include "iofile.h"
 #include "minion.h"
 
 #include <chrono>
@@ -94,6 +95,21 @@ int main()
 
     // *** Here is the real start ...
     try {
+        string gui;
+        string fp{"data/gui.minion"};
+        if (readfile(gui, fp)) {
+            cout << "Reading " << fp << endl;
+            try {
+                read_minion(gui);
+            } catch (minion::MinionException &e) {
+                cerr << e.what() << endl;
+            }
+        } else {
+            cerr << "Error opening file: " << fp << endl;
+        }
+
+        return 0;
+
         int w0 = 1000;
         int h0 = 700;
         gui_new("W0", "Window", "", read_minion(fmt::format("WIDTH:{} HEIGHT:{}", w0, h0)));
@@ -116,11 +132,11 @@ int main()
         //f1a->size(w0, h0);
         widget_set_size("F1", read_minion(fmt::format("WIDTH:{} HEIGHT:{}", w0, h0)));
         //f1a->box(FL_BORDER_BOX);
-        widget_set_box("F1", read_minion("BOXTYPE:FL_BORDER_BOX"));
+        //widget_set_box("F1", read_minion("BOXTYPE:FL_NO_BOX"));
         //f1a->color(0x00ff0000);
-        widget_set_color("F1", read_minion("COLOR:00FF00"));
+        //widget_set_color("F1", read_minion("COLOR:00FF00"));
 
-        gui_new("B1", "Box", "", read_minion("LABEL:B1 BOXTYPE:FL_ENGRAVED_BOX"));
+        //gui_new("B1", "Box", "", read_minion("LABEL:B1 BOXTYPE:FL_ENGRAVED_BOX"));
         auto vbox1 = new Fl_Box(FL_BORDER_BOX, 0, 0, 0, 0, "B1");
         vbox1->color(FL_RED);
         f1a->fixed(vbox1, 200);

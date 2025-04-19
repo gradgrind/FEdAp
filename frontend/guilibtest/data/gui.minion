@@ -1,0 +1,54 @@
+&APP_WIDTH: 1000
+&APP_HEIGHT: 700
+GUI: [
+  {
+    NEW: Window
+    NAME: MainWindow
+    WIDTH: &APP_WIDTH
+    HEIGHT: &APP_HEIGHT
+    COLOUR: ffffff
+  }
+  {
+    NEW: VBox
+    NAME: l_MainWindow
+    PARENT: MainWindow
+    WIDTH: &APP_WIDTH
+    HEIGHT: &APP_HEIGHT
+  }
+  {
+    NEW: Panel
+    NAME: P1
+    LABEL: "Panel 1"
+    PARENT: l_MainWindow
+    BOXTYPE: FL_BORDER_BOX
+    COLOUR: 00ff00
+    FIXED: 200
+  }
+  {
+    NEW: Panel
+    NAME: P2
+    LABEL: "Panel 2"
+    PARENT: l_MainWindow
+    BOXTYPE: FL_ENGRAVED_BOX
+    COLOUR: ffff00
+    FIXED: 200
+  }
+  
+  
+  {
+    WIDGET: MainWindow
+    DO: [
+      {RESIZABLE: l_MainWindow}
+      {
+        METHOD: callback
+        WITH: main_callback 
+      }
+      {METHOD: show}
+    ]
+  }
+  {FUNCTION: RUN} # Enter main event loop
+]
+
+# How to deal with callbacks and other events?
+# If a widget is deleted, all its children will be deleted too,
+# so the name should be removed from the widget map.

@@ -261,7 +261,7 @@ void Minion::unread_ch(
     Char ch)
 {
     if (ch_pending != 0) {
-        throw "Bug";
+        throw minion::MinionException("Bug in unread_ch");
     }
     ch_pending = ch;
     if (ch == '\n') {
@@ -354,7 +354,8 @@ Char Minion::get_item(
             get_list(m);
             if (m.index() == 0) {
                 // I don't think this is sensibly recoverable
-                throw "Invalid list/array";
+                throw minion::MinionException(error_message);
+                //throw "Invalid list/array";
             }
             return ' ';
         }
@@ -363,7 +364,8 @@ Char Minion::get_item(
             MinionMap mm;
             if (!get_map(mm, '}')) {
                 // I don't think this is sensibly recoverable
-                throw "Invalid map";
+                throw minion::MinionException(error_message);
+                //throw "Invalid map";
             }
             m = MinionValue{mm};
             return ' ';
@@ -511,8 +513,8 @@ void Minion::get_list(
             }
             error_message.append(fmt::format(("Reading array starting in line {}."
                                               " In line {}: expected ']' or value\n"),
-                                             start_line - 1,
-                                             item_line - 1));
+                                             start_line,
+                                             item_line));
             m.emplace<0>();
             return;
         }
@@ -541,8 +543,8 @@ bool Minion::get_map(
             }
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string\n"),
-                                             start_line - 1,
-                                             item_line - 1));
+                                             start_line,
+                                             item_line));
             return false;
         }
         if (!holds_alternative<string>(item)) {
@@ -552,8 +554,8 @@ bool Minion::get_map(
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected key string,\n"
                                               "Found: {}\n"),
-                                             start_line - 1,
-                                             item_line - 1,
+                                             start_line,
+                                             item_line,
                                              itemstr));
             return false;
         }
@@ -562,9 +564,9 @@ bool Minion::get_map(
             if (mmp.key == key) {
                 error_message.append(fmt::format(("Reading map starting in line {}."
                                                   " Key \"{}\" repeated at line {}\n"),
-                                                 start_line - 1,
+                                                 start_line,
                                                  key,
-                                                 item_line - 1));
+                                                 item_line));
                 return false;
             }
         }
@@ -574,8 +576,8 @@ bool Minion::get_map(
         if (item.index() != 0 || sep != ':') {
             error_message.append(fmt::format(("Reading map starting in line {}."
                                               " Item at line {}: expected ':'\n"),
-                                             start_line - 1,
-                                             item_line - 1));
+                                             start_line,
+                                             item_line));
             return false;
         }
         item_line = line_i;
