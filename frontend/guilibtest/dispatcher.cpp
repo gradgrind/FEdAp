@@ -1,5 +1,54 @@
 #include "fltk_minion.h"
+#include "layout.h"
+#include <FL/Fl_Group.H>
 using namespace std;
+
+void Handle_NEW(
+    string_view wtype, mmap m)
+{
+    string name;
+    Fl_Widget* w;
+    method_handler h;
+    if (get_minion_string(m, "NAME", name)) {
+        mlist do_list = get<mlist>(m.get("DO"));
+        if (wtype == "Window") {
+            w = NEW_Window(name, do_list);
+            h = group_methods;
+            //new WidgetData("Group:Window:Double", name, w);
+        } else if (wtype == "Vlayout") {
+            w = NEW_Vlayout(name, do_list);
+            h = flex_methods;
+            //new WidgetData("Group:Flex", name, w);
+        } else if (wtype == "Hlayout") {
+            w = NEW_Hlayout(name, do_list);
+            h = flex_methods;
+            //new WidgetData("Group:Flex", name, w);
+        } else if (wtype == "Grid") {
+            w = NEW_Grid(name, do_list);
+            h = grid_methods;
+            //new WidgetData("Group:Grid", name, w);
+        } else {
+            throw fmt::format("Unknown widget type: {}", wtype);
+        }
+        string parent;
+        if (get_minion_string(m, "PARENT", parent)) {
+            static_cast<Fl_Group*>(get_widget(parent))->add(w);
+        }
+        //TODO
+        WidgetData::add_widget_data(name, w, h);
+        //TODO: handle methods
+
+        return;
+    }
+    throw fmt::format("Bad NEW command: {}", minion::dump_map_items(m, -1));
+}
+
+void Handle_WIDGET(
+    Fl_Widget* w, mlist param)
+{
+    //TODO: This needs to find the correct starting point in the method-
+    // handler hierarchy ...
+}
 
 // *** Dispatch table for widget-creation functions
 // First create a function template
@@ -67,21 +116,17 @@ void widget_method(
 void GUI(
     mmap obj)
 {
-    string fw;
-    if (get_minion_string(obj, "F", fw)) {
-        try {
-            auto fn = fn_map.at(fw);
-            fn(obj);
-        } catch (const std::out_of_range& e) {
-            throw fmt::format("Unknown function: {} ({})", fw, e.what());
-        }
-    } else if (get_minion_string(obj, "W", fw)) {
-        auto w = get_widget(fw);
-        mlist ml{get<mlist>(obj.get("DO"))};
-        for (const auto& m : ml) {
-            // This should throw an exception if not a map
-            widget_method(w, get<mmap>(m));
-        }
+    string w;
+    if (get_minion_string(obj, "NEW", w)) {
+        Handle_NEW(w, obj);
+    } else if (get_minion_string(obj, "WIDGET", w)) {
+        mlist do_list = get<mlist>(obj.get("DO"));
+        auto widg = get_widget(w);
+        Handle_WIDGET(widg, do_list);
+    } else if (get_minion_string(obj, "FUNCTION", w)) {
+        //TODO
+        //auto f = function_map.at(w);
+        //f(obj);
     } else {
         throw fmt::format("Invalid GUI parameters: {}", dump_map_items(obj, -1));
     }

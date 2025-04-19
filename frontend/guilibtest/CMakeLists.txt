@@ -20,6 +20,7 @@ add_executable(guilibtest main.cpp
     minion.cpp
     iofile.cpp
     iofile.h
+    layout.h
 )
 
 include(GNUInstallDirs)

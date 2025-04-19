@@ -2,21 +2,16 @@
 #include <FL/Fl_Box.H>
 using namespace std;
 
-void new_box(
-    string_view name, string_view parent, mmap data)
-{    
-    Fl_Box* widg;
-    string label;
-    if (get_minion_string(data, "LABEL", label)) {
-        widg = new Fl_Box(0, 0, 0, 0, label.c_str());
-    } else {
-        widg = new Fl_Box(0, 0, 0, 0);
+// *** Non-layout widgets ***
+
+Fl_Widget *NEW_Box(
+    string_view name, mlist do_list)
+{
+    auto widg = new Fl_Box(0, 0, 0, 0);
+    for (const auto &cmd : do_list) {
+        mlist m = get<mlist>(cmd);
+        string_view c = get<string>(m.at(0));
+        //_widget_methods(widg, c, m);
     }
-    new WidgetData("Box", name, widg);
-    // set boxtype
-    //widget_set_box(name, data); NO, it assumes the field is present
-    string s;
-    if (get_minion_string(data, "BOXTYPE", s)) {
-        widg->box(magic_enum::enum_cast<Fl_Boxtype>(s).value());
-    }
+    return widg;
 }

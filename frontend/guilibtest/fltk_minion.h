@@ -17,8 +17,8 @@ using minion::read_minion;
 #define MAGIC_ENUM_RANGE_MAX 255
 #include "magic_enum/magic_enum.hpp"
 
-using method = std::function<void(Fl_Widget *, mmap)>;
-using member_map = std::map<std::string_view, method>;
+//using method = std::function<void(Fl_Widget *, mmap)>;
+//using member_map = std::map<std::string_view, method>;
 
 // The user_data in Fl_Widget is used to store additional fields,
 // primarily the widget's name and type. As the original user-data feature

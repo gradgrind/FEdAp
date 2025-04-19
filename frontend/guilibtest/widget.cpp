@@ -25,6 +25,11 @@ mlist list_widgets()
     return keys;
 }
 
+//TODO: static
+WidgetData::add_widget_data(
+    string_view name, Fl_Widget *w, method_handler h)
+{}
+
 WidgetData::WidgetData(
     string_view w_type, string_view w_name, Fl_Widget *widget)
     : Fl_Callback_User_Data()
@@ -47,6 +52,7 @@ WidgetData::WidgetData(
 void WidgetData::add_widget(
     Fl_Widget *w)
 {
+    //TODO: Unnamed widgets are probably not what I really want ...
     // Allow unnamed widgets. These are not placed in the map.
     if (wname.empty())
         return;

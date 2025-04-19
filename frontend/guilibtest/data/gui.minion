@@ -4,46 +4,51 @@ GUI: [
   {
     NEW: Window
     NAME: MainWindow
-    WIDTH: &APP_WIDTH
-    HEIGHT: &APP_HEIGHT
-    COLOUR: ffffff
+    DO: [
+      [WIDTH &APP_WIDTH]
+      [HEIGHT &APP_HEIGHT]
+      [COLOUR ffffff]
+    ]
   }
   {
-    NEW: VBox
+    NEW: Vlayout
     NAME: l_MainWindow
-    PARENT: MainWindow
-    WIDTH: &APP_WIDTH
-    HEIGHT: &APP_HEIGHT
+    PARENT: l_MainWindow
+    DO: [
+      [WIDTH &APP_WIDTH]
+      [HEIGHT &APP_HEIGHT]
+    ]
   }
   {
-    NEW: Panel
+    NEW: Box
     NAME: P1
-    LABEL: "Panel 1"
     PARENT: l_MainWindow
-    BOXTYPE: FL_BORDER_BOX
-    COLOUR: 00ff00
-    FIXED: 200
+    DO: [
+      [LABEL "Panel 1"]
+      [BOXTYPE FL_BORDER_BOX]
+      [COLOUR 00ff00]
+      [FIXED 200]
+    ]
   }
   {
-    NEW: Panel
+    NEW: Box
     NAME: P2
-    LABEL: "Panel 2"
     PARENT: l_MainWindow
-    BOXTYPE: FL_ENGRAVED_BOX
-    COLOUR: ffff00
-    FIXED: 200
+    DO: [
+      [LABEL "Panel 2"]
+      [BOXTYPE FL_ENGRAVED_BOX]
+      [COLOUR ffff00]
+      [FIXED 200]
+    ]
   }
   
   
   {
     WIDGET: MainWindow
     DO: [
-      {RESIZABLE: l_MainWindow}
-      {
-        METHOD: callback
-        WITH: main_callback 
-      }
-      {METHOD: show}
+      [RESIZABLE l_MainWindow]
+      [CALLBACK main_callback]
+      [SHOW]
     ]
   }
   {FUNCTION: RUN} # Enter main event loop
@@ -51,4 +56,4 @@ GUI: [
 
 # How to deal with callbacks and other events?
 # If a widget is deleted, all its children will be deleted too,
-# so the name should be removed from the widget map.
+# so the names should be removed from the widget map.

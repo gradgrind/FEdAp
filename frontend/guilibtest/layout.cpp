@@ -1,65 +1,122 @@
-#include "fltk_minion.h"
+#include "layout.h"
+//#include "fltk_minion.h"
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Grid.H>
 using namespace std;
+#include "minion.h"
+#include <fmt/format.h>
+using mlist = minion::MinionList;
 
-// "Group" widgets
+// *** "Group" widgets ***
 
-void new_window(
-    string_view name, string_view parent, mmap data)
+void widget_methods(
+    Fl_Widget *w, string_view c, mlist m)
+{
+    int ww, wh;
+    if (c == "SIZE") {
+        ww = stoi(get<string>(m.at(1)));
+        wh = stoi(get<string>(m.at(2)));
+        w->size(ww, wh);
+    } else {
+        throw fmt::format("Unknown widget method: {}", c);
+    }
+}
+
+void group_methods(
+    Fl_Widget *w, string_view c, mlist m)
+{
+    if (c == "???") {
+        // TODO
+    } else {
+        widget_methods(w, c, m);
+    }
+}
+
+void flex_methods(
+    Fl_Widget *w, string_view c, mlist m)
+{
+    if (c == "???") {
+        // TODO
+    } else {
+        group_methods(w, c, m);
+    }
+}
+
+void grid_methods(
+    Fl_Widget *w, string_view c, mlist m)
+{
+    if (c == "???") {
+        // TODO
+    } else {
+        group_methods(w, c, m);
+    }
+}
+
+Fl_Widget *NEW_Window(
+    string_view name, mlist do_list)
 {
     int w = 800;
-    get_minion_int(data, "WIDTH", w);
     int h = 600;
-    get_minion_int(data, "HEIGHT", h);
+    mlist do_stripped;
+    for (const auto &cmd : do_list) {
+        mlist m = get<mlist>(cmd);
+        string_view c = get<string>(m.at(0));
+        if (c == "WIDTH") {
+            w = stoi(get<string>(m.at(1)));
+        } else if (c == "HEIGHT") {
+            h = stoi(get<string>(m.at(1)));
+        } else {
+            do_stripped.emplace_back(m);
+        }
+    }
+
     auto widg = new Fl_Double_Window(w, h);
-    //TODO: widg->end(), or null current group, or ...?
-    new WidgetData("Group:Window:Double", name, widg);
+    Fl_Group::current(0); // disable "auto-grouping"
+
+    for (const auto &cmd : do_stripped) {
+        mlist m = get<mlist>(cmd);
+        string_view c = get<string>(m.at(0));
+        group_methods(widg, c, m);
+    }
+    return widg;
 }
 
-void new_flex(
-    string_view name, string_view parent, mmap data)
+Fl_Widget *NEW_Vlayout(
+    string_view name, mlist do_list)
 {
-    string orientation;
-    get_minion_string(data, "ORIENTATION", orientation);
-    auto widg = new Fl_Flex((orientation == "HORIZONTAL") ? Fl_Flex::ROW : Fl_Flex::COLUMN);
-    //TODO: widg->end(), or null current group, or ...?
-    new WidgetData("Group:Flex", name, widg);
+    auto widg = new Fl_Flex(Fl_Flex::COLUMN);
+    Fl_Group::current(0); // disable "auto-grouping"
+    for (const auto &cmd : do_list) {
+        mlist m = get<mlist>(cmd);
+        string_view c = get<string>(m.at(0));
+        flex_methods(widg, c, m);
+    }
+    return widg;
 }
 
-void new_grid(
-    string_view name, string_view parent, mmap data)
+Fl_Widget *NEW_Hlayout(
+    string_view name, mlist do_list)
+{
+    auto widg = new Fl_Flex(Fl_Flex::ROW);
+    Fl_Group::current(0); // disable "auto-grouping"
+    for (const auto &cmd : do_list) {
+        mlist m = get<mlist>(cmd);
+        string_view c = get<string>(m.at(0));
+        flex_methods(widg, c, m);
+    }
+    return widg;
+}
+
+Fl_Widget *NEW_Grid(
+    string_view name, mlist do_list)
 {
     auto widg = new Fl_Grid(0, 0, 0, 0);
-    //TODO: widg->end(), or null current group, or ...?
-    new WidgetData("Group:Grid", name, widg);
-}
-
-void _parm_widget_name(
-    const mmap data, string &name)
-{
-    if (!get_minion_string(data, "NAME", name)) {
-        throw fmt::format("Function '{}':\n no 'NAME' field", minion::dump_map_items(data, -1));
+    Fl_Group::current(0); // disable "auto-grouping"
+    for (const auto &cmd : do_list) {
+        mlist m = get<mlist>(cmd);
+        string_view c = get<string>(m.at(0));
+        grid_methods(widg, c, m);
     }
-}
-
-void _parm_set_parent(
-    const mmap data, Fl_Widget *widg)
-{
-    string parent;
-    if (get_minion_string(data, "PARENT", parent) && !parent.empty()) {
-        static_cast<Fl_Group *>(get_widget(parent))->add(widg);
-    }
-}
-
-void _new_grid(
-    mmap data)
-{
-    string name;
-    _parm_widget_name(data, name);
-    auto widg = new Fl_Grid(0, 0, 0, 0);
-    Fl_Group::current(0);
-    new WidgetData("Group:Grid", name, widg);
-    _parm_set_parent(data, widg);
+    return widg;
 }
