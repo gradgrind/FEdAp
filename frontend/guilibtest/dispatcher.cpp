@@ -32,10 +32,10 @@ void Handle_NEW(
         }
         string parent;
         if (get_minion_string(m, "PARENT", parent)) {
-            static_cast<Fl_Group*>(get_widget(parent))->add(w);
+            static_cast<Fl_Group*>(WidgetData::get_widget(parent))->add(w);
         }
         //TODO
-        WidgetData::add_widget_data(name, w, h);
+        WidgetData::add_widget(name, w, h);
         //TODO: handle methods
 
         return;

@@ -1,12 +1,20 @@
 #include "fltk_minion.h"
+#include "layout.h"
+#include <iostream>
 using namespace std;
 
-unordered_map<string_view, int> widget_type_map;
-vector<string_view> widget_type_names;
-vector<member_map> widget_type_vec;
-unordered_map<string_view, Fl_Widget *> widget_map;
+// static
+mlist WidgetData::list_widgets()
+{
+    mlist keys;
+    for (const auto &kv : widget_map) {
+        keys.emplace_back(string{kv.first});
+    }
+    return keys;
+}
 
-Fl_Widget *get_widget(
+// static
+Fl_Widget *WidgetData::get_widget(
     string_view name)
 {
     try {
@@ -16,76 +24,46 @@ Fl_Widget *get_widget(
     }
 }
 
-mlist list_widgets()
-{
-    mlist keys;
-    for (const auto &kv : widget_map) {
-        keys.emplace_back(string{kv.first});
-    }
-    return keys;
-}
-
-//TODO: static
-WidgetData::add_widget_data(
+// static
+void WidgetData::add_widget(
     string_view name, Fl_Widget *w, method_handler h)
-{}
+{
+    if (widget_map.contains(name)) {
+        throw fmt::format("Widget name already exists: {}", name);
+    }
+    auto wd = new WidgetData(name, h);
+    widget_map.emplace(wd->w_name, w);
+    w->user_data(wd, true); // auto-free = true
+}
 
 WidgetData::WidgetData(
-    string_view w_type, string_view w_name, Fl_Widget *widget)
+    string_view wname, method_handler h)
     : Fl_Callback_User_Data()
-    , wname{w_name}
+    , w_name{wname}
+    , handle_method{h}
 {
-    int i;
-    if (widget_type_map.contains(w_type)) {
-        i = widget_type_map.at(w_type);
-    } else {
-        i = widget_type_vec.size();
-        widget_type_names.push_back(w_type);
-        widget_type_vec.push_back(member_map{});
-        widget_type_map.emplace(w_type, i);
-    }
-    wtype = i;
-    add_widget(widget);
-    widget->user_data(this, true);
+    //TODO: widget type?
 }
 
-void WidgetData::add_widget(
-    Fl_Widget *w)
-{
-    //TODO: Unnamed widgets are probably not what I really want ...
-    // Allow unnamed widgets. These are not placed in the map.
-    if (wname.empty())
-        return;
-    if (widget_map.contains(wname)) {
-        throw fmt::format("Widget name already exists: {}", wname);
-    }
-    widget_map.emplace(wname, w);
-}
-
-void WidgetData::remove_widget(
-    std::string_view name)
-{
-    // Allow unnamed widgets. These are not placed in the map.
-    if (wname.empty())
-        return;
-    if (widget_map.erase(wname) == 0) {
-        throw fmt::format("Can't remove widget '{}', it doesn't exist", wname);
-    }
-}
-
-// The user data might need deleting
+// The destructor is called when the widget to which this WidgetData is
+// attached is deleted – if the widget's user-data was set with auto-free
+// true. The widget reference must be removed from widget_map and the
+// user-data associated with the WidgetData might need deleting.
 WidgetData::~WidgetData()
 {
-    remove_widget(wname);
+    if (widget_map.erase(w_name) == 0) {
+        cerr << fmt::format("Can't remove widget '{}', it doesn't exist", w_name) << endl;
+    }
     if (auto_delete_user_data && user_data)
         delete static_cast<Fl_Callback_User_Data *>(user_data);
 }
 
 string_view WidgetData::widget_name()
 {
-    return wname;
+    return w_name;
 }
 
+/*
 int WidgetData::widget_type()
 {
     return wtype;
@@ -96,11 +74,10 @@ string_view WidgetData::widget_type_name()
     auto i = widget_type();
     return widget_type_names[i];
 }
+*/
 
 void WidgetData::do_method(
-    Fl_Widget *widget, string_view name, mmap data)
+    Fl_Widget *widget, string_view name, mlist cmd)
 {
-    auto members = widget_type_vec.at(wtype);
-    auto m = members.at(name);
-    m(widget, data);
+    handle_method(widget, name, cmd);
 }
