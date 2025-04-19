@@ -1,5 +1,5 @@
 #include "layout.h"
-//#include "fltk_minion.h"
+#include "widget_methods.h"
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Grid.H>
@@ -11,7 +11,7 @@ using mmap = minion::MinionMap;
 
 // *** "Group" widgets ***
 
-void widget_methods(
+void widget_method(
     Fl_Widget *w, string_view c, mlist m)
 {
     int ww, wh;
@@ -19,28 +19,39 @@ void widget_methods(
         ww = stoi(get<string>(m.at(1))); // width
         wh = stoi(get<string>(m.at(2))); // height
         w->size(ww, wh);
+    } else if (c == "COLOUR") {
+        auto clr = get_colour(get<string>(m.at(1)));
+        w->color(clr);
+    } else if (c == "BOXTYPE") {
+        auto bxt = get_boxtype(get<string>(m.at(1)));
+        w->box(bxt);
+    } else if (c == "LABEL") {
+        auto lbl = get<string>(m.at(1));
+        w->copy_label(lbl.c_str());
     } else {
         throw fmt::format("Unknown widget method: {}", c);
     }
 }
 
-void group_methods(
+void group_method(
     Fl_Widget *w, string_view c, mlist m)
 {
     if (c == "???") {
         // TODO
     } else {
-        widget_methods(w, c, m);
+        widget_method(w, c, m);
     }
 }
 
 void flex_methods(
     Fl_Widget *w, string_view c, mlist m)
 {
-    if (c == "???") {
-        // TODO
+    if (c == "FIXED") {
+        auto parent = static_cast<Fl_Flex *>(w->parent());
+        int sz = stoi(get<string>(m.at(1)));
+        parent->fixed(w, sz);
     } else {
-        group_methods(w, c, m);
+        group_method(w, c, m);
     }
 }
 
@@ -50,7 +61,7 @@ void grid_methods(
     if (c == "???") {
         // TODO
     } else {
-        group_methods(w, c, m);
+        group_method(w, c, m);
     }
 }
 

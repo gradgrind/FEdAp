@@ -1,6 +1,10 @@
-#include "fltk_minion.h"
+//#include "fltk_minion.h"
 #include "layout.h"
+#include "minion.h"
 #include <FL/Fl_Group.H>
+#include <fmt/format.h>
+using mmap = minion::MinionMap;
+using mlist = minion::MinionList;
 using namespace std;
 
 void Handle_methods(
@@ -20,10 +24,10 @@ void Handle_NEW(
     string name;
     Fl_Widget* w;
     method_handler h;
-    if (get_minion_string(m, "NAME", name)) {
+    if (m.get_string("NAME", name)) {
         if (wtype == "Window") {
             w = NEW_Window(name, m);
-            h = group_methods;
+            h = group_method;
         } else if (wtype == "Vlayout") {
             w = NEW_Vlayout(name, m);
             h = flex_methods;
@@ -37,7 +41,7 @@ void Handle_NEW(
             throw fmt::format("Unknown widget type: {}", wtype);
         }
         string parent;
-        if (get_minion_string(m, "PARENT", parent)) {
+        if (m.get_string("PARENT", parent)) {
             static_cast<Fl_Group*>(WidgetData::get_widget(parent))->add(w);
         }
         // Add a WidgetData as "user data" to the widget
@@ -56,14 +60,14 @@ void GUI(
     mmap obj)
 {
     string w;
-    if (get_minion_string(obj, "NEW", w)) {
+    if (obj.get_string("NEW", w)) {
         Handle_NEW(w, obj);
-    } else if (get_minion_string(obj, "WIDGET", w)) {
+    } else if (obj.get_string("WIDGET", w)) {
         // Handle methods
         auto widg = WidgetData::get_widget(w);
         auto wd{static_cast<WidgetData*>(widg->user_data())};
         Handle_methods(widg, obj, wd->handle_method);
-    } else if (get_minion_string(obj, "FUNCTION", w)) {
+    } else if (obj.get_string("FUNCTION", w)) {
         auto f = function_map.at(w);
         f(obj);
     } else {

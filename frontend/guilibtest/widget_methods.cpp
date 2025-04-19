@@ -1,7 +1,26 @@
 #include "widget_methods.h"
+#define MAGIC_ENUM_RANGE_MIN 0
+#define MAGIC_ENUM_RANGE_MAX 255
+#include "magic_enum/magic_enum.hpp"
+#include <fmt/format.h>
 using namespace std;
 
-//TODO: move somewhere more appropriate ... DEPRECATED? see minion.h
+Fl_Color get_colour(
+    string& colour)
+{
+    if (colour.length() == 6) {
+        return static_cast<Fl_Color>(stoi(colour, nullptr, 16)) * 0x100;
+    }
+    throw fmt::format("Invalid colour: '{}'", colour);
+}
+
+Fl_Boxtype get_boxtype(
+    string& boxtype)
+{
+    return magic_enum::enum_cast<Fl_Boxtype>(boxtype).value();
+}
+
+/*TODO: move somewhere more appropriate ... DEPRECATED? see minion.h
 int get_minion_int(
     mmap data, string_view key)
 {
@@ -47,73 +66,4 @@ bool get_minion_string(
     }
     return true;
 }
-
-Fl_Color _get_color(
-    mmap data)
-{
-    auto s = get_minion_string(data, "COLOUR");
-    if (s.length() == 6) {
-        return static_cast<Fl_Color>(stoi(s, nullptr, 16)) * 0x100;
-    }
-    throw fmt::format("Invalid color: '{}'", s);
-}
-
-Fl_Boxtype _get_boxtype(
-    mmap data)
-{
-    string s;
-    if (get_minion_string(data, "BOXTYPE", s)) {
-        return magic_enum::enum_cast<Fl_Boxtype>(s).value();
-    } else {
-        throw fmt::format("Invalid box type: '{}'", s);
-    }
-}
-
-// ---
-
-//OLD--
-void widget_set_size(
-    string_view name, mmap data)
-{
-    auto w = get_widget(name);
-    w->size(get_minion_int(data, "WIDTH"), get_minion_int(data, "HEIGHT"));
-}
-
-void widget_set_box(
-    string_view name, mmap data)
-{
-    auto w = get_widget(name);
-    w->box(_get_boxtype(data));
-}
-
-void widget_set_color(
-    string_view name, mmap data)
-{
-    auto w = get_widget(name);
-    w->color(_get_color(data));
-}
-
-//NEW++
-void _widget_set_size(
-    Fl_Widget* w, mmap data)
-{
-    w->size(get_minion_int(data, "WIDTH"), get_minion_int(data, "HEIGHT"));
-}
-
-void _widget_set_box(
-    Fl_Widget* w, mmap data)
-{
-    w->box(_get_boxtype(data));
-}
-
-void _widget_set_color(
-    Fl_Widget* w, mmap data)
-{
-    w->color(_get_color(data));
-}
-
-member_map widget_methods{{"set_size", _widget_set_size},
-                          {"set_box", _widget_set_box},
-                          {"set_color", _widget_set_color}};
-// Each subclass has its own map, constructed by COPYING the parent class
-// map and adding its own methods
+*/

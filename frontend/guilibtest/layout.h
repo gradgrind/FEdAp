@@ -14,8 +14,8 @@ Fl_Widget *NEW_Grid(std::string_view name, minion::MinionMap cmd);
 using method_handler = std::function<void(Fl_Widget *, std::string_view, minion::MinionList)>;
 void grid_methods(Fl_Widget *w, std::string_view c, minion::MinionList m);
 void flex_methods(Fl_Widget *w, std::string_view c, minion::MinionList m);
-void group_methods(Fl_Widget *w, std::string_view c, minion::MinionList m);
-void widget_methods(Fl_Widget *w, std::string_view c, minion::MinionList m);
+void group_method(Fl_Widget *w, std::string_view c, minion::MinionList m);
+void widget_method(Fl_Widget *w, std::string_view c, minion::MinionList m);
 
 class WidgetData : public Fl_Callback_User_Data
 {

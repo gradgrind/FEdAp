@@ -612,6 +612,17 @@ bool MinionMap::get_int(
     return false;
 }
 
+bool MinionMap::get_string(
+    string_view key, string &value)
+{
+    auto s = get(key);
+    if (holds_alternative<string>(s)) {
+        value = get<string>(s);
+        return true;
+    }
+    return true;
+}
+
 } // namespace minion
 
 void test_minion(

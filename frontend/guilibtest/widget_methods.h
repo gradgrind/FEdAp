@@ -1,10 +1,10 @@
 #ifndef WIDGET_METHODS_H
 #define WIDGET_METHODS_H
 
-#include "fltk_minion.h"
+#include <FL/Enumerations.H>
+#include <string>
 
-void widget_set_size(std::string_view name, mmap data);
-void widget_set_box(std::string_view name, mmap data);
-void widget_set_color(std::string_view name, mmap data);
+Fl_Color get_colour(std::string &colour);
+Fl_Boxtype get_boxtype(std::string &boxtype);
 
 #endif // WIDGET_METHODS_H
