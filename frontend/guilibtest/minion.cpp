@@ -600,6 +600,18 @@ bool Minion::get_map(
     } // end of loop
 }
 
+bool MinionMap::get_int(
+    string_view key, int &value)
+{
+    auto s = get(key);
+    if (holds_alternative<string>(s)) {
+        // Read as integer
+        value = stoi(get<string>(s));
+        return true;
+    }
+    return false;
+}
+
 } // namespace minion
 
 void test_minion(

@@ -4,9 +4,9 @@ GUI: [
   {
     NEW: Window
     NAME: MainWindow
+    WIDTH: &APP_WIDTH
+    HEIGHT: &APP_HEIGHT
     DO: [
-      [WIDTH &APP_WIDTH]
-      [HEIGHT &APP_HEIGHT]
       [COLOUR ffffff]
     ]
   }
@@ -15,8 +15,7 @@ GUI: [
     NAME: l_MainWindow
     PARENT: l_MainWindow
     DO: [
-      [WIDTH &APP_WIDTH]
-      [HEIGHT &APP_HEIGHT]
+      [SIZE &APP_WIDTH &APP_HEIGHT]
     ]
   }
   {

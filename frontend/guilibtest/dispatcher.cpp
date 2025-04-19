@@ -3,6 +3,17 @@
 #include <FL/Fl_Group.H>
 using namespace std;
 
+void Handle_methods(
+    Fl_Widget* w, mmap m, method_handler h)
+{
+    mlist do_list = get<mlist>(m.get("DO"));
+    for (const auto& cmd : do_list) {
+        mlist m = get<mlist>(cmd);
+        string_view c = get<string>(m.at(0));
+        h(w, c, m);
+    }
+}
+
 void Handle_NEW(
     string_view wtype, mmap m)
 {
@@ -10,23 +21,18 @@ void Handle_NEW(
     Fl_Widget* w;
     method_handler h;
     if (get_minion_string(m, "NAME", name)) {
-        mlist do_list = get<mlist>(m.get("DO"));
         if (wtype == "Window") {
-            w = NEW_Window(name, do_list);
+            w = NEW_Window(name, m);
             h = group_methods;
-            //new WidgetData("Group:Window:Double", name, w);
         } else if (wtype == "Vlayout") {
-            w = NEW_Vlayout(name, do_list);
+            w = NEW_Vlayout(name, m);
             h = flex_methods;
-            //new WidgetData("Group:Flex", name, w);
         } else if (wtype == "Hlayout") {
-            w = NEW_Hlayout(name, do_list);
+            w = NEW_Hlayout(name, m);
             h = flex_methods;
-            //new WidgetData("Group:Flex", name, w);
         } else if (wtype == "Grid") {
-            w = NEW_Grid(name, do_list);
+            w = NEW_Grid(name, m);
             h = grid_methods;
-            //new WidgetData("Group:Grid", name, w);
         } else {
             throw fmt::format("Unknown widget type: {}", wtype);
         }
@@ -34,84 +40,17 @@ void Handle_NEW(
         if (get_minion_string(m, "PARENT", parent)) {
             static_cast<Fl_Group*>(WidgetData::get_widget(parent))->add(w);
         }
-        //TODO
+        // Add a WidgetData as "user data" to the widget
         WidgetData::add_widget(name, w, h);
-        //TODO: handle methods
-
+        // Handle methods
+        Handle_methods(w, m, h);
         return;
     }
     throw fmt::format("Bad NEW command: {}", minion::dump_map_items(m, -1));
 }
 
-void Handle_WIDGET(
-    Fl_Widget* w, mlist param)
-{
-    //TODO: This needs to find the correct starting point in the method-
-    // handler hierarchy ...
-}
-
-// *** Dispatch table for widget-creation functions
-// First create a function template
-using new_widget_func = function<void(string_view name, string_view parent, mmap data)>;
-// Create the map object
-using function_map = unordered_map<string_view, new_widget_func>;
-function_map fmap{{"Window", new_window}, {"Flex", new_flex}, {"Grid", new_grid}, {"Box", new_box}};
-
-// Call a method of a given widget, passing any parameters as a mmap object.
-void gui(
-    string_view widget, string_view method, mmap data)
-{}
-
-// The widget-creation functions could be treated as methods
-// on a group parent. That means there would need to be a sort of
-// top-level set of functions (i.e. not really methods) which are
-// accessible to the group widgets. The newly-created widgets would
-// be added to the parent group. This could look like:
-//    gui("MyParent", "Box", R"({"name": "MyWidget")")
-// As a special case, parent = "" could create unattached widgets.
-// A main window would be one of these.
-
-// On the other hand, it might be nice to have a widget definition
-// of the form:
-//    gui("MyWidget", "Box", ...)
-// That might require placing its parent in the data:
-//    gui("MyWidget", "Box", R"({"parent": "MyParent"})")
-// In this case, the widget-creation functions should not be available
-// as methods on any particular widget (type), but only accessible if
-// the widget (name) is undefined, including "" (in which case there
-// must be a parent?).
-
-// Another possibility might be a distinct creation function, say:
-//    gui_new("MyWidget", "Box", "MyParent", ...)
-// That might be the most "logical", so let's do it for now.
-
-void gui_new(
-    string_view name, string_view widget_type, string_view parent, mmap data)
-{
-    try {
-        auto fn = fmap.at(widget_type);
-        fn(name, parent, data);
-    } catch (const std::out_of_range& e) {
-        throw fmt::format("Unknown widget type: {} ({})", widget_type, e.what());
-    }
-}
-
-// NEW ...
-using _new_widget_func = function<void(mmap data)>;
-using _function_map = unordered_map<string_view, _new_widget_func>;
-_function_map fn_map{};
-
-void widget_method(
-    Fl_Widget* w, mmap obj)
-{
-    auto wd{static_cast<WidgetData*>(w->user_data())};
-    string m;
-    if (get_minion_string(obj, "M", m)) {
-        wd->do_method(w, m, obj);
-    } else {
-        throw fmt::format("Invalid method on {}: {}", wd->widget_name(), dump_map_items(obj, -1));
-    }
-}
+using function_handler = std::function<void(minion::MinionMap)>;
+unordered_map<string, function_handler> function_map;
 
 void GUI(
     mmap obj)
@@ -120,13 +59,13 @@ void GUI(
     if (get_minion_string(obj, "NEW", w)) {
         Handle_NEW(w, obj);
     } else if (get_minion_string(obj, "WIDGET", w)) {
-        mlist do_list = get<mlist>(obj.get("DO"));
-        auto widg = get_widget(w);
-        Handle_WIDGET(widg, do_list);
+        // Handle methods
+        auto widg = WidgetData::get_widget(w);
+        auto wd{static_cast<WidgetData*>(widg->user_data())};
+        Handle_methods(widg, obj, wd->handle_method);
     } else if (get_minion_string(obj, "FUNCTION", w)) {
-        //TODO
-        //auto f = function_map.at(w);
-        //f(obj);
+        auto f = function_map.at(w);
+        f(obj);
     } else {
         throw fmt::format("Invalid GUI parameters: {}", dump_map_items(obj, -1));
     }

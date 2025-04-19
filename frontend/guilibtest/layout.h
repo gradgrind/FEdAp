@@ -6,10 +6,10 @@
 #include <functional>
 #include <string_view>
 
-Fl_Widget *NEW_Window(std::string_view name, minion::MinionList do_list);
-Fl_Widget *NEW_Vlayout(std::string_view name, minion::MinionList do_list);
-Fl_Widget *NEW_Hlayout(std::string_view name, minion::MinionList do_list);
-Fl_Widget *NEW_Grid(std::string_view name, minion::MinionList do_list);
+Fl_Widget *NEW_Window(std::string_view name, minion::MinionMap cmd);
+Fl_Widget *NEW_Vlayout(std::string_view name, minion::MinionMap cmd);
+Fl_Widget *NEW_Hlayout(std::string_view name, minion::MinionMap cmd);
+Fl_Widget *NEW_Grid(std::string_view name, minion::MinionMap cmd);
 
 using method_handler = std::function<void(Fl_Widget *, std::string_view, minion::MinionList)>;
 void grid_methods(Fl_Widget *w, std::string_view c, minion::MinionList m);
@@ -30,8 +30,6 @@ class WidgetData : public Fl_Callback_User_Data
     void *user_data = nullptr;
     bool auto_delete_user_data = false;
 
-    method_handler handle_method;
-
     WidgetData(std::string_view w_name, method_handler h);
 
 public:
@@ -41,12 +39,13 @@ public:
     static Fl_Widget *get_widget(std::string_view name);
     static minion::MinionList list_widgets();
 
+    method_handler handle_method;
+
     void remove_widget(std::string_view name);
 
     std::string_view widget_name();
     //int widget_type();
     //std::string_view widget_type_name();
-    void do_method(Fl_Widget *widget, std::string_view name, minion::MinionList data);
 };
 
 #endif // LAYOUT_H

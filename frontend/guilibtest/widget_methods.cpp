@@ -1,7 +1,7 @@
 #include "widget_methods.h"
 using namespace std;
 
-//TODO: move somewhere more appropriate ...
+//TODO: move somewhere more appropriate ... DEPRECATED? see minion.h
 int get_minion_int(
     mmap data, string_view key)
 {
@@ -51,7 +51,7 @@ bool get_minion_string(
 Fl_Color _get_color(
     mmap data)
 {
-    auto s = get_minion_string(data, "COLOR");
+    auto s = get_minion_string(data, "COLOUR");
     if (s.length() == 6) {
         return static_cast<Fl_Color>(stoi(s, nullptr, 16)) * 0x100;
     }

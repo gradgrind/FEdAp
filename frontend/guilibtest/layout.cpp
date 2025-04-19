@@ -7,6 +7,7 @@ using namespace std;
 #include "minion.h"
 #include <fmt/format.h>
 using mlist = minion::MinionList;
+using mmap = minion::MinionMap;
 
 // *** "Group" widgets ***
 
@@ -15,8 +16,8 @@ void widget_methods(
 {
     int ww, wh;
     if (c == "SIZE") {
-        ww = stoi(get<string>(m.at(1)));
-        wh = stoi(get<string>(m.at(2)));
+        ww = stoi(get<string>(m.at(1))); // width
+        wh = stoi(get<string>(m.at(2))); // height
         w->size(ww, wh);
     } else {
         throw fmt::format("Unknown widget method: {}", c);
@@ -54,69 +55,37 @@ void grid_methods(
 }
 
 Fl_Widget *NEW_Window(
-    string_view name, mlist do_list)
+    mmap param)
 {
     int w = 800;
     int h = 600;
-    mlist do_stripped;
-    for (const auto &cmd : do_list) {
-        mlist m = get<mlist>(cmd);
-        string_view c = get<string>(m.at(0));
-        if (c == "WIDTH") {
-            w = stoi(get<string>(m.at(1)));
-        } else if (c == "HEIGHT") {
-            h = stoi(get<string>(m.at(1)));
-        } else {
-            do_stripped.emplace_back(m);
-        }
-    }
-
+    param.get_int("WIDTH", w);
+    param.get_int("HEIGHT", h);
     auto widg = new Fl_Double_Window(w, h);
     Fl_Group::current(0); // disable "auto-grouping"
-
-    for (const auto &cmd : do_stripped) {
-        mlist m = get<mlist>(cmd);
-        string_view c = get<string>(m.at(0));
-        group_methods(widg, c, m);
-    }
     return widg;
 }
 
 Fl_Widget *NEW_Vlayout(
-    string_view name, mlist do_list)
+    mmap param)
 {
     auto widg = new Fl_Flex(Fl_Flex::COLUMN);
     Fl_Group::current(0); // disable "auto-grouping"
-    for (const auto &cmd : do_list) {
-        mlist m = get<mlist>(cmd);
-        string_view c = get<string>(m.at(0));
-        flex_methods(widg, c, m);
-    }
     return widg;
 }
 
 Fl_Widget *NEW_Hlayout(
-    string_view name, mlist do_list)
+    mmap param)
 {
     auto widg = new Fl_Flex(Fl_Flex::ROW);
     Fl_Group::current(0); // disable "auto-grouping"
-    for (const auto &cmd : do_list) {
-        mlist m = get<mlist>(cmd);
-        string_view c = get<string>(m.at(0));
-        flex_methods(widg, c, m);
-    }
     return widg;
 }
 
 Fl_Widget *NEW_Grid(
-    string_view name, mlist do_list)
+    mmap param)
 {
     auto widg = new Fl_Grid(0, 0, 0, 0);
     Fl_Group::current(0); // disable "auto-grouping"
-    for (const auto &cmd : do_list) {
-        mlist m = get<mlist>(cmd);
-        string_view c = get<string>(m.at(0));
-        grid_methods(widg, c, m);
-    }
     return widg;
 }

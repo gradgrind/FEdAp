@@ -75,9 +75,3 @@ string_view WidgetData::widget_type_name()
     return widget_type_names[i];
 }
 */
-
-void WidgetData::do_method(
-    Fl_Widget *widget, string_view name, mlist cmd)
-{
-    handle_method(widget, name, cmd);
-}

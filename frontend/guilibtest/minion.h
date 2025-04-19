@@ -48,6 +48,7 @@ class MinionMap : public std::vector<MinionMapPair>
 {
 public:
     MinionValue get(std::string_view key);
+    bool get_int(std::string_view key, int &value);
 };
 
 class MinionList : public std::vector<MinionValue>
