@@ -3,6 +3,7 @@
 #include "widget_methods.h"
 #include "widgets.h"
 #include <FL/fl_draw.H>
+//#include <fmt/format.h>
 #include <iostream>
 using namespace std;
 
@@ -71,15 +72,15 @@ void rowtable_method(
         static_cast<RowTable *>(w)->col_headers.clear();
         int n = m.size() - 1;
         static_cast<RowTable *>(w)->set_cols(n);
-        for (int i = 1; i <= n; ++i) {
-            static_cast<RowTable *>(w)->col_headers.emplace_back(get<string>(m.at(i)));
+        for (int i = 0; i < n; ++i) {
+            static_cast<RowTable *>(w)->col_headers[i] = get<string>(m.at(i + 1));
         }
     } else if (c == "row_headers") {
         static_cast<RowTable *>(w)->row_headers.clear();
         int n = m.size() - 1;
         static_cast<RowTable *>(w)->set_rows(n);
-        for (int i = 1; i < m.size(); ++i) {
-            static_cast<RowTable *>(w)->row_headers.emplace_back(get<string>(m.at(i)));
+        for (int i = 0; i < n; ++i) {
+            static_cast<RowTable *>(w)->row_headers[i] = get<string>(m.at(i + 1));
         }
     } else {
         widget_method(w, c, m);
@@ -93,8 +94,10 @@ void RowTable::set_cols(
     int nr = rows();
     cols(n);
     col_headers.resize(n);
-    for (int i = 0; i < nr; ++i) {
-        data.at(i).resize(n);
+    if (n && nr) {
+        for (int i = 0; i < nr; ++i) {
+            data.at(i).resize(n);
+        }
     }
 }
 
@@ -105,7 +108,9 @@ void RowTable::set_rows(
     int nc = cols();
     rows(n);
     row_headers.resize(n);
-    data.resize(n, vector<string>(nc));
+    if (n && nc) {
+        data.resize(n, vector<string>(nc));
+    }
 }
 
 Fl_Widget *NEW_RowTable(
@@ -117,7 +122,6 @@ Fl_Widget *NEW_RowTable(
 void RowTable::draw_cell(
     TableContext context, int ROW, int COL, int X, int Y, int W, int H)
 {
-    //static char s[40];
     switch (context) {
     case CONTEXT_STARTPAGE: // before page is drawn..
         //fl_font(FL_HELVETICA, 16); // set the font for our drawing operations
