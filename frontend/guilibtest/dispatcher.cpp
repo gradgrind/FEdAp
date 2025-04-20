@@ -40,9 +40,19 @@ void Handle_NEW(
         } else if (wtype == "Grid") {
             w = NEW_Grid(m);
             h = grid_method;
+            // *** End of layouts, start of other widgets
         } else if (wtype == "Box") {
             w = NEW_Box(m);
             h = widget_method;
+        } else if (wtype == "Choice") {
+            w = NEW_Choice(m);
+            h = choice_method;
+        } else if (wtype == "Output") {
+            w = NEW_Output(m);
+            h = input_method;
+        } else if (wtype == "RowTable") {
+            w = NEW_RowTable(m);
+            h = rowtable_method;
         } else {
             throw fmt::format("Unknown widget type: {}", wtype);
         }

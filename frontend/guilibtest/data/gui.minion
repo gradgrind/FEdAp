@@ -6,6 +6,7 @@ GUI: [
     NAME: MainWindow
     WIDTH: &APP_WIDTH
     HEIGHT: &APP_HEIGHT
+    #ESC_CLOSES: 1
     DO: [
       [COLOUR ffffff]
     ]
@@ -16,6 +17,7 @@ GUI: [
     PARENT: MainWindow
     DO: [
       [SIZE &APP_WIDTH &APP_HEIGHT]
+      [MARGIN 5]
     ]
   }
   {
@@ -40,13 +42,36 @@ GUI: [
       [FIXED 200]
     ]
   }
+  {
+    NEW: Choice
+    NAME: C1
+    PARENT: l_MainWindow
+    DO: [
+      [COLOUR ff8080]
+      [FIXED 40]
+      [ADD "First" "Second" "Third"]
+      [clear_visible_focus]
+    ]
+  }
+  {
+    NEW: Output
+    NAME: O1
+    PARENT: l_MainWindow
+    DO: [
+      [COLOUR ffc800]
+      [FIXED 40]
+      [VALUE "Read only ˝Öößŋħĸ€"]
+      [clear_visible_focus]
+      [LABEL "Label"]
+      [measure_label]
+    ]
+  }
   
   
   {
     WIDGET: MainWindow
     DO: [
       [RESIZABLE l_MainWindow]
-      [CALLBACK main_callback] #???
       [SHOW]
     ]
   }

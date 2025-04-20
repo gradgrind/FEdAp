@@ -20,6 +20,18 @@ Fl_Boxtype get_boxtype(
     return magic_enum::enum_cast<Fl_Boxtype>(boxtype).value();
 }
 
+int int_param(
+    minion::MinionList m, int i)
+{
+    return stoi(get<string>(m.at(1)));
+}
+
+Fl_Color colour_param(
+    minion::MinionList m, int i)
+{
+    return get_colour(get<string>(m.at(1)));
+}
+
 /*TODO: move somewhere more appropriate ... DEPRECATED? see minion.h
 int get_minion_int(
     mmap data, string_view key)

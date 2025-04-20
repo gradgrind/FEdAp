@@ -5,6 +5,7 @@
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Grid.H>
 #include <fmt/format.h>
+#include <iostream>
 using namespace std;
 using mlist = minion::MinionList;
 using mmap = minion::MinionMap;
@@ -16,8 +17,8 @@ void widget_method(
 {
     int ww, wh;
     if (c == "SIZE") {
-        ww = stoi(get<string>(m.at(1))); // width
-        wh = stoi(get<string>(m.at(2))); // height
+        ww = int_param(m, 1); // width
+        wh = int_param(m, 2); // height
         w->size(ww, wh);
     } else if (c == "COLOUR") {
         auto clr = get_colour(get<string>(m.at(1)));
@@ -36,12 +37,20 @@ void widget_method(
     } else if (c == "FIXED") {
         auto parent = dynamic_cast<Fl_Flex *>(w->parent());
         if (parent) {
-            int sz = stoi(get<string>(m.at(1)));
+            int sz = int_param(m, 1);
             parent->fixed(w, sz);
         } else {
             throw fmt::format("Widget ({}) method FIXED: parent not VLayout/Hlayout",
                               WidgetData::get_widget_name(w));
         }
+    } else if (c == "clear_visible_focus") {
+        w->clear_visible_focus();
+    } else if (c == "measure_label") {
+        int wl, hl;
+        w->measure_label(wl, hl);
+        //TODO ...
+        cout << "Measure " << WidgetData::get_widget_name(w) << " label: " << wl << ", " << hl
+             << endl;
     } else {
         throw fmt::format("Unknown widget method: {}", c);
     }
@@ -61,8 +70,9 @@ void group_method(
 void flex_method(
     Fl_Widget *w, string_view c, mlist m)
 {
-    if (c == "???") {
-        //TODO
+    if (c == "MARGIN") {
+        int sz = int_param(m, 1);
+        static_cast<Fl_Flex *>(w)->margin(sz);
     } else {
         group_method(w, c, m);
     }
@@ -78,6 +88,17 @@ void grid_method(
     }
 }
 
+void callback_no_esc_closes(
+    Fl_Widget *w, void *x)
+{
+    if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape)
+        return; // ignore Escape
+    //TODO: message to backend?
+    cout << "Closing " << WidgetData::get_widget_name(w) << endl;
+    //TODO--
+    exit(0);
+}
+
 Fl_Widget *NEW_Window(
     mmap param)
 {
@@ -86,6 +107,11 @@ Fl_Widget *NEW_Window(
     param.get_int("WIDTH", w);
     param.get_int("HEIGHT", h);
     auto widg = new Fl_Double_Window(w, h);
+    int esc_closes{0};
+    param.get_int("ESC_CLOSES", esc_closes);
+    if (!esc_closes)
+        widg->callback(callback_no_esc_closes);
+
     Fl_Group::current(0); // disable "auto-grouping"
     return widg;
 }
