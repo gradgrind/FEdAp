@@ -1,11 +1,11 @@
 #include "layout.h"
+#include "minion.h"
 #include "widget_methods.h"
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Grid.H>
-using namespace std;
-#include "minion.h"
 #include <fmt/format.h>
+using namespace std;
 using mlist = minion::MinionList;
 using mmap = minion::MinionMap;
 
@@ -28,6 +28,20 @@ void widget_method(
     } else if (c == "LABEL") {
         auto lbl = get<string>(m.at(1));
         w->copy_label(lbl.c_str());
+    } else if (c == "CALLBACK") {
+        auto cb = get<string>(m.at(1));
+        w->callback(do_callback);
+    } else if (c == "SHOW") {
+        w->show();
+    } else if (c == "FIXED") {
+        auto parent = dynamic_cast<Fl_Flex *>(w->parent());
+        if (parent) {
+            int sz = stoi(get<string>(m.at(1)));
+            parent->fixed(w, sz);
+        } else {
+            throw fmt::format("Widget ({}) method FIXED: parent not VLayout/Hlayout",
+                              WidgetData::get_widget_name(w));
+        }
     } else {
         throw fmt::format("Unknown widget method: {}", c);
     }
@@ -36,26 +50,25 @@ void widget_method(
 void group_method(
     Fl_Widget *w, string_view c, mlist m)
 {
-    if (c == "???") {
-        // TODO
+    if (c == "RESIZABLE") {
+        auto rsw = WidgetData::get_widget(get<string>(m.at(1)));
+        static_cast<Fl_Group *>(w)->resizable(rsw);
     } else {
         widget_method(w, c, m);
     }
 }
 
-void flex_methods(
+void flex_method(
     Fl_Widget *w, string_view c, mlist m)
 {
-    if (c == "FIXED") {
-        auto parent = static_cast<Fl_Flex *>(w->parent());
-        int sz = stoi(get<string>(m.at(1)));
-        parent->fixed(w, sz);
+    if (c == "???") {
+        //TODO
     } else {
         group_method(w, c, m);
     }
 }
 
-void grid_methods(
+void grid_method(
     Fl_Widget *w, string_view c, mlist m)
 {
     if (c == "???") {

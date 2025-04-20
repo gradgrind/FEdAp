@@ -8,9 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(FLTK 1.4 CONFIG REQUIRED)
 
 add_executable(guilibtest main.cpp
-    fltk_minion.h
+
     layout.cpp
-    widget.cpp
+    widgetdata.cpp
     dispatcher.cpp
     widget_methods.cpp
     widget_methods.h
@@ -21,6 +21,9 @@ add_executable(guilibtest main.cpp
     iofile.cpp
     iofile.h
     layout.h
+    widgets.h
+    functions.h
+    functions.cpp
 )
 
 include(GNUInstallDirs)

@@ -6,16 +6,21 @@
 #include <functional>
 #include <string_view>
 
-Fl_Widget *NEW_Window(std::string_view name, minion::MinionMap cmd);
-Fl_Widget *NEW_Vlayout(std::string_view name, minion::MinionMap cmd);
-Fl_Widget *NEW_Hlayout(std::string_view name, minion::MinionMap cmd);
-Fl_Widget *NEW_Grid(std::string_view name, minion::MinionMap cmd);
+//TODO ...
+void tmp_run(minion::MinionMap data);
+
+Fl_Widget *NEW_Window(minion::MinionMap param);
+Fl_Widget *NEW_Vlayout(minion::MinionMap param);
+Fl_Widget *NEW_Hlayout(minion::MinionMap param);
+Fl_Widget *NEW_Grid(minion::MinionMap param);
 
 using method_handler = std::function<void(Fl_Widget *, std::string_view, minion::MinionList)>;
-void grid_methods(Fl_Widget *w, std::string_view c, minion::MinionList m);
-void flex_methods(Fl_Widget *w, std::string_view c, minion::MinionList m);
+void grid_method(Fl_Widget *w, std::string_view c, minion::MinionList m);
+void flex_method(Fl_Widget *w, std::string_view c, minion::MinionList m);
 void group_method(Fl_Widget *w, std::string_view c, minion::MinionList m);
 void widget_method(Fl_Widget *w, std::string_view c, minion::MinionList m);
+
+void do_callback(Fl_Widget *w, void *x);
 
 class WidgetData : public Fl_Callback_User_Data
 {
@@ -38,6 +43,7 @@ public:
     static void add_widget(std::string_view name, Fl_Widget *w, method_handler h);
     static Fl_Widget *get_widget(std::string_view name);
     static minion::MinionList list_widgets();
+    static std::string_view get_widget_name(Fl_Widget *w);
 
     method_handler handle_method;
 

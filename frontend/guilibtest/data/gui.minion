@@ -13,7 +13,7 @@ GUI: [
   {
     NEW: Vlayout
     NAME: l_MainWindow
-    PARENT: l_MainWindow
+    PARENT: MainWindow
     DO: [
       [SIZE &APP_WIDTH &APP_HEIGHT]
     ]
@@ -46,7 +46,7 @@ GUI: [
     WIDGET: MainWindow
     DO: [
       [RESIZABLE l_MainWindow]
-      [CALLBACK main_callback]
+      [CALLBACK main_callback] #???
       [SHOW]
     ]
   }

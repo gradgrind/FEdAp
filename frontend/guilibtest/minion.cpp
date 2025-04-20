@@ -620,7 +620,7 @@ bool MinionMap::get_string(
         value = get<string>(s);
         return true;
     }
-    return true;
+    return false;
 }
 
 } // namespace minion

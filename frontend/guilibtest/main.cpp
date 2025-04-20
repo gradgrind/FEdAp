@@ -1,19 +1,13 @@
-#include "widget_methods.h"
+#include "iofile.h"
+#include "layout.h" //TODO: less ...
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
-
-#include <fmt/format.h>
-
-#include <iostream>
-
-#include "iofile.h"
-#include "minion.h"
-
 #include <chrono>
-
+#include <fmt/format.h>
+#include <iostream>
 using namespace std;
 
 chrono::time_point<std::chrono::steady_clock> t0;
@@ -38,6 +32,7 @@ void timetest()
     Fl::add_timeout(1.0, timetest_cb);
 }
 
+//TODO: Window might get a special callback ...
 void main_callback(
     Fl_Widget *, void *)
 {
@@ -76,6 +71,7 @@ int main()
     //testminion();
     //return 0;
 
+    /* testing stuff
     string _bt1{"FL_NO_BOX"};
     cout << _bt1 << ": " << magic_enum::enum_cast<Fl_Boxtype>(_bt1).value() << endl;
 
@@ -92,21 +88,28 @@ int main()
 
     auto c = new C;
     delete c;
+    */
 
-    // *** Here is the real start ...
+    minion::MinionMap guidata;
+
     try {
         string gui;
         string fp{"data/gui.minion"};
         if (readfile(gui, fp)) {
             cout << "Reading " << fp << endl;
             try {
-                read_minion(gui);
+                guidata = minion::read_minion(gui);
             } catch (minion::MinionException &e) {
                 cerr << e.what() << endl;
+                return 99;
             }
         } else {
             cerr << "Error opening file: " << fp << endl;
+            return 99;
         }
+        //cout << minion::dump_map_items(guidata, 0) << endl;
+
+        tmp_run(guidata);
 
         return 0;
 

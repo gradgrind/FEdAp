@@ -1,7 +1,11 @@
-#include "fltk_minion.h"
 #include "layout.h"
+#include <fmt/format.h>
 #include <iostream>
 using namespace std;
+using mlist = minion::MinionList;
+
+//static member variable
+std::unordered_map<std::string_view, Fl_Widget *> WidgetData::widget_map;
 
 // static
 mlist WidgetData::list_widgets()
@@ -34,6 +38,14 @@ void WidgetData::add_widget(
     auto wd = new WidgetData(name, h);
     widget_map.emplace(wd->w_name, w);
     w->user_data(wd, true); // auto-free = true
+}
+
+// static
+string_view WidgetData::get_widget_name(
+    Fl_Widget *w)
+{
+    auto wd{static_cast<WidgetData *>(w->user_data())};
+    return wd->w_name;
 }
 
 WidgetData::WidgetData(

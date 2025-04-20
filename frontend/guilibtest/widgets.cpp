@@ -1,17 +1,12 @@
-#include "fltk_minion.h"
+#include "minion.h"
 #include <FL/Fl_Box.H>
 using namespace std;
+using mmap = minion::MinionMap;
 
 // *** Non-layout widgets ***
 
 Fl_Widget *NEW_Box(
-    string_view name, mlist do_list)
+    mmap param)
 {
-    auto widg = new Fl_Box(0, 0, 0, 0);
-    for (const auto &cmd : do_list) {
-        mlist m = get<mlist>(cmd);
-        string_view c = get<string>(m.at(0));
-        //_widget_methods(widg, c, m);
-    }
-    return widg;
+    return new Fl_Box(0, 0, 0, 0);
 }

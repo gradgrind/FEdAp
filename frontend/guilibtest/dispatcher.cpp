@@ -1,8 +1,10 @@
-//#include "fltk_minion.h"
+#include "functions.h"
 #include "layout.h"
 #include "minion.h"
+#include "widgets.h"
 #include <FL/Fl_Group.H>
 #include <fmt/format.h>
+#include <iostream>
 using mmap = minion::MinionMap;
 using mlist = minion::MinionList;
 using namespace std;
@@ -21,27 +23,31 @@ void Handle_methods(
 void Handle_NEW(
     string_view wtype, mmap m)
 {
+    //cout << "Handle_NEW " << wtype << ":" << minion::dump_map_items(m, 1) << endl;
     string name;
     Fl_Widget* w;
     method_handler h;
     if (m.get_string("NAME", name)) {
         if (wtype == "Window") {
-            w = NEW_Window(name, m);
+            w = NEW_Window(m);
             h = group_method;
         } else if (wtype == "Vlayout") {
-            w = NEW_Vlayout(name, m);
-            h = flex_methods;
+            w = NEW_Vlayout(m);
+            h = flex_method;
         } else if (wtype == "Hlayout") {
-            w = NEW_Hlayout(name, m);
-            h = flex_methods;
+            w = NEW_Hlayout(m);
+            h = flex_method;
         } else if (wtype == "Grid") {
-            w = NEW_Grid(name, m);
-            h = grid_methods;
+            w = NEW_Grid(m);
+            h = grid_method;
+        } else if (wtype == "Box") {
+            w = NEW_Box(m);
+            h = widget_method;
         } else {
             throw fmt::format("Unknown widget type: {}", wtype);
         }
         string parent;
-        if (m.get_string("PARENT", parent)) {
+        if (m.get_string("PARENT", parent) && !parent.empty()) {
             static_cast<Fl_Group*>(WidgetData::get_widget(parent))->add(w);
         }
         // Add a WidgetData as "user data" to the widget
@@ -52,9 +58,6 @@ void Handle_NEW(
     }
     throw fmt::format("Bad NEW command: {}", minion::dump_map_items(m, -1));
 }
-
-using function_handler = std::function<void(minion::MinionMap)>;
-unordered_map<string, function_handler> function_map;
 
 void GUI(
     mmap obj)
@@ -75,6 +78,21 @@ void GUI(
     }
 }
 
+//TODO ...
+void tmp_run(
+    mmap data)
+{
+    auto dolist0 = data.get("GUI");
+    if (holds_alternative<mlist>(dolist0)) {
+        auto dolist = get<mlist>(dolist0);
+        for (const auto& cmd : dolist) {
+            GUI(get<mmap>(cmd));
+        }
+    } else {
+        cerr << "Input data not a GUI command list" << endl;
+    }
+}
+
 // Pass a message to the back-end. This can be an event/callback, the
 // reponse to a query, or whatever.
 
@@ -91,6 +109,14 @@ void GUI(
 // For the moment I would like to implement just normal callbacks, i.e.
 // asynchronous calls. Where event handlers are necessary, I would first
 // consider extending the C++ widgets.
+
+//TODO: ???
+void do_callback(
+    Fl_Widget* w, void* x)
+{
+    auto wd{static_cast<WidgetData*>(w->user_data())};
+    cout << "Callback: " << wd->widget_name() << endl;
+}
 
 //TODO
 mmap message(
