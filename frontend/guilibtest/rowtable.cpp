@@ -40,9 +40,9 @@ void rowtable_method(
     Fl_Widget *w, std::string_view c, minion::MinionList m)
 {
     if (c == "rows") {
-        static_cast<RowTable *>(w)->rows(int_param(m, 1));
+        static_cast<RowTable *>(w)->set_rows(int_param(m, 1));
     } else if (c == "cols") {
-        static_cast<RowTable *>(w)->cols(int_param(m, 1));
+        static_cast<RowTable *>(w)->set_cols(int_param(m, 1));
     } else if (c == "row_header_width") {
         int rhw = int_param(m, 1);
         if (rhw) {
@@ -69,11 +69,15 @@ void rowtable_method(
         static_cast<RowTable *>(w)->col_width_all(int_param(m, 1));
     } else if (c == "col_headers") {
         static_cast<RowTable *>(w)->col_headers.clear();
-        for (int i = 1; i < m.size(); ++i) {
+        int n = m.size() - 1;
+        static_cast<RowTable *>(w)->set_cols(n);
+        for (int i = 1; i <= n; ++i) {
             static_cast<RowTable *>(w)->col_headers.emplace_back(get<string>(m.at(i)));
         }
     } else if (c == "row_headers") {
         static_cast<RowTable *>(w)->row_headers.clear();
+        int n = m.size() - 1;
+        static_cast<RowTable *>(w)->set_rows(n);
         for (int i = 1; i < m.size(); ++i) {
             static_cast<RowTable *>(w)->row_headers.emplace_back(get<string>(m.at(i)));
         }
@@ -82,7 +86,27 @@ void rowtable_method(
     }
 }
 
-//TODO: Need to handle effect of row/column changes on data stores.
+// Need to handle the effect of column changes on data stores.
+void RowTable::set_cols(
+    int n)
+{
+    int nr = rows();
+    cols(n);
+    col_headers.resize(n);
+    for (int i = 0; i < nr; ++i) {
+        data.at(i).resize(n);
+    }
+}
+
+// Need to handle the effect of row changes on data stores.
+void RowTable::set_rows(
+    int n)
+{
+    int nc = cols();
+    rows(n);
+    row_headers.resize(n);
+    data.resize(n, vector<string>(nc));
+}
 
 Fl_Widget *NEW_RowTable(
     minion::MinionMap param)

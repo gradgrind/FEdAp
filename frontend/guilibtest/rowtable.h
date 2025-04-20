@@ -29,6 +29,9 @@ class RowTable : public Fl_Table_Row
 public:
     RowTable();
 
+    void set_cols(int n);
+    void set_rows(int n);
+
     std::vector<std::vector<std::string>> data; // data array for cells
     std::vector<std::string> row_headers;
     std::vector<std::string> col_headers;
