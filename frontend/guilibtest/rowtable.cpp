@@ -128,6 +128,7 @@ void RowTable::draw_cell(
 
         // Adjust column widths
         size_columns();
+        //TODO: Adjust width of row headers?
 
         // Handle change of selected row
         if (Fl_Table::select_row != _current_row) {
@@ -143,8 +144,13 @@ void RowTable::draw_cell(
         fl_draw(col_headers[COL].c_str(), X, Y, W, H, FL_ALIGN_CENTER);
         fl_pop_clip();
         return;
-    //case CONTEXT_ROW_HEADER:      // Draw row headers
-    //    return;
+    case CONTEXT_ROW_HEADER: // Draw row headers
+        fl_push_clip(X, Y, W, H);
+        fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, row_header_color());
+        fl_color(FL_BLACK);
+        fl_draw(row_headers[ROW].c_str(), X, Y, W, H, FL_ALIGN_CENTER);
+        fl_pop_clip();
+        return;
     case CONTEXT_CELL: // Draw data in cells
         fl_push_clip(X, Y, W, H);
         // Draw cell bg
