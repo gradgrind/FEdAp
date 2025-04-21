@@ -11,15 +11,18 @@ GUI: [
       [COLOUR ffffff]
     ]
   }
+  
   {
     NEW: Vlayout
     NAME: l_MainWindow
     PARENT: MainWindow
     DO: [
-      [SIZE &APP_WIDTH &APP_HEIGHT]
+      [fit_to_parent]
+      # [SIZE &APP_WIDTH &APP_HEIGHT]
       [MARGIN 5]
     ]
   }
+  
   {
     NEW: Box
     NAME: P1
@@ -88,7 +91,7 @@ GUI: [
   {
     WIDGET: MainWindow
     DO: [
-      [RESIZABLE l_MainWindow]
+      # [RESIZABLE l_MainWindow]
       [SHOW]
     ]
   }

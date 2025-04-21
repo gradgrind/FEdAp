@@ -62,6 +62,14 @@ void group_method(
     if (c == "RESIZABLE") {
         auto rsw = WidgetData::get_widget(get<string>(m.at(1)));
         static_cast<Fl_Group *>(w)->resizable(rsw);
+    } else if (c == "fit_to_parent") {
+        if (auto parent = w->parent()) {
+            w->resize(0, 0, parent->w(), parent->h());
+            parent->resizable(w);
+        } else {
+            throw fmt::format("Widget ({}) method fit_to_parent: no parent",
+                              WidgetData::get_widget_name(w));
+        }
     } else {
         widget_method(w, c, m);
     }
@@ -111,11 +119,7 @@ Fl_Widget *NEW_Window(
     param.get_int("ESC_CLOSES", esc_closes);
     if (!esc_closes)
         widg->callback(callback_no_esc_closes);
-
     Fl_Group::current(0); // disable "auto-grouping"
-
-    //TODO: Allow setting a flex/grid manager here?
-
     return widg;
 }
 
