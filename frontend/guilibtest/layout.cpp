@@ -113,6 +113,9 @@ Fl_Widget *NEW_Window(
         widg->callback(callback_no_esc_closes);
 
     Fl_Group::current(0); // disable "auto-grouping"
+
+    //TODO: Allow setting a flex/grid manager here?
+
     return widg;
 }
 

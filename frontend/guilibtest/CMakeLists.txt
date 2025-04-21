@@ -25,11 +25,11 @@ add_executable(guilibtest main.cpp
     functions.h
     functions.cpp
     rowtable.h rowtable.cpp
-    test_table.cpp
-    widget_base.h
-    widget_base.cpp
-    layout_test.cpp
-    widgets_test.cpp
+
+
+
+
+
 )
 
 include(GNUInstallDirs)

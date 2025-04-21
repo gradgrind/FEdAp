@@ -60,9 +60,6 @@ void Handle_NEW(
         } else if (wtype == "RowTable") {
             w = NEW_RowTable(m);
             h = rowtable_method;
-        } else if (wtype == "MyTable") {
-            w = NEW_MyTable(m);
-            h = widget_method;
         } else {
             throw fmt::format("Unknown widget type: {}", wtype);
         }

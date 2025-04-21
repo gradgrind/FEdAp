@@ -1,7 +1,5 @@
 #include "iofile.h"
 #include "layout.h" //TODO: less ...
-#include "widget_base.h"
-#include "widgets.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
@@ -111,57 +109,9 @@ int main()
         }
         //cout << minion::dump_map_items(guidata, 0) << endl;
 
-        //tmp_run(guidata);
-
-        auto dolist0 = guidata.get("GUI");
-        if (holds_alternative<minion::MinionList>(dolist0)) {
-            auto dolist = get<minion::MinionList>(dolist0);
-            for (const auto &cmd : dolist) {
-                do_GUI(get<minion::MinionMap>(cmd));
-            }
-            //auto tt = NEW_MyTable(minion::MinionMap{});
-            //auto fl = widget_info.at("l_MainWindow");
-            //static_cast<Fl_Group *>(fl.widget)->add(tt);
-            //Fl::run();
-        } else {
-            cerr << "Input data not a GUI command list" << endl;
-        }
-
-        //Fl_Widget *win = new Fl_Double_Window(800, 500, "Table Flex");
-        //Fl_Group::current(0);
-        auto win = widget_info.at("MainWindow").widget;
-
-        //Fl_Widget *l = new Fl_Flex(0, 0, win->w(), win->h());
-        //Fl_Group::current(0);
-        //static_cast<Fl_Group *>(win)->add(l);
-        auto l = widget_info.at("l_MainWindow").widget;
-
-        cout << "??? " << l->parent() << " ? " << win << endl;
-        cout << "  l: " << l->w() << " ? " << l->h() << endl;
-        cout << "  win: " << win->w() << " ? " << win->h() << endl;
-
-        win->color(0xffffff00);
-        static_cast<Fl_Flex *>(l)->margin(5);
-        Fl_Widget *b = new Fl_Box(FL_BORDER_BOX, 0, 0, 0, 0, "box");
-        b->color(0x00ff0000);
-        static_cast<Fl_Group *>(l)->add(b);
-        static_cast<Fl_Flex *>(l)->fixed(b, 100);
-        Fl_Widget *table = NEW_MyTable(minion::MinionMap{});
-        static_cast<Fl_Group *>(l)->add(table);
-        static_cast<Fl_Group *>(win)->resizable(l);
-        win->show();
-        Fl::run();
+        tmp_run(guidata);
 
         return 0;
-
-        /*
-        win->resizable(f1a);
-
-        win->callback(main_callback);
-        win->end();
-        win->show();
-        return Fl::run();
-        */
     } catch (const std::exception &ex) {
         cout << "EXCEPTION: " << ex.what() << endl;
     } catch (const std::string &ex) {

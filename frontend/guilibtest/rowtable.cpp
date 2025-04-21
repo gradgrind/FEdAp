@@ -1,6 +1,5 @@
 #include "rowtable.h"
 #include "layout.h"
-#include "widget_base.h"
 #include "widget_methods.h"
 #include "widgets.h"
 #include <FL/fl_draw.H>
@@ -86,71 +85,6 @@ void rowtable_method(
         t->rows(t->rows() + 1);
     } else {
         widget_method(w, c, m);
-    }
-}
-
-void w_rowtable_method(
-    Widget wd, string_view c, MinionList m)
-{
-    auto t = static_cast<RowTable *>(wd.widget);
-
-    //TODO: It would probably be better to use an enum and switch!
-    if (c == "rows") {
-        t->set_rows(int_param(m, 1));
-    } else if (c == "cols") {
-        t->set_cols(int_param(m, 1));
-    } else if (c == "row_header_width") {
-        int rhw = int_param(m, 1);
-        if (rhw) {
-            t->row_header(1);
-            t->row_header_width(rhw);
-        } else {
-            t->row_header(0);
-        }
-    } else if (c == "col_header_height") {
-        int chh = int_param(m, 1);
-        if (chh) {
-            t->col_header(1);
-            t->col_header_height(chh);
-        } else {
-            t->col_header(0);
-        }
-    } else if (c == "col_header_color") {
-        t->col_header_color(colour_param(m, 1));
-    } else if (c == "row_header_color") {
-        t->row_header_color(colour_param(m, 1));
-    } else if (c == "row_height_all") {
-        t->row_height_all(int_param(m, 1));
-    } else if (c == "col_width_all") {
-        t->col_width_all(int_param(m, 1));
-    } else if (c == "col_headers") {
-        t->col_headers.clear();
-        int n = m.size() - 1;
-        t->set_cols(n);
-        for (int i = 0; i < n; ++i) {
-            t->col_headers[i] = get<string>(m.at(i + 1));
-        }
-    } else if (c == "row_headers") {
-        t->row_headers.clear();
-        int n = m.size() - 1;
-        t->set_rows(n);
-        for (int i = 0; i < n; ++i) {
-            t->row_headers[i] = get<string>(m.at(i + 1));
-        }
-    } else if (c == "add_row") {
-        int n = m.size() - 2;
-        if (n != t->cols()) {
-            throw "RowTable: add_row with wrong length";
-        }
-        t->row_headers.emplace_back(get<string>(m.at(1)));
-        vector<string> r(n);
-        for (int i = 0; i < n; ++i) {
-            r[i] = get<string>(m.at(i + 2));
-        }
-        t->data.emplace_back(r);
-        t->rows(t->rows() + 1);
-    } else {
-        w_widget_method(wd, c, m);
     }
 }
 
@@ -246,16 +180,16 @@ void RowTable::size_columns()
 {
     int ncols = cols();
     int nrows = rows();
-    int w, h, wmax;
+    int cw, ch, wmax;
 
     // Deal with row headers
     wmax = 0;
     if (row_header()) {
         for (int r = 0; r < nrows; ++r) {
-            w = 0;
-            fl_measure(row_headers[r].c_str(), w, h, 0);
-            if (w > wmax)
-                wmax = w;
+            cw = 0;
+            fl_measure(row_headers[r].c_str(), cw, ch, 0);
+            if (cw > wmax)
+                wmax = cw;
         }
     }
     int rhw = wmax + 10;
@@ -269,14 +203,14 @@ void RowTable::size_columns()
     std::vector<colwidth> colwidths;
 
     for (int c = 0; c < ncols; ++c) {
-        w = 0;
-        fl_measure(col_headers[c].c_str(), w, h, 0);
-        wmax = w;
+        cw = 0;
+        fl_measure(col_headers[c].c_str(), cw, ch, 0);
+        wmax = cw;
         for (int r = 0; r < nrows; ++r) {
-            w = 0;
-            fl_measure(data[r][c].c_str(), w, h, 0);
-            if (w > wmax)
-                wmax = w;
+            cw = 0;
+            fl_measure(data[r][c].c_str(), cw, ch, 0);
+            if (cw > wmax)
+                wmax = cw;
         }
         colwidths.emplace_back(colwidth{c, wmax});
     }
@@ -287,8 +221,7 @@ void RowTable::size_columns()
     //for (const auto &i : colwidths)
     //    cout << "$ " << i.col << ": " << i.width << endl;
 
-    int restwid0 = wiw - rhw;
-    int restwid = restwid0;
+    int restwid = tiw;
     int icols = ncols;
     const int padwidth = 4;
     for (colwidth cw : colwidths) {
@@ -310,14 +243,6 @@ void RowTable::size_columns()
             }
         }
     }
-
-    int sum{0};
-    for (colwidth cw : colwidths) {
-        w = col_width(cw.col);
-        cout << "$$ col " << cw.col << ": " << w << " / " << cw.width << endl;
-        sum += w;
-    }
-    cout << "$$$$$ " << restwid0 << " / " << sum << endl;
 }
 
 void RowTable::_row_cb(
