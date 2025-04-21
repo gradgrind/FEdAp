@@ -1,0 +1,141 @@
+&APP_WIDTH: 1000
+&APP_HEIGHT: 700
+&OUTPUT_COLOUR: ffffc8
+
+GUI: [
+  {
+    NEW: Window
+    NAME: MainWindow
+    WIDTH: &APP_WIDTH
+    HEIGHT: &APP_HEIGHT
+    #ESC_CLOSES: 1
+    DO: [
+      [COLOUR ffffff]
+    ]
+  }
+  {
+    NEW: Vlayout
+    NAME: l_MainWindow
+    PARENT: MainWindow
+    DO: [
+      [fit_to_parent]
+      # [MARGIN 5]
+    ]
+  }
+  # Top-level contents
+  {
+    NEW: Box
+    NAME: P1
+    PARENT: l_MainWindow
+    DO: [
+      [LABEL "Panel 1"]
+      [BOXTYPE FL_BORDER_FRAME]
+      [FIXED 100]
+    ]
+  }
+  # *** Course Editor ***
+  {
+    NEW: Vlayout
+    NAME: CourseEditor
+    PARENT: l_MainWindow
+  }
+  # Top Panel
+  {
+    NEW: Box
+    NAME: todo
+    PARENT: CourseEditor
+    DO: [
+      [LABEL "TODO: CourseEditor"]
+      [BOXTYPE FL_FLAT_BOX]
+      [FIXED 50]
+    ]
+  }
+  {
+    NEW: Hlayout
+    NAME: ViewSelect
+    PARENT: CourseEditor
+    DO: [
+      [MARGIN 5]
+      [GAP 5]
+      [FIXED 40]
+    ]
+  }
+  {
+    NEW: Choice
+    NAME: TableType
+    PARENT: ViewSelect
+    DO: [
+      [clear_visible_focus]
+      [FIXED 100]
+      [ADD Class Teacher Subject]
+    ]
+  }
+  {
+    NEW: Choice
+    NAME: TableRow
+    PARENT: ViewSelect
+    DO: [
+      [clear_visible_focus]
+      [FIXED 150]
+      [ADD "FB: Fritz Jolander Jeremias Braun"
+           "DG: Diego Garcia"
+           "PM: Pamela Masterson"
+      ]
+    ]
+  }
+  # The label of the output widget allocates no space of its own,
+  # overwriting anything to the left of the widget, so add padding.
+  {
+    NEW: Box
+    NAME: pad1
+    PARENT: ViewSelect
+    DO: [
+      [FIXED 100] # TODO: TableTotals label width + 20
+    ]
+  }
+  {
+    NEW: Output
+    NAME: TableTotals
+    PARENT: ViewSelect
+    DO: [
+      [COLOUR &OUTPUT_COLOUR]
+      [VALUE "Read only ˝Öößŋħĸ€"]
+      [clear_visible_focus]
+      [LABEL "Total lessons:"]
+      [measure_label]
+      # Consider a special method to insert a padding box before
+      # this widget?
+    ]
+  }
+
+  # Top Panel – end
+
+  # TODO...
+  
+  {
+    NEW: RowTable
+    NAME: T1
+    PARENT: CourseEditor
+    DO: [
+      [col_headers "Col 1" "Column 2" "Col 3" "Col 4"]
+      [col_header_height 30]
+      # [row_headers "Row 1" "Long row 2" "Row 3"]
+      [row_header_width 80]
+      [row_height_all 30]
+      [col_header_color e8e8ff]
+      [row_header_color ffe8e8]
+      [add_row "Row 1" A B C D]
+      [add_row "Long Row 2" a b c d]
+      [add_row "Row 3" "" "" "A very long table entry" last]
+    ]
+  }
+  
+  {
+    WIDGET: MainWindow
+    DO: [
+      # [RESIZABLE l_MainWindow]
+      [SHOW]
+    ]
+  }
+  {FUNCTION: RUN} # Enter main event loop
+]

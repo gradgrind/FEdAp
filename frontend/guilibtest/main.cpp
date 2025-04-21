@@ -94,7 +94,8 @@ int main()
 
     try {
         string gui;
-        string fp{"data/gui.minion"};
+        //string fp{"data/gui.minion"};
+        string fp{"data/course_editor.minion"};
         if (readfile(gui, fp)) {
             cout << "Reading " << fp << endl;
             try {

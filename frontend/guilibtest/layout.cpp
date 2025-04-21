@@ -81,6 +81,9 @@ void flex_method(
     if (c == "MARGIN") {
         int sz = int_param(m, 1);
         static_cast<Fl_Flex *>(w)->margin(sz);
+    } else if (c == "GAP") {
+        int sz = int_param(m, 1);
+        static_cast<Fl_Flex *>(w)->gap(sz);
     } else {
         group_method(w, c, m);
     }
