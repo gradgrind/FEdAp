@@ -3,10 +3,11 @@
 #include "widgets.h"
 #include <FL/Fl_Group.H>
 #include <fmt/format.h>
+#include <iostream>
 using namespace std;
 using namespace minion;
 
-std::unordered_map<std::string, Widget> widget_info{};
+unordered_map<std::string, Widget> widget_info{};
 
 void do_methods(
     Widget wd, MinionMap m)
@@ -15,9 +16,10 @@ void do_methods(
     if (holds_alternative<MinionList>(dolist)) {
         MinionList do_list = get<MinionList>(dolist);
         for (const auto &cmd : do_list) {
-            MinionList m = get<MinionList>(cmd);
-            string_view c = get<string>(m.at(0));
-            wd.handle_method(wd, c, m);
+            MinionList ml = get<MinionList>(cmd);
+            cout << "DO: " << dump_list_items(ml, -1) << endl;
+            string_view c = get<string>(ml.at(0));
+            wd.handle_method(wd, c, ml);
         }
     } else if (dolist.index() != 0) {
         string s;

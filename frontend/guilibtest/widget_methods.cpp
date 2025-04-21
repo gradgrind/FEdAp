@@ -23,13 +23,13 @@ Fl_Boxtype get_boxtype(
 int int_param(
     minion::MinionList m, int i)
 {
-    return stoi(get<string>(m.at(1)));
+    return stoi(get<string>(m.at(i)));
 }
 
 Fl_Color colour_param(
     minion::MinionList m, int i)
 {
-    return get_colour(get<string>(m.at(1)));
+    return get_colour(get<string>(m.at(i)));
 }
 
 /*TODO: move somewhere more appropriate ... DEPRECATED? see minion.h

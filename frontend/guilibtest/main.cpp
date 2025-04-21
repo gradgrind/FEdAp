@@ -119,13 +119,38 @@ int main()
             for (const auto &cmd : dolist) {
                 do_GUI(get<minion::MinionMap>(cmd));
             }
-            auto tt = NEW_MyTable(minion::MinionMap{});
-            auto fl = widget_info.at("l_MainWindow");
-            static_cast<Fl_Group *>(fl.widget)->add(tt);
-            Fl::run();
+            //auto tt = NEW_MyTable(minion::MinionMap{});
+            //auto fl = widget_info.at("l_MainWindow");
+            //static_cast<Fl_Group *>(fl.widget)->add(tt);
+            //Fl::run();
         } else {
             cerr << "Input data not a GUI command list" << endl;
         }
+
+        //Fl_Widget *win = new Fl_Double_Window(800, 500, "Table Flex");
+        //Fl_Group::current(0);
+        auto win = widget_info.at("MainWindow").widget;
+
+        //Fl_Widget *l = new Fl_Flex(0, 0, win->w(), win->h());
+        //Fl_Group::current(0);
+        //static_cast<Fl_Group *>(win)->add(l);
+        auto l = widget_info.at("l_MainWindow").widget;
+
+        cout << "??? " << l->parent() << " ? " << win << endl;
+        cout << "  l: " << l->w() << " ? " << l->h() << endl;
+        cout << "  win: " << win->w() << " ? " << win->h() << endl;
+
+        win->color(0xffffff00);
+        static_cast<Fl_Flex *>(l)->margin(5);
+        Fl_Widget *b = new Fl_Box(FL_BORDER_BOX, 0, 0, 0, 0, "box");
+        b->color(0x00ff0000);
+        static_cast<Fl_Group *>(l)->add(b);
+        static_cast<Fl_Flex *>(l)->fixed(b, 100);
+        Fl_Widget *table = NEW_MyTable(minion::MinionMap{});
+        static_cast<Fl_Group *>(l)->add(table);
+        static_cast<Fl_Group *>(win)->resizable(l);
+        win->show();
+        Fl::run();
 
         return 0;
 

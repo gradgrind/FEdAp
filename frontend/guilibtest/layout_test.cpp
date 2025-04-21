@@ -20,6 +20,7 @@ void w_widget_method(
     if (c == "SIZE") {
         ww = int_param(m, 1); // width
         wh = int_param(m, 2); // height
+        cout << "?SIZE? " << ww << " ? " << wh << endl;
         wd.widget->size(ww, wh);
     } else if (c == "COLOUR") {
         auto clr = get_colour(get<string>(m.at(1)));

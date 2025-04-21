@@ -20,6 +20,7 @@ GUI: [
       [MARGIN 5]
     ]
   }
+  #[
   {
     NEW: Box
     NAME: P1
@@ -31,6 +32,7 @@ GUI: [
       [FIXED 100]
     ]
   }
+  #]
   
   #[
   {
@@ -62,6 +64,7 @@ GUI: [
   }
   ]#
   
+  #[
   {
     WIDGET: MainWindow
     DO: [
@@ -69,6 +72,7 @@ GUI: [
       [SHOW]
     ]
   }
+  ]#
   #{FUNCTION: RUN} # Enter main event loop
 ]
 
