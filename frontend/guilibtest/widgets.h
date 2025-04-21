@@ -12,5 +12,6 @@ Fl_Widget *NEW_Box(minion::MinionMap param);
 Fl_Widget *NEW_Choice(minion::MinionMap param);
 Fl_Widget *NEW_Output(minion::MinionMap param);
 Fl_Widget *NEW_RowTable(minion::MinionMap param);
+Fl_Widget *NEW_MyTable(minion::MinionMap param);
 
 #endif // WIDGETS_H

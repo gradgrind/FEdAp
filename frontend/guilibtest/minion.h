@@ -36,6 +36,7 @@ class MinionList;
 using MinionValue = std::variant<
     std::monostate, std::string, MinionMap, MinionList>;
 
+void dump(std::string &valstr, MinionValue item, int level = -1);
 std::string dump_list_items(const MinionList m, int level);
 std::string dump_map_items(const MinionMap m, int level);
 

@@ -1,5 +1,5 @@
-&APP_WIDTH: 800
-&APP_HEIGHT: 500
+&APP_WIDTH: 1000
+&APP_HEIGHT: 700
 GUI: [
   {
     NEW: Window
@@ -31,7 +31,47 @@ GUI: [
       [FIXED 100]
     ]
   }
+  {
+    NEW: Box
+    NAME: P2
+    PARENT: l_MainWindow
+    DO: [
+      [LABEL "Panel 2"]
+      [BOXTYPE FL_ENGRAVED_BOX]
+      [COLOUR ffff00]
+      [FIXED 60]
+    ]
+  }
+  {
+    NEW: Choice
+    NAME: C1
+    PARENT: l_MainWindow
+    DO: [
+      [COLOUR ff8080]
+      [FIXED 40]
+      [ADD "First" "Second" "Third"]
+      [clear_visible_focus]
+    ]
+  }
+  {
+    NEW: Output
+    NAME: O1
+    PARENT: l_MainWindow
+    DO: [
+      [COLOUR ffc800]
+      [FIXED 40]
+      [VALUE "Read only ˝Öößŋħĸ€"]
+      [clear_visible_focus]
+      [LABEL "Label"]
+      [measure_label]
+    ]
+  }
   
+  {
+    NEW: MyTable
+    NAME: TT
+    PARENT: l_MainWindow
+  }
   #[
   {
     NEW: RowTable
@@ -48,16 +88,6 @@ GUI: [
       [add_row "Row 1" A B C D]
       [add_row "Long Row 2" a b c d]
       [add_row "Row 3" "" "" "A very long table entry" last]
-      [FIXED 100]
-    ]
-  }
-  #
-  {
-    NEW: MyTable
-    NAME: TT
-    PARENT: l_MainWindow
-    DO: [
-#      [FIXED 100]
     ]
   }
   ]#
@@ -69,7 +99,7 @@ GUI: [
       [SHOW]
     ]
   }
-  #{FUNCTION: RUN} # Enter main event loop
+  {FUNCTION: RUN} # Enter main event loop
 ]
 
 # How to deal with callbacks and other events?

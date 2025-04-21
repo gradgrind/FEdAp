@@ -1,11 +1,18 @@
 #include "rowtable.h"
 #include "layout.h"
+#include "widget_base.h"
 #include "widget_methods.h"
 #include "widgets.h"
 #include <FL/fl_draw.H>
 //#include <fmt/format.h>
 #include <iostream>
 using namespace std;
+using namespace minion;
+
+//TODO: When the table doesn't fit in the space, scrollbars should appear.
+// It is not clear to me why they don't!
+
+//TODO: After changes I probably need to force a redraw (redraw()).
 
 RowTable::RowTable()
     : Fl_Table_Row(0, 0, 0, 0)
@@ -16,74 +23,134 @@ RowTable::RowTable()
     col_header(0); // disable column headers (along top)
     type(Fl_Table_Row::SELECT_SINGLE);
 }
-/*// Rows
-    rows(5);            // how many rows
-    row_header(0);      // disable row headers (along left)
-    row_height_all(30); // default height of rows
-    // Cols
-    cols(6);               // how many columns
-    col_header(1);         // enable column headers (along top)
-    col_header_height(30); // enable column headers (along top)
-    //col_width_all(150);    // default width of columns
-    col_header_color(fl_rgb_color(230, 230, 255));
-    end(); // end the Fl_Table group
-    
-    // Temporary (test) data
-    headers = {"Subject", "Groups", "Teachers", "Rooms", "Units", "Properties"};
-    data = {{"Fr", "11.A", "PM", "fs1", "1, 1, 1", ""},
-            {"Fr", "11.B", "PM", "fs1", "1, 1, 1", ""},
-            {"Ma", "11", "AH", "k11", "3, 3", "HU"},
-            {"Ma", "11.A", "AH", "k11", "1, 1", ""},
-            {"Fr", "11.B", "AH", "k11", "1, 1", ""}};
-*/
 
 void rowtable_method(
-    Fl_Widget *w, std::string_view c, minion::MinionList m)
+    Fl_Widget *w, string_view c, MinionList m)
 {
+    auto t = static_cast<RowTable *>(w);
+
+    //TODO: It would probably be better to use an enum and switch!
     if (c == "rows") {
-        static_cast<RowTable *>(w)->set_rows(int_param(m, 1));
+        t->set_rows(int_param(m, 1));
     } else if (c == "cols") {
-        static_cast<RowTable *>(w)->set_cols(int_param(m, 1));
+        t->set_cols(int_param(m, 1));
     } else if (c == "row_header_width") {
         int rhw = int_param(m, 1);
         if (rhw) {
-            static_cast<RowTable *>(w)->row_header(1);
-            static_cast<RowTable *>(w)->row_header_width(rhw);
+            t->row_header(1);
+            t->row_header_width(rhw);
         } else {
-            static_cast<RowTable *>(w)->row_header(0);
+            t->row_header(0);
         }
     } else if (c == "col_header_height") {
         int chh = int_param(m, 1);
         if (chh) {
-            static_cast<RowTable *>(w)->col_header(1);
-            static_cast<RowTable *>(w)->col_header_height(chh);
+            t->col_header(1);
+            t->col_header_height(chh);
         } else {
-            static_cast<RowTable *>(w)->col_header(0);
+            t->col_header(0);
         }
     } else if (c == "col_header_color") {
-        static_cast<RowTable *>(w)->col_header_color(colour_param(m, 1));
+        t->col_header_color(colour_param(m, 1));
     } else if (c == "row_header_color") {
-        static_cast<RowTable *>(w)->row_header_color(colour_param(m, 1));
+        t->row_header_color(colour_param(m, 1));
     } else if (c == "row_height_all") {
-        static_cast<RowTable *>(w)->row_height_all(int_param(m, 1));
+        t->row_height_all(int_param(m, 1));
     } else if (c == "col_width_all") {
-        static_cast<RowTable *>(w)->col_width_all(int_param(m, 1));
+        t->col_width_all(int_param(m, 1));
     } else if (c == "col_headers") {
-        static_cast<RowTable *>(w)->col_headers.clear();
+        t->col_headers.clear();
         int n = m.size() - 1;
-        static_cast<RowTable *>(w)->set_cols(n);
+        t->set_cols(n);
         for (int i = 0; i < n; ++i) {
-            static_cast<RowTable *>(w)->col_headers[i] = get<string>(m.at(i + 1));
+            t->col_headers[i] = get<string>(m.at(i + 1));
         }
     } else if (c == "row_headers") {
-        static_cast<RowTable *>(w)->row_headers.clear();
+        t->row_headers.clear();
         int n = m.size() - 1;
-        static_cast<RowTable *>(w)->set_rows(n);
+        t->set_rows(n);
         for (int i = 0; i < n; ++i) {
-            static_cast<RowTable *>(w)->row_headers[i] = get<string>(m.at(i + 1));
+            t->row_headers[i] = get<string>(m.at(i + 1));
         }
+    } else if (c == "add_row") {
+        int n = m.size() - 2;
+        if (n != t->cols()) {
+            throw "RowTable: add_row with wrong length";
+        }
+        t->row_headers.emplace_back(get<string>(m.at(1)));
+        vector<string> r(n);
+        for (int i = 0; i < n; ++i) {
+            r[i] = get<string>(m.at(i + 2));
+        }
+        t->data.emplace_back(r);
+        t->rows(t->rows() + 1);
     } else {
         widget_method(w, c, m);
+    }
+}
+
+void w_rowtable_method(
+    Widget wd, string_view c, MinionList m)
+{
+    auto t = static_cast<RowTable *>(wd.widget);
+
+    //TODO: It would probably be better to use an enum and switch!
+    if (c == "rows") {
+        t->set_rows(int_param(m, 1));
+    } else if (c == "cols") {
+        t->set_cols(int_param(m, 1));
+    } else if (c == "row_header_width") {
+        int rhw = int_param(m, 1);
+        if (rhw) {
+            t->row_header(1);
+            t->row_header_width(rhw);
+        } else {
+            t->row_header(0);
+        }
+    } else if (c == "col_header_height") {
+        int chh = int_param(m, 1);
+        if (chh) {
+            t->col_header(1);
+            t->col_header_height(chh);
+        } else {
+            t->col_header(0);
+        }
+    } else if (c == "col_header_color") {
+        t->col_header_color(colour_param(m, 1));
+    } else if (c == "row_header_color") {
+        t->row_header_color(colour_param(m, 1));
+    } else if (c == "row_height_all") {
+        t->row_height_all(int_param(m, 1));
+    } else if (c == "col_width_all") {
+        t->col_width_all(int_param(m, 1));
+    } else if (c == "col_headers") {
+        t->col_headers.clear();
+        int n = m.size() - 1;
+        t->set_cols(n);
+        for (int i = 0; i < n; ++i) {
+            t->col_headers[i] = get<string>(m.at(i + 1));
+        }
+    } else if (c == "row_headers") {
+        t->row_headers.clear();
+        int n = m.size() - 1;
+        t->set_rows(n);
+        for (int i = 0; i < n; ++i) {
+            t->row_headers[i] = get<string>(m.at(i + 1));
+        }
+    } else if (c == "add_row") {
+        int n = m.size() - 2;
+        if (n != t->cols()) {
+            throw "RowTable: add_row with wrong length";
+        }
+        t->row_headers.emplace_back(get<string>(m.at(1)));
+        vector<string> r(n);
+        for (int i = 0; i < n; ++i) {
+            r[i] = get<string>(m.at(i + 2));
+        }
+        t->data.emplace_back(r);
+        t->rows(t->rows() + 1);
+    } else {
+        w_widget_method(wd, c, m);
     }
 }
 
@@ -114,7 +181,7 @@ void RowTable::set_rows(
 }
 
 Fl_Widget *NEW_RowTable(
-    minion::MinionMap param)
+    MinionMap param)
 {
     return new RowTable();
 }
@@ -126,9 +193,9 @@ void RowTable::draw_cell(
     case CONTEXT_STARTPAGE: // before page is drawn..
         //fl_font(FL_HELVETICA, 16); // set the font for our drawing operations
 
+        //TODO: Adjust width of row headers?
         // Adjust column widths
         size_columns();
-        //TODO: Adjust width of row headers?
 
         // Handle change of selected row
         if (Fl_Table::select_row != _current_row) {
@@ -177,15 +244,30 @@ void RowTable::draw_cell(
 //TODO: Do I need to set font (fl_font()) before using fl_measure()?
 void RowTable::size_columns()
 {
+    int ncols = cols();
+    int nrows = rows();
+    int w, h, wmax;
+
+    // Deal with row headers
+    wmax = 0;
+    if (row_header()) {
+        for (int r = 0; r < nrows; ++r) {
+            w = 0;
+            fl_measure(row_headers[r].c_str(), w, h, 0);
+            if (w > wmax)
+                wmax = w;
+        }
+    }
+    int rhw = wmax + 10;
+    row_header_width(rhw);
+
+    // Get widest column entries
     struct colwidth
     {
         int col, width;
     };
     std::vector<colwidth> colwidths;
 
-    int ncols = cols();
-    int nrows = rows();
-    int w, h, wmax;
     for (int c = 0; c < ncols; ++c) {
         w = 0;
         fl_measure(col_headers[c].c_str(), w, h, 0);
@@ -196,28 +278,29 @@ void RowTable::size_columns()
             if (w > wmax)
                 wmax = w;
         }
-        colwidths.push_back(colwidth{c, wmax});
+        colwidths.emplace_back(colwidth{c, wmax});
     }
     std::sort(colwidths.begin(), colwidths.end(), [](colwidth a, colwidth b) {
-        return a.width < b.width;
+        return a.width > b.width;
     });
 
-    //for (auto i : colwidths)
-    //    std::cout << "$ " << i.col << ": " << i.width << std::endl;
+    //for (const auto &i : colwidths)
+    //    cout << "$ " << i.col << ": " << i.width << endl;
 
-    int restwid = wiw;
-    int cols = ncols;
+    int restwid0 = wiw - rhw;
+    int restwid = restwid0;
+    int icols = ncols;
     const int padwidth = 4;
     for (colwidth cw : colwidths) {
-        if (cols == 1) {
+        if (icols == 1) {
             if (cw.width + padwidth < restwid) {
                 col_width(cw.col, restwid);
             } else {
                 col_width(cw.col, cw.width + padwidth);
             }
         } else {
-            int defwid = restwid / cols;
-            --cols;
+            int defwid = restwid / icols;
+            --icols;
             if (cw.width + padwidth < defwid) {
                 col_width(cw.col, defwid);
                 restwid -= defwid;
@@ -227,6 +310,14 @@ void RowTable::size_columns()
             }
         }
     }
+
+    int sum{0};
+    for (colwidth cw : colwidths) {
+        w = col_width(cw.col);
+        cout << "$$ col " << cw.col << ": " << w << " / " << cw.width << endl;
+        sum += w;
+    }
+    cout << "$$$$$ " << restwid0 << " / " << sum << endl;
 }
 
 void RowTable::_row_cb(

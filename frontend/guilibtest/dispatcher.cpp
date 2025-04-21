@@ -12,11 +12,18 @@ using namespace std;
 void Handle_methods(
     Fl_Widget* w, mmap m, method_handler h)
 {
-    mlist do_list = get<mlist>(m.get("DO"));
-    for (const auto& cmd : do_list) {
-        mlist m = get<mlist>(cmd);
-        string_view c = get<string>(m.at(0));
-        h(w, c, m);
+    auto dolist = m.get("DO");
+    if (holds_alternative<mlist>(dolist)) {
+        mlist do_list = get<mlist>(dolist);
+        for (const auto& cmd : do_list) {
+            mlist m = get<mlist>(cmd);
+            string_view c = get<string>(m.at(0));
+            h(w, c, m);
+        }
+    } else if (dolist.index() != 0) {
+        string s;
+        minion::dump(s, dolist, 0);
+        throw string{"Invalid DO list: "} + s;
     }
 }
 
@@ -53,6 +60,9 @@ void Handle_NEW(
         } else if (wtype == "RowTable") {
             w = NEW_RowTable(m);
             h = rowtable_method;
+        } else if (wtype == "MyTable") {
+            w = NEW_MyTable(m);
+            h = widget_method;
         } else {
             throw fmt::format("Unknown widget type: {}", wtype);
         }

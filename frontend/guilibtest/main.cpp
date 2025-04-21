@@ -1,5 +1,7 @@
 #include "iofile.h"
 #include "layout.h" //TODO: less ...
+#include "widget_base.h"
+#include "widgets.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Flex.H>
@@ -109,7 +111,21 @@ int main()
         }
         //cout << minion::dump_map_items(guidata, 0) << endl;
 
-        tmp_run(guidata);
+        //tmp_run(guidata);
+
+        auto dolist0 = guidata.get("GUI");
+        if (holds_alternative<minion::MinionList>(dolist0)) {
+            auto dolist = get<minion::MinionList>(dolist0);
+            for (const auto &cmd : dolist) {
+                do_GUI(get<minion::MinionMap>(cmd));
+            }
+            auto tt = NEW_MyTable(minion::MinionMap{});
+            auto fl = widget_info.at("l_MainWindow");
+            static_cast<Fl_Group *>(fl.widget)->add(tt);
+            Fl::run();
+        } else {
+            cerr << "Input data not a GUI command list" << endl;
+        }
 
         return 0;
 

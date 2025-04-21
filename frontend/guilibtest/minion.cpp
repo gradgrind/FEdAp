@@ -84,7 +84,7 @@ void dump_string(
 // indentation.
 const int indent_depth = 2;
 void dump(
-    string &valstr, MinionValue item, int level = -1)
+    string &valstr, MinionValue item, int level)
 {
     if (holds_alternative<string>(item)) {
         auto s{get<string>(item)};
