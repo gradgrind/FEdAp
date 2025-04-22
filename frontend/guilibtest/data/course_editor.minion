@@ -109,14 +109,12 @@ GUI: [
     ]
   }
   
-  # TODO...
-  
   {
     NEW: RowTable
     NAME: T1
     PARENT: Content
     DO: [
-      # [COLOUR &BACKGROUND]
+      # [COLOUR ffffe0]
       [col_headers "Col 1" "Column 2" "Col 3" "Col 4"]
       [col_header_height 30]
       # [row_headers "Row 1" "Long row 2" "Row 3"]

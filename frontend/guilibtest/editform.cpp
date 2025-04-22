@@ -21,6 +21,17 @@ using namespace minion;
 //  Entry_name + new_value (ENTRY)
 //  Entry_name + [new_value ...] (LIST)
 
+struct EditFormEntryData : public Fl_Callback_User_Data
+{
+    std::string w_name;
+
+    EditFormEntryData(
+        std::string_view n)
+        : Fl_Callback_User_Data()
+        , w_name{n}
+    {}
+};
+
 void editform_method(
     Fl_Widget* w, string_view c, MinionList m)
 {
@@ -41,12 +52,12 @@ void editform_method(
 
         //TODO
         e1->callback(
-            [](Fl_Widget* w, void* a) { cout << "Activated: " << Fl::callback_reason() << endl; });
-
-        //TODO--
-        //e1->value(label.c_str());
-        // Setting the tooltip allows overlong texts to be readable
-        //e1->tooltip(label.c_str());
+            [](Fl_Widget* w, void* ud) {
+                cout << "Activated: " << static_cast<EditFormEntryData*>(ud)->w_name << ": "
+                     << Fl::callback_reason() << endl;
+            },
+            new EditFormEntryData(name),
+            true);
 
         e1->clear_visible_focus(); // no cursor, but text cannot be copied
         e1->horizontal_label_margin(5);
@@ -136,6 +147,8 @@ void editform_method(
         } else if (auto e1 = dynamic_cast<Fl_Select_Browser*>(e0)) {
             e1->clear();
             for (int i = 2; i < m.size(); ++i) {
+                //TODO? add can have a second argument (void *), which can
+                // refer to data ...
                 e1->add(get<string>(m.at(i)).c_str());
             }
         }
