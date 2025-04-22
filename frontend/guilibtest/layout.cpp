@@ -61,7 +61,7 @@ void group_method(
 {
     if (c == "RESIZABLE") {
         auto rsw = WidgetData::get_widget(get<string>(m.at(1)));
-        static_cast<Fl_Group *>(w)->resizable(rsw);
+        w->as_group()->resizable(rsw);
     } else if (c == "fit_to_parent") {
         if (auto parent = w->parent()) {
             w->resize(0, 0, parent->w(), parent->h());

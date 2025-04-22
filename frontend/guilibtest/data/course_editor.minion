@@ -75,22 +75,13 @@ GUI: [
     NAME: TableRow
     PARENT: ViewSelect
     DO: [
+      [LABEL "X X X X X X:" 10] # adds padding box for label
       [clear_visible_focus]
       [FIXED 150]
       [ADD "FB: Fritz Jolander Jeremias Braun"
            "DG: Diego Garcia"
            "PM: Pamela Masterson"
       ]
-    ]
-  }
-  # The label of the output widget allocates no space of its own,
-  # overwriting anything to the left of the widget, so add padding.
-  {
-    NEW: Box
-    NAME: pad1
-    PARENT: ViewSelect
-    DO: [
-      [FIXED 100] # TODO: TableTotals label width + 20
     ]
   }
   {
@@ -101,10 +92,7 @@ GUI: [
       [COLOUR &OUTPUT_COLOUR]
       [VALUE "Read only ˝Öößŋħĸ€"]
       [clear_visible_focus]
-      [LABEL "Total lessons:"]
-      [measure_label]
-      # Consider a special method to insert a padding box before
-      # this widget?
+      [LABEL "Total lessons:" 20] # adds padding box for label
     ]
   }
 

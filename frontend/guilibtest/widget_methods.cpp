@@ -1,4 +1,6 @@
 #include "widget_methods.h"
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Flex.H>
 #define MAGIC_ENUM_RANGE_MIN 0
 #define MAGIC_ENUM_RANGE_MAX 255
 #include "magic_enum/magic_enum.hpp"
@@ -30,6 +32,23 @@ Fl_Color colour_param(
     minion::MinionList m, int i)
 {
     return get_colour(get<string>(m.at(i)));
+}
+
+void left_label(
+    Fl_Widget *w, minion::MinionList m)
+{
+    // In an Hlayout an empty box will be inserted as the the widget
+    // itself allocates no space for the label.
+    auto lbl = get<string>(m.at(1));
+    w->copy_label(lbl.c_str());
+    auto pw = dynamic_cast<Fl_Flex *>(w->parent());
+    if (pw && pw->horizontal()) {
+        auto padbox = new Fl_Box(0, 0, 0, 0);
+        pw->insert(*padbox, w);
+        int wl, hl;
+        w->measure_label(wl, hl);
+        pw->fixed(padbox, wl + int_param(m, 2));
+    }
 }
 
 /*TODO: move somewhere more appropriate ... DEPRECATED? see minion.h

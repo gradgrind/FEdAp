@@ -1,7 +1,9 @@
 #include "layout.h"
 #include "minion.h"
+#include "widget_methods.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Flex.H>
 #include <FL/Fl_Output.H>
 using namespace std;
 using mmap = minion::MinionMap;
@@ -16,6 +18,8 @@ void choice_method(
             // handled by the widget?
             static_cast<Fl_Choice *>(w)->add(get<string>(m.at(i)).c_str());
         }
+    } else if (c == "LABEL") {
+        left_label(w, m);
     } else {
         widget_method(w, c, m);
     }
@@ -28,8 +32,8 @@ void input_method(
         //TODO: Do I need to store the string somewhere, or is that
         // handled by the widget?
         static_cast<Fl_Input *>(w)->value(get<string>(m.at(1)).c_str());
-    } else if (c == "???") {
-        //TODO
+    } else if (c == "LABEL") {
+        left_label(w, m);
     } else {
         widget_method(w, c, m);
     }
