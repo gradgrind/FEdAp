@@ -117,7 +117,11 @@ void RowTable::set_rows(
 Fl_Widget *NEW_RowTable(
     MinionMap param)
 {
-    return new RowTable();
+    auto widg = new RowTable();
+    widg->color(widg->bg);
+    widg->col_header_color(widg->header_bg);
+    widg->row_header_color(widg->header_bg);
+    return widg;
 }
 
 void RowTable::draw_cell(
@@ -166,7 +170,7 @@ void RowTable::draw_cell(
         fl_color(FL_GRAY0);
         fl_draw(data[ROW][COL].c_str(), X, Y, W, H, FL_ALIGN_CENTER);
         // Draw box border
-        fl_color(color());
+        fl_color(0xb0b0b000);
         fl_rect(X, Y, W, H);
         fl_pop_clip();
         return;

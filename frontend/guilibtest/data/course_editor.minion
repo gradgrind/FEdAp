@@ -1,5 +1,6 @@
 &APP_WIDTH: 1000
 &APP_HEIGHT: 700
+&BACKGROUND: f0f0f0
 &OUTPUT_COLOUR: ffffc8
 
 GUI: [
@@ -10,7 +11,7 @@ GUI: [
     HEIGHT: &APP_HEIGHT
     #ESC_CLOSES: 1
     DO: [
-      [COLOUR ffffff]
+      [COLOUR &BACKGROUND]
     ]
   }
   {
@@ -98,19 +99,30 @@ GUI: [
 
   # Top Panel – end
 
+  # Left/Right: table and editor form
+  {
+    NEW: Hlayout
+    NAME: Content
+    PARENT: CourseEditor
+    DO: [
+      [GAP 3]
+    ]
+  }
+  
   # TODO...
   
   {
     NEW: RowTable
     NAME: T1
-    PARENT: CourseEditor
+    PARENT: Content
     DO: [
+      # [COLOUR &BACKGROUND]
       [col_headers "Col 1" "Column 2" "Col 3" "Col 4"]
       [col_header_height 30]
       # [row_headers "Row 1" "Long row 2" "Row 3"]
       [row_header_width 80]
       [row_height_all 30]
-      [col_header_color e8e8ff]
+      # [col_header_color ffe8e8]
       [row_header_color ffe8e8]
       [add_row "Row 1" A B C D]
       [add_row "Long Row 2" a b c d]
@@ -118,6 +130,28 @@ GUI: [
     ]
   }
   
+  {
+    NEW: EditForm
+    NAME: EditorForm
+    PARENT: Content
+    DO: [
+      [FIXED 300]
+      [ENTRY EF1 First]
+      [SEPARATOR]
+      [ENTRY EF2 Second]
+      [LIST EF3 "List entry"]
+    ]
+  }
+  
+  {
+    WIDGET: EditorForm
+    DO: [
+      [SET EF1 "Changed First"]
+      [SET EF3 "New list 1" "New list 2"]
+    ]
+  }
+  
+  # Starting up the main window
   {
     WIDGET: MainWindow
     DO: [

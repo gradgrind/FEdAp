@@ -60,6 +60,9 @@ void Handle_NEW(
         } else if (wtype == "RowTable") {
             w = NEW_RowTable(m);
             h = rowtable_method;
+        } else if (wtype == "EditForm") {
+            w = NEW_EditForm(m);
+            h = editform_method;
         } else {
             throw fmt::format("Unknown widget type: {}", wtype);
         }

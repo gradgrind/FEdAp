@@ -32,6 +32,9 @@ public:
     void set_cols(int n);
     void set_rows(int n);
 
+    Fl_Color bg{0xf0f0f000};
+    Fl_Color header_bg{0xe0e0e000};
+
     std::vector<std::vector<std::string>> data; // data array for cells
     std::vector<std::string> row_headers;
     std::vector<std::string> col_headers;

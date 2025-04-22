@@ -25,6 +25,8 @@ add_executable(guilibtest main.cpp
     functions.h
     functions.cpp
     rowtable.h rowtable.cpp
+    editform.h
+    editform.cpp
 
 
 

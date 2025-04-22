@@ -92,8 +92,16 @@ void flex_method(
 void grid_method(
     Fl_Widget *w, string_view c, mlist m)
 {
-    if (c == "???") {
-        // TODO
+    if (c == "GAP") {
+        int szr = int_param(m, 1);
+        int szc = szr;
+        if (m.size() > 2) {
+            szc = int_param(m, 2);
+        }
+        static_cast<Fl_Grid *>(w)->gap(szr, szc);
+    } else if (c == "MARGIN") {
+        int sz = int_param(m, 1);
+        static_cast<Fl_Grid *>(w)->margin(sz, sz, sz, sz);
     } else {
         group_method(w, c, m);
     }

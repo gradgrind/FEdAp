@@ -38,6 +38,7 @@ void input_method(
         widget_method(w, c, m);
     }
 }
+
 // *** Non-layout widgets ***
 
 Fl_Widget *NEW_Box(
