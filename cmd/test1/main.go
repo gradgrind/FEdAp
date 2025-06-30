@@ -5,6 +5,7 @@ import (
 	"fedap/mugui"
 	"fedap/readxml"
 	"fedap/ttbase"
+	"fedap/ttengine"
 	"fmt"
 	"math/rand/v2"
 	"path/filepath"
@@ -136,6 +137,6 @@ func main() {
 		ttinfo := ttbase.MakeTtInfo(db)
 		ttinfo.PrepareCoreData()
 
-		//PlaceLessons(ttinfo)
+		ttengine.PlaceLessons(ttinfo)
 	}
 }
