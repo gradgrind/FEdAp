@@ -1,7 +1,7 @@
 package ttbase
 
 import (
-	"W365toFET/base"
+	"fedap/base"
 )
 
 func filterDivisions(ttinfo *TtInfo) {

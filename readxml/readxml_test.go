@@ -1,9 +1,9 @@
 package readxml
 
 import (
-	"W365toFET/base"
-	"W365toFET/fet"
-	"W365toFET/ttbase"
+	"fedap/base"
+	"fedap/fet"
+	"fedap/ttbase"
 	"fmt"
 	"os"
 	"path/filepath"

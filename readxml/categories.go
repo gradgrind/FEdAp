@@ -1,8 +1,7 @@
 package readxml
 
 import (
-	"W365toFET/base"
-	"W365toFET/w365tt"
+	"fedap/base"
 	"strings"
 )
 
@@ -35,7 +34,7 @@ func (cdata *conversionData) withLunchBreak(
 // Return true if the flag is set.
 func (cdata *conversionData) isStandIns(
 	refs RefList, // Category list
-	nodeId w365tt.Ref, // Class
+	nodeId Ref, // Class
 ) bool {
 	//fmt.Printf("Categories for Class %s:\n", nodeId)
 	for _, catref := range splitRefList(refs) {

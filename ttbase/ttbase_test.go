@@ -1,8 +1,8 @@
 package ttbase
 
 import (
-	"W365toFET/base"
-	"W365toFET/readxml"
+	"fedap/base"
+	"fedap/readxml"
 	"fmt"
 	"slices"
 	"testing"

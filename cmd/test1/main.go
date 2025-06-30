@@ -14,6 +14,8 @@ var inputfiles = []string{
 	"../../testdata/readxml/x01.xml",
 }
 
+type Penalty int64
+
 func test1() {
 	N := 1000000
 	// (0), 1:0, 2:1, 3:2, 4:5, 5:7, 6:0, 7:4, 8:1
@@ -97,6 +99,6 @@ func main() {
 		ttinfo := ttbase.MakeTtInfo(db)
 		ttinfo.PrepareCoreData()
 
-		PlaceLessons(ttinfo)
+		//PlaceLessons(ttinfo)
 	}
 }

@@ -1,7 +1,7 @@
 package ttbase
 
 import (
-	"W365toFET/base"
+	"fedap/base"
 )
 
 // By trying all slots for all (non-fixed) activities just after the fixed

@@ -1,7 +1,7 @@
 package readxml
 
 import (
-	"W365toFET/base"
+	"fedap/base"
 	"fmt"
 	"slices"
 )
