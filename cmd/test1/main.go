@@ -2,11 +2,15 @@ package main
 
 import (
 	"fedap/base"
+	"fedap/mugui"
 	"fedap/readxml"
 	"fedap/ttbase"
 	"fmt"
 	"math/rand/v2"
+	"path/filepath"
 	"slices"
+
+	"github.com/gradgrind/gominion"
 )
 
 var inputfiles = []string{
@@ -65,9 +69,42 @@ func test2() {
 	fmt.Println()
 }
 
+func testgui() {
+	fp, err := filepath.Abs(
+		filepath.Join("../../guidata/studentgroups1.minion"))
+	if err != nil {
+		panic(err)
+	}
+	fpm := fmt.Sprintf(
+		`[[MINION_FILE,"%s"],[WIDGET,MainWindow,[SHOW]],[RUN]]`,
+		fp)
+	mugui.MinionGui(fpm, callback)
+}
+
+func callback(data string) string {
+	fmt.Printf("Go callback got '%s'\n", data)
+	v := gominion.ReadMinion(data)
+	if e, ok := v.(gominion.MError); ok {
+		fmt.Println(" *** Error ***")
+		fmt.Println(e)
+	} else {
+		fmt.Println("  -->")
+		fmt.Println(gominion.DumpMinion(v, -1))
+	}
+	mm := v.(gominion.MList)
+	var wname string
+	mm.GetString(0, &wname)
+
+	cbr := "[]"
+	fmt.Println("CB: " + cbr)
+	return cbr
+}
+
 func main() {
-	test1()
-	return
+	//test1()
+	//test2()
+	//testgui()
+	//return
 
 	base.OpenLog("")
 	for _, fxml := range inputfiles {

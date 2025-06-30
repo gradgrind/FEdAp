@@ -1,0 +1,243 @@
+# student groups
+&APP_WIDTH: 800,
+&APP_HEIGHT: 500,
+[
+  [SETUP,      
+    # [BACKGROUND, ffffff],
+    # [BACKGROUND2, c8ffff],
+    # [FOREGROUND, 804040]
+    [BACKGROUND, 202020],
+    [BACKGROUND2, 404040],
+    [FOREGROUND, f0f0f0],
+    [SELECTION_BACKGROUND, a0a0f0],
+  ],
+  
+  [NEW, Window, MainWindow, {
+      FLOATING: 1,
+      WIDTH: &APP_WIDTH,
+      HEIGHT: &APP_HEIGHT,
+      #ESC_CLOSES: 1,
+    },
+    [TEXT, "Buttons Test"]
+  ],
+  # Class / student-group list
+  [NEW, Label, _l1, {
+      BOXTYPE: BORDER_BOX,
+      LABEL_ALIGN: LEFT,
+      GRID_ALIGN: FILL,
+    },
+    [COLOUR, a00000],
+    [TEXT, Klassen]
+  ],
+  [NEW, List, classlist, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [SET, 1, 2, 9, 10, 11],
+    [WIDTH, 100],
+    [HEIGHT, 400]
+  ],
+  [NEW, Vlayout, _v1, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [ADD, _l1, classlist],
+    [WIDTH, 100],
+  ],
+  
+  [NEW, PushButton, up1, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "▲"]
+  ],
+  [NEW, PushButton, dn1, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "▼"]
+  ],
+  [NEW, PushButton, add1, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "✚"]
+  ],
+  [NEW, PushButton, del1, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "━"]
+  ],
+  [NEW, Vlayout, _buttons1, {
+      GAP: 20,
+      GRID_ALIGN: VERTICAL,
+    },
+    # [ADD, up1, dn1, add1, del1]
+  ],
+  [WIDGET, _buttons1, [ADD, up1]],
+  [WIDGET, _buttons1, [ADD, dn1]],
+  [WIDGET, _buttons1, [ADD, add1]],
+  [WIDGET, _buttons1, [ADD, del1]],
+  
+  # Divisions list
+  [NEW, Label, _l2, {
+      BOXTYPE: BORDER_BOX,
+      LABEL_ALIGN: LEFT,
+      GRID_ALIGN: FILL,
+    },
+    [COLOUR, a00000],
+    [TEXT, Teilungen],
+  ],
+  [NEW, List, divisions, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [SET, Hauptteilung, KP],
+    [WIDTH, 100],
+  ],
+  [NEW, Vlayout, _v2, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [ADD, _l2, divisions],
+    [WIDTH, 150],
+  ],
+  
+  [NEW, PushButton, up2, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "▲"]
+  ],
+  [NEW, PushButton, dn2, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "▼"]
+  ],
+  [NEW, PushButton, add2, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "✚"]
+  ],
+  [NEW, PushButton, del2, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "━"]
+  ],
+  [NEW, Vlayout, _buttons2, {
+      GAP: 20,
+      GRID_ALIGN: VERTICAL,
+    },
+    [ADD, up2, dn2, add2, del2]
+  ],
+  
+  # Groups list
+  [NEW, Label, _l3, {
+      BOXTYPE: BORDER_BOX,
+      LABEL_ALIGN: LEFT,
+      GRID_ALIGN: FILL,
+    },
+    [COLOUR, a00000],
+    [TEXT, Gruppen]
+  ],
+  [NEW, List, groups, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [SET, A, BG, R],
+    [WIDTH, 100],
+  ],
+  [NEW, Vlayout, _v3, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [ADD, _l3, groups],
+    [WIDTH, 100],
+  ],
+  
+  [NEW, PushButton, up3, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "▲"]
+  ],
+  [NEW, PushButton, dn3, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "▼"]
+  ],
+  [NEW, PushButton, add3, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "✚"]
+  ],
+  [NEW, PushButton, del3, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "━"]
+  ],
+  [NEW, Vlayout, _buttons3, {
+      GAP: 20,
+      GRID_ALIGN: VERTICAL,
+    },
+    [ADD, up3, dn3, add3, del3]
+  ],
+   
+  # Special (combining) groups
+  [NEW, Label, _l4, {
+      BOXTYPE: BORDER_BOX,
+      LABEL_ALIGN: LEFT,
+      GRID_ALIGN: FILL,
+    },
+    [COLOUR, a00000],
+    [TEXT, Sondergruppen]
+  ],
+  [NEW, List, xgroups, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [SET, B, G],
+    [WIDTH, 100],
+  ],
+  [NEW, Vlayout, _v4, {
+      GRID_ALIGN: FILL,
+      GRID_GROW: 1
+    },
+    [ADD, _l4, xgroups],
+    [WIDTH, 100],
+  ],
+  
+  [NEW, PushButton, up4, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "@8->"]
+  ],
+  [NEW, PushButton, dn4, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "@2->"]
+  ],
+  [NEW, PushButton, add4, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "@+"]
+  ],
+  [NEW, PushButton, del4, {
+      GRID_ALIGN: FILL,
+  },
+    [TEXT, "@line"]
+  ],
+  [NEW, Vlayout, _buttons4, {
+      GAP: 20,
+      GRID_ALIGN: VERTICAL,
+    },
+    [ADD, up4, dn4, add4, del4]
+  ],
+  
+  [NEW, Hlayout, l_MainWindow, {
+      MARGIN: 5,
+      GAP: 10,
+      BOXTYPE: BORDER_BOX,
+      FLOATING: 1      
+    },
+    # [COLOUR, ffff00], # No effect if (FL_NO_BOX)
+    [ADD, _v1, _buttons1, _v2, _buttons2, _v3, _buttons3, _v4, _buttons4]
+  ],
+
+  [WIDGET, MainWindow, [SET_LAYOUT, l_MainWindow]]
+]
