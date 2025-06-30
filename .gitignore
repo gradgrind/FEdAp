@@ -3,7 +3,7 @@ CMakeLists.txt.user
 old
 
 _*
-.*
+.vscode/
 *.log
 
 # Test binary, built with `go test -c`
