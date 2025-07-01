@@ -5,11 +5,12 @@ import (
 	"fedap/mugui"
 	"fedap/readxml"
 	"fedap/ttbase"
-	"fedap/ttengine"
 	"fmt"
 	"math/rand/v2"
+	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/gradgrind/gominion"
 )
@@ -54,14 +55,14 @@ func test2() {
 	N := 1000000
 	rmap := map[int]int{}
 	ILIM := int(total) + 1
-	for c := 0; c < N; c++ {
+	for range N {
 		r := rand.IntN(ILIM)
 		i, _ := slices.BinarySearch(pvec, Penalty(r))
 		//fmt.Printf(" ??? %d --> %d\n", r, i)
 		rmap[i]++
 	}
 	fmt.Println(" -->")
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		n, ok := rmap[i]
 		if ok {
 			fmt.Printf(" %d: %+f\n", i, float32(n)*float32(ILIM)/float32(N))
@@ -137,6 +138,14 @@ func main() {
 		ttinfo := ttbase.MakeTtInfo(db)
 		ttinfo.PrepareCoreData()
 
-		ttengine.PlaceLessons(ttinfo)
+		j := ttbase.TtInfoToJson(ttinfo)
+		jfp := filepath.Base(fxml)
+		jfp = strings.TrimSuffix(jfp, filepath.Ext(jfp)) + "_tt.json"
+		err := os.WriteFile(jfp, j, 0644)
+		if err != nil {
+			panic(err)
+		}
+
+		//ttengine.PlaceLessons(ttinfo)
 	}
 }

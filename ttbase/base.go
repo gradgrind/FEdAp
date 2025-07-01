@@ -1,6 +1,7 @@
 package ttbase
 
 import (
+	"encoding/json"
 	"fedap/base"
 	"slices"
 )
@@ -62,6 +63,16 @@ type TtInfo struct {
 	ParallelLessons       []ParallelLessons
 
 	WITHOUT_ROOM_PLACEMENTS bool // ignore initial room placements
+}
+
+func TtInfoToJson(ttinfo *TtInfo) []byte {
+	u, err := json.Marshal(ttinfo)
+	//u, err := json.MarshalIndent(ttinfo, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	//fmt.Println(string(u))
+	return u
 }
 
 func MakeTtInfo(db *base.DbTopLevel) *TtInfo {

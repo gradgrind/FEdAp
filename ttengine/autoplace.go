@@ -146,7 +146,7 @@ func (pmon *placementMonitor) basicLoop() {
 		if bestunplaced == 0 {
 			//return // to exit when all activities have been placed
 			if end0 == 0 {
-				end0 = bestscore / 10
+				end0 = bestscore / 4
 			}
 			if bestscore <= end0 {
 				return
