@@ -1,35 +1,11 @@
-# Courses Editor
+# Courses
 
-The courses editor shows a table of courses filtered by class or teacher. It may be useful to offer filtering on lesson subject, too.
+_Courses_ group associated _Resources_ (student-groups, teachers, rooms) with a set of _Activities_ (primarily lessons, but they could cover all sorts of things), for which suitable time-slots must be found.
 
-## Courses, Supercourses and Subcourses
+Three types of "course" are supported. The "normal" type is just called a _Course_, where the same activity is to take place at the same time every week. Some courses, however, are taught in blocks of, say, a few weeks at the same time every week. Other course blocks occupy the same weekly time-slots, but at other times in the year. This eventuality is covered by what are here called _SuperCourses_ and _SubCourses_. A _SuperCourse_ occupies regular time-slots, just like a normal _Course_, but has no directly associated _Resources_. Associated with the _SuperCourse_ are a number of _SubCourses_, which specify the _Resources_ for each of the real courses which are to take place in the time slots. To enable more elaborate course time arrangements, a _SubCourse_ can be associated with more than one _SuperCourse_.
 
-Three types of course are supported. A standard course has a subject, one or more teachers, one or more student groups, a room specification and a number of lesson durations (the durations of the individual lessons in a school week). Apart from the subject these are all optional, allowing some flexibility in regard to what a "course" actually is – it could also cover teachers' meetings, lunch-breaks, etc. There will also be other optional parameters to cover constraints.
+Each _Course_ and _SuperCourse_ has a list of activity durations (the unit being a school lesson period), determining the _Activities_ associated with this course. At least in the case of a _SuperCourse_, the term _Activity_ refers to a "lesson" in the broadest sense. It is a concept relevant primarily to the construction of the timetable, an _Activity_ is an item which is to be placed in one or more (depending on its duration) consecutive timetable slots.
 
-Courses can also be grouped together, for example when there are particular time-slots in the week in which the courses are taught in a concentrated way for a number of weeks, followed by some weeks of another course, and so on throughout the year. For the timetable, these "supercourses" need their own names, in the same way that standard courses have a subject name. The "subcourses" which are the individual teaching blocks of the supercourses, are much like standard courses, except that they don't have lesson durations, these being supplied by the supercourse to which they belong. Also timetable constraints for these courses will be a function of the supercourse, though the subcourses might well have configuration parameters for uses outside of the timetable module.
+## When might a _SubCourse_ be associated with more than one _SuperCourse_?
 
-The filtered course tables contain standard courses and subcourses. The tables are read-only. To allow editing of the entries there is also a panel, rather like an HTML form. In this panel there are also controls to show and edit the supercourse of a subcourse. Certain properties of a subcourse (especially the lesson durations) are actually properties of the supercourse, so where these are shown as belonging to the subcourse, the values will be shared by all subcourses of this supercourse. Thus, when a subcourse is edited it may not be enough to redisplay just the subcourse itself, it might be necessary to redisplay all the other subcourses of the supercourse as well. The extra cost of redisplaying the whole table might not be so great, so that it might be sensible to redisplay the whole table when a change is made.
-
-A complication is that a subcourse can "belong" to more than one supercourse.
-It is understandable in that the subgroup basically – as far as
-the timetabling is concerned – functions as a set of "resources"
-(teachers, groups, etc.). The supercourses provide the lessons (and a
-name/tag). Thus the panel specifying the supercourses must allow for more than one entry. Selection of one of these would then show the lessons (and perhaps constraints) associated with this supercourse. In the main course table, the lessons field would show the lessons from all supercourses associated with a subcourse.
-
-## Table fields
-
-The table has the following fields (columns):
-    subject, groups, teachers, lesson lengths, properties(?), rooms
-
-## Editor form fields
-The side panel ("form") allows editing of the selected course and has, in addition to the table's editable fields and the supercourse information, the following fields:
-    block-name, block-subject, constraints
-
-## Summary information
-
-There might also be summary information about the number of lessons for
-the teacher or groups set in the filter determining the courses shown.
-
-## Editing operations
-
-Apart from editing the various fields of a course, it should be possible to delete courses and add new ones. Further, a course may be added to a supercourse (possibly defining a new supercourse). If the supercourse is new, it has no lessons and those of the subcourse (if any) could be transferred to the supercourse. Otherwise the course's lessons should be discarded, perhaps with a warning. Also removing a course from a supercourse should be possible. The lessons of that supercourse would no longer be relevant for the subcourse, however, if it has no other supercourse, the lessons could be copied (or transferred if the change results in the supercourse being discarded completely).
+A number of time-slots within the week may be set aside for teaching blocks in which multiple classes are involved. A reason might be that the teachers for the courses which are to take place in these blocks are active in more than one class. It might not be typical, but it is possible that the exact times are slightly different in the various classes. Consider a case in which the normal distribution of times is the first two lessons of each day (every day). In one class, however, the time must be different on one day. To cover this case, three _SuperCourses_ could be used, one for the days where all classes have the same times, the other two for the two times on the special day. All _SubCourses_ would be associated with the first of these _SuperCourses_ and also with one of the other two, depending on which class they are aimed at.
