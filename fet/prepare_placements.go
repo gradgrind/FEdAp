@@ -17,6 +17,8 @@ type TtData struct {
 	ResourceWeeks [][]int
 	TeacherIndex  map[string]int
 	GroupIndexes  map[string][]int
+	RoomIndex     map[string]int
+	VirtualRooms  map[string]TtVirtualRoom
 }
 
 type TtTeacher struct {
@@ -25,10 +27,15 @@ type TtTeacher struct {
 	ResourceIndex int
 }
 
-type TtClass struct {
-	Id  Ref
-	Tag string
-	//ResourceIndex int
+type TtRoom struct {
+	Id            Ref
+	Tag           string
+	ResourceIndex int
+}
+
+type TtVirtualRoom struct {
+	RoomIndexes       []int
+	RoomChoiceIndexes [][]int
 }
 
 type TtAtomicGroup struct {
@@ -46,6 +53,8 @@ func prepare_placements(fetdata *fet) {
 
 	tt_data.TeacherIndex = map[string]int{}
 	tt_data.GroupIndexes = map[string][]int{}
+	tt_data.RoomIndex = map[string]int{}
+	tt_data.VirtualRooms = map[string]TtVirtualRoom{}
 
 	for _, t := range fetdata.Teachers_List.Teacher {
 		tid := base.NewId()
@@ -125,12 +134,60 @@ func prepare_placements(fetdata *fet) {
 		}
 	}
 
-	//TODO: Rooms can be real or virtual. The rooms are attached to the activities
-	// indirectly, via constraints. These can specify a list of rooms from which
-	// one is to be chosen. If there is more than one, they must (here) be all
-	// real. A single room may be real or virtual.
-	// All rooms used in a virtual room should be real (here). FET may well support
-	// more complex arrangements, but that may be too much here.
+	// Teachers and groups are referenced directly in the Activity nodes.
+	// Rooms are not, they are attached to the activities by constraints. The
+	// constraints specify a list of rooms from which one is to be chosen.
+	// To complicate matters, there are – in addition to the "real" rooms –
+	// "virtual" rooms. If the choice list contains just one room, it may be real
+	// or virtual, otherwise only real rooms are acceptable.
+	// A virtual room contains a list of needed real rooms and a list of room
+	// choices, whose components must also be real rooms.
+	// FET may well support more complex arrangements which are currently not
+	// supported by this scheme.
+
+	for _, r := range fetdata.Rooms_List.Room {
+		//TODO: The handling of virtual rooms may need delaying until all the
+		// real rooms have been read.
+		if r.Virtual {
+			// This is basically a list of room choices, where each "choice"
+			// may actually be a single room, i.e. no choice!
+			item_p := TtVirtualRoom{}
+			for _, rset := range r.Set_of_Real_Rooms {
+				if rset.Number_of_Real_Rooms == 1 {
+					r := rset.Real_Room[0]
+					tix, ok := tt_data.RoomIndex[r]
+					if ok {
+						item_p.RoomIndexes = append(item_p.RoomIndexes, tix)
+					} else {
+						base.Error.Fatalf("Unknown (real) room: %s", r)
+					}
+				} else {
+					rooms := []int{}
+					for _, r := range rset.Real_Room {
+						tix, ok := tt_data.RoomIndex[r]
+						if ok {
+							rooms = append(rooms, tix)
+						} else {
+							base.Error.Fatalf("Unknown (real) room: %s", r)
+						}
+					}
+					item_p.RoomChoiceIndexes = append(item_p.RoomChoiceIndexes,
+						rooms)
+				}
+			}
+			tt_data.VirtualRooms[r.Name] = item_p
+
+		} else {
+			tid := base.NewId()
+			tix := len(tt_data.Resources)
+			item_p := &TtRoom{tid, r.Name, tix}
+			tt_data.Resources = append(tt_data.Resources, item_p)
+			tt_data.RoomIndex[r.Name] = tix
+			tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
+				make([]int, slots_per_week))
+		}
+
+	}
 
 	//TODO: Blocked time-slots, different-days (and other constraints?)
 }
