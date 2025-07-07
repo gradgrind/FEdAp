@@ -17,6 +17,10 @@ add_executable(ttplacer
     ../mugui/minion.cpp
     ../mugui/iofile.cpp
     baseconstraint.h baseconstraint.cpp
+    activity.h activity.cpp
+    prng.h
+    course.h course.cpp
+    structures.h
 )
     
 target_include_directories(ttplacer PUBLIC ../mugui)
