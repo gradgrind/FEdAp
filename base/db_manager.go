@@ -12,7 +12,7 @@ func NewDb() *DbTopLevel {
 	return db
 }
 
-func (db *DbTopLevel) newId() Ref {
+func NewId() Ref {
 	// Create a Version 4 UUID.
 	u2, err := uuid.NewV4()
 	if err != nil {
@@ -23,7 +23,7 @@ func (db *DbTopLevel) newId() Ref {
 
 func (db *DbTopLevel) addElement(ref Ref, element any) Ref {
 	if ref == "" {
-		ref = db.newId()
+		ref = NewId()
 	}
 	_, nok := db.Elements[ref]
 	if nok {
