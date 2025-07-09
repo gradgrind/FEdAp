@@ -52,10 +52,10 @@ type fet struct {
 	Space_Constraints_List spaceConstraints
 }
 
-func ReadFet(data []byte) {
-	var fetdata fet
-	xml.Unmarshal(data, &fetdata)
-	prepare_placements(&fetdata)
+func ReadFet(data []byte) *fet {
+	fetdata := &fet{}
+	xml.Unmarshal(data, fetdata)
+	return fetdata
 }
 
 func weight2fet(w int) string {

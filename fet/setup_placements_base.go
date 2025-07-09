@@ -15,10 +15,14 @@ type TtData struct {
 	NHours        int
 	Resources     []any
 	ResourceWeeks [][]int
+	DayIndex      map[string]int
+	HourIndex     map[string]int
 	TeacherIndex  map[string]int
 	GroupIndexes  map[string][]int
 	RoomIndex     map[string]int
 	VirtualRooms  map[string]TtVirtualRoom
+	Activities    []TtActivity
+	MapActivity   map[int]int // translate activity id, FET -> internal
 }
 
 type TtTeacher struct {
@@ -44,10 +48,23 @@ type TtAtomicGroup struct {
 	ResourceIndex int
 }
 
-func prepare_placements(fetdata *fet) {
-	tt_data := TtData{}
+func (tt_data *TtData) TimeSlotIndex(day string, hour string) int {
+	d := tt_data.DayIndex[day]
+	h := tt_data.HourIndex[hour]
+	return d*tt_data.NHours + h
+}
+
+func (tt_data *TtData) PrepareResources(fetdata *fet) {
 	tt_data.NDays = fetdata.Days_List.Number_of_Days
+	tt_data.DayIndex = map[string]int{}
+	for i, d := range fetdata.Days_List.Day {
+		tt_data.DayIndex[d.Name] = i
+	}
 	tt_data.NHours = fetdata.Hours_List.Number_of_Hours
+	tt_data.HourIndex = map[string]int{}
+	for i, h := range fetdata.Hours_List.Hour {
+		tt_data.HourIndex[h.Name] = i
+	}
 	slots_per_week := tt_data.NDays * tt_data.NHours
 	fmt.Printf("n days = %d, n hours = %d\n", tt_data.NDays, tt_data.NHours)
 
@@ -176,6 +193,7 @@ func prepare_placements(fetdata *fet) {
 				}
 			}
 			tt_data.VirtualRooms[r.Name] = item_p
+			fmt.Printf("ROOM: %s – %v\n", r.Name, item_p)
 
 		} else {
 			tid := base.NewId()
@@ -185,9 +203,8 @@ func prepare_placements(fetdata *fet) {
 			tt_data.RoomIndex[r.Name] = tix
 			tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
 				make([]int, slots_per_week))
+			fmt.Printf("ROOM: %s – %d\n", r.Name, tix)
 		}
 
 	}
-
-	//TODO: Blocked time-slots, different-days (and other constraints?)
 }

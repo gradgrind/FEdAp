@@ -31,7 +31,12 @@ func main() {
 		byteValue, _ := io.ReadAll(xmlFile)
 
 		// Parse XML to FET structure
-		fet.ReadFet(byteValue)
+		fetdata := fet.ReadFet(byteValue)
+
+		tt_data := &fet.TtData{}
+		tt_data.PrepareResources(fetdata)
+		tt_data.SetupActivities(fetdata)
+		tt_data.ResourceBlocking(fetdata)
 
 		/*
 			db := cdata.Db()

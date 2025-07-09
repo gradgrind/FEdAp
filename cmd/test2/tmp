@@ -1,0 +1,896 @@
+
+ ++++++++++++++++++++++
+n days = 5, n hours = 10
+n teachers: 39
+§ 1.A - [39]
+§ 1.B - [40]
+§§ 1 - [39 40]
+§ 2.F - [41 42]
+§ 2.R - [43 44]
+§ 2.A - [41 43]
+§ 2.B - [42 44]
+§§ 2 - [41 42 43 44]
+§ 3.A - [45 46 47 48]
+§ 3.B - [49 50 51 52]
+§ 3.F - [45 46 49 50]
+§ 3.R - [47 48 51 52]
+§ 3.C - [45 47 49 51]
+§ 3.K - [46 48 50 52]
+§§ 3 - [45 46 47 48 49 50 51 52]
+§ 4.A - [53 54 55 56]
+§ 4.B - [57 58 59 60]
+§ 4.F - [53 54 57 58]
+§ 4.R - [55 56 59 60]
+§ 4.C - [53 55 57 59]
+§ 4.K - [54 56 58 60]
+§§ 4 - [53 54 55 56 57 58 59 60]
+§ 5.A - [61 62 63 64]
+§ 5.B - [65 66 67 68]
+§ 5.F - [61 62 65 66]
+§ 5.R - [63 64 67 68]
+§ 5.C - [61 63 65 67]
+§ 5.K - [62 64 66 68]
+§§ 5 - [61 62 63 64 65 66 67 68]
+§ 6.A - [69 70 71 72]
+§ 6.B - [73 74 75 76]
+§ 6.F - [69 70 73 74]
+§ 6.R - [71 72 75 76]
+§ 6.K - [69 71 73 75]
+§ 6.C - [70 72 74 76]
+§§ 6 - [69 70 71 72 73 74 75 76]
+§ 7.B - [77 78 79 80]
+§ 7.A - [81 82 83 84]
+§ 7.R - [77 78 81 82]
+§ 7.F - [79 80 83 84]
+§ 7.C - [77 79 81 83]
+§ 7.K - [78 80 82 84]
+§§ 7 - [77 78 79 80 81 82 83 84]
+§ 8.B - [85 86 87]
+§ 8.A - [88 89 90]
+§ 8.F - [85 88]
+§ 8.R - [86 89]
+§ 8.P - [87 90]
+§§ 8 - [85 86 87 88 89 90]
+§ 9.A - [91 92 93 94 95 96]
+§ 9.B - [97 98 99 100 101 102]
+§ 9.F - [91 92 97 98]
+§ 9.P - [93 94 99 100]
+§ 9.R - [95 96 101 102]
+§ 9.U - [91 93 95 97 99 101]
+§ 9.V - [92 94 96 98 100 102]
+§§ 9 - [91 92 93 94 95 96 97 98 99 100 101 102]
+§ 10.A - [103 104 105 106 107 108]
+§ 10.B - [109 110 111 112 113 114]
+§ 10.F - [103 104 109 110]
+§ 10.P - [105 106 111 112]
+§ 10.R - [107 108 113 114]
+§ 10.U - [103 105 107 109 111 113]
+§ 10.V - [104 106 108 110 112 114]
+§§ 10 - [103 104 105 106 107 108 109 110 111 112 113 114]
+§ 11.A - [115 116 117 118 119 120 121 122]
+§ 11.B - [123 124 125 126 127 128 129 130]
+§ 11.F - [115 116 117 118 123 124 125 126]
+§ 11.R - [119 120 121 122 127 128 129 130]
+§ 11.G - [115 116 119 120 123 124 127 128]
+§ 11.H - [117 118 121 122 125 126 129 130]
+§ 11.FH - [115 117 119 121 123 125 127 129]
+§ 11.MR - [116 118 120 122 124 126 128 130]
+§§ 11 - [115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130]
+§ 12FH.A - [131 132 133 134]
+§ 12FH.B - [135 136 137 138]
+§ 12FH.F - [131 132 135 136]
+§ 12FH.R - [133 134 137 138]
+§ 12FH.G - [131 133 135 137]
+§ 12FH.H - [132 134 136 138]
+§§ 12FH - [131 132 133 134 135 136 137 138]
+§ 12M.A - [139 140]
+§ 12M.B - [141 142]
+§ 12M.G - [139 141]
+§ 12M.H - [140 142]
+§§ 12M - [139 140 141 142]
+§ 13.F - [143]
+§ 13.R - [144]
+§§ 13 - [143 144]
+ROOM: auv – 145
+ROOM: b – 146
+ROOM: ch – 147
+ROOM: e – 148
+ROOM: eu – 149
+ROOM: s – 150
+ROOM: fpu – 151
+ROOM: g1 – 152
+ROOM: g2 – 153
+ROOM: h1 – 154
+ROOM: h2 – 155
+ROOM: k1 – 156
+ROOM: k10 – 157
+ROOM: k11 – 158
+ROOM: k12 – 159
+ROOM: mr – 160
+ROOM: k13 – 161
+ROOM: k2 – 162
+ROOM: k3 – 163
+ROOM: k4 – 164
+ROOM: k5 – 165
+ROOM: k6 – 166
+ROOM: k7 – 167
+ROOM: k8 – 168
+ROOM: k9 – 169
+ROOM: ku1 – 170
+ROOM: ku2 – 171
+ROOM: mu – 172
+ROOM: r1 – 173
+ROOM: r2 – 174
+ROOM: th – 175
+ROOM: tr – 176
+ROOM: w1 – 177
+ROOM: w2 – 178
+ROOM: v1 – 179
+ROOM: v2 – 180
+ROOM: v3 – 181
+ROOM: v4 – 182
+ROOM: !001 – {[177 157 160 158 145 161 147 159 169] []}
+Activity fixed room, 231: 165
+Activity fixed room, 232: 165
+Activity fixed room, 233: 165
+Activity fixed room, 234: 165
+Activity fixed room, 235: 165
+Activity fixed room, 258: 160
+Activity fixed room, 259: 160
+Activity fixed room, 101: 175
+Activity fixed room, 414: 165
+Activity fixed room, 438: 159
+Activity fixed room, 439: 159
+Activity fixed room, 202: 169
+Activity fixed room, 29: 178
+Activity fixed room, 221: 159
+Activity fixed room, 222: 159
+Activity fixed room, 223: 159
+Activity fixed room, 224: 159
+Activity fixed room, 76: 168
+Activity fixed room, 46: 160
+Activity fixed room, 47: 160
+Activity fixed room, 310: 172
+Activity fixed room, 311: 172
+Activity fixed room, 395: 167
+Activity fixed room, 136: 157
+Activity fixed room, 137: 157
+Activity fixed room, 176: 160
+Activity fixed room, 177: 160
+Activity fixed room, 178: 160
+Activity fixed room, 250: 145
+Activity fixed room, 251: 145
+Activity fixed room, 252: 145
+Activity fixed room, 253: 145
+Activity fixed room, 415: 161
+Activity fixed room, 416: 161
+Activity fixed room, 56: 161
+Activity fixed room, 57: 161
+Activity fixed room, 58: 161
+Activity fixed room, 203: 145
+Activity fixed room, 204: 145
+Activity fixed room, 205: 145
+Activity fixed room, 440: 159
+Activity fixed room, 441: 159
+Activity fixed room, 211: 172
+Activity fixed room, 212: 172
+Activity fixed room, 219: 157
+Activity fixed room, 347: 175
+Activity fixed room, 87: 160
+Activity fixed room, 88: 160
+Activity fixed room, 407: [177 157 160 158 145 161 147 159 169]
+Activity fixed room, 408: [177 157 160 158 145 161 147 159 169]
+Activity fixed room, 409: [177 157 160 158 145 161 147 159 169]
+Activity fixed room, 410: [177 157 160 158 145 161 147 159 169]
+Activity fixed room, 411: [177 157 160 158 145 161 147 159 169]
+Activity fixed room, 226: 168
+Activity fixed room, 350: 157
+Activity fixed room, 44: 163
+Activity fixed room, 45: 163
+Activity fixed room, 9: 161
+Activity fixed room, 10: 161
+Activity fixed room, 119: 178
+Activity fixed room, 299: 151
+Activity fixed room, 300: 151
+Activity fixed room, 301: 151
+Activity fixed room, 383: 167
+Activity fixed room, 384: 167
+Activity fixed room, 385: 167
+Activity fixed room, 386: 167
+Activity fixed room, 387: 167
+Activity fixed room, 433: 177
+Activity fixed room, 335: 165
+Activity fixed room, 59: 178
+Activity fixed room, 36: 168
+Activity fixed room, 37: 168
+Activity fixed room, 38: 168
+Activity fixed room, 39: 168
+Activity fixed room, 40: 168
+Activity fixed room, 103: 176
+Activity fixed room, 412: 172
+Activity fixed room, 413: 172
+Activity fixed room, 345: 172
+Activity fixed room, 346: 172
+Activity fixed room, 266: 178
+Activity fixed room, 362: 168
+Activity fixed room, 160: 162
+Activity fixed room, 326: 169
+Activity fixed room, 327: 169
+Activity fixed room, 442: 176
+Activity fixed room, 161: 178
+Activity fixed room, 186: 157
+Activity fixed room, 322: 172
+Activity fixed room, 102: 172
+Activity fixed room, 302: 162
+Activity fixed room, 303: 162
+Activity fixed room, 304: 162
+Activity fixed room, 305: 162
+Activity fixed room, 306: 162
+Activity fixed room, 434: 175
+Activity fixed room, 286: 168
+Activity fixed room, 287: 168
+Activity fixed room, 288: 168
+Activity fixed room, 344: 170
+Activity fixed room, 18: 168
+Activity fixed room, 19: 168
+Activity fixed room, 262: 161
+Activity fixed room, 263: 161
+Activity fixed room, 264: 161
+Activity fixed room, 117: 175
+Activity fixed room, 244: 170
+Activity fixed room, 86: 178
+Activity fixed room, 164: 164
+Activity fixed room, 165: 164
+Activity fixed room, 371: 169
+Activity fixed room, 446: 178
+Activity fixed room, 375: 171
+Activity fixed room, 380: 156
+Activity fixed room, 210: 171
+Activity fixed room, 67: 158
+Activity fixed room, 425: 175
+Activity fixed room, 26: 177
+Activity fixed room, 27: 177
+Activity fixed room, 109: 156
+Activity fixed room, 110: 156
+Activity fixed room, 111: 156
+Activity fixed room, 112: 156
+Activity fixed room, 113: 156
+Activity fixed room, 229: 170
+Activity fixed room, 275: 166
+Activity fixed room, 11: 172
+Activity fixed room, 12: 172
+Activity fixed room, 20: 161
+Activity fixed room, 21: 161
+Activity fixed room, 138: 164
+Activity fixed room, 139: 164
+Activity fixed room, 140: 164
+Activity fixed room, 141: 164
+Activity fixed room, 142: 164
+Activity fixed room, 220: 168
+Activity fixed room, 71: 172
+Activity fixed room, 245: 161
+Activity fixed room, 246: 161
+Activity fixed room, 247: 161
+Activity fixed room, 390: 165
+Activity fixed room, 133: 165
+Activity fixed room, 134: 165
+Activity fixed room, 135: 165
+Activity fixed room, 348: 168
+Activity fixed room, 349: 168
+Activity fixed room, 209: 159
+Activity fixed room, 320: 159
+Activity fixed room, 321: 159
+Activity fixed room, 74: 177
+Activity fixed room, 216: 175
+Activity fixed room, 213: 172
+Activity fixed room, 214: 172
+Activity fixed room, 3: 175
+Activity fixed room, 65: 156
+Activity fixed room, 66: 156
+Activity fixed room, 72: 158
+Activity fixed room, 73: 158
+Activity fixed room, 324: 160
+Activity fixed room, 325: 160
+Activity fixed room, 80: 159
+Activity fixed room, 23: 151
+Activity fixed room, 24: 151
+Activity fixed room, 25: 151
+Activity fixed room, 28: 178
+Activity fixed room, 94: 145
+Activity fixed room, 154: 169
+Activity fixed room, 225: 175
+Activity fixed room, 289: 163
+Activity fixed room, 290: 163
+Activity fixed room, 291: 163
+Activity fixed room, 292: 163
+Activity fixed room, 293: 163
+Activity fixed room, 356: 166
+Activity fixed room, 357: 166
+Activity fixed room, 358: 166
+Activity fixed room, 359: 166
+Activity fixed room, 360: 166
+Activity fixed room, 267: 163
+Activity fixed room, 268: 163
+Activity fixed room, 190: 157
+Activity fixed room, 404: 175
+
+ ++++++++++++++++++++++
+n days = 5, n hours = 9
+n teachers: 59
+§ 1.A - [59]
+§ 1.B - [60]
+§§ 1 - [59 60]
+§ 1K - 61
+§ 2.A - [62]
+§ 2.B - [63]
+§§ 2 - [62 63]
+§ 2K - 64
+§ 3.A - [65]
+§ 3.B - [66]
+§§ 3 - [65 66]
+§ 3K - 67
+§ 4.A - [68]
+§ 4.B - [69]
+§§ 4 - [68 69]
+§ 4K.A - [70]
+§ 4K.B - [71]
+§§ 4K - [70 71]
+§ 5.A - [72]
+§ 5.B - [73]
+§§ 5 - [72 73]
+§ 5K - 74
+§ 6.A - [75]
+§ 6.B - [76]
+§§ 6 - [75 76]
+§ 6K - 77
+§ 7.A - [78]
+§ 7.B - [79]
+§§ 7 - [78 79]
+§ 7K - 80
+§ 8.A - [81]
+§ 8.B - [82]
+§§ 8 - [81 82]
+§ 8K - 83
+§ 9.A - [84]
+§ 9.BG - [85]
+§ 9.R - [86]
+§§ 9 - [84 85 86]
+§ 9K - 87
+§ 10.A - [88]
+§ 10.BG - [89]
+§ 10.R - [90]
+§§ 10 - [88 89 90]
+§ 10K - 91
+§ 11.A - [92]
+§ 11.BG - [93]
+§ 11.R - [94]
+§§ 11 - [92 93 94]
+§ 11K - 95
+§ 12.A - [96]
+§ 12.BG - [97]
+§ 12.R - [98]
+§§ 12 - [96 97 98]
+§ 12K - 99
+§ 13 - 100
+§ 0X - 101
+ROOM: bb – 102
+ROOM: ch – 103
+ROOM: eKK – 104
+ROOM: eOS – 105
+ROOM: eUS – 106
+ROOM: fsMS – 107
+ROOM: gb – 108
+ROOM: haCG – 109
+ROOM: haIV – 110
+ROOM: haML – 111
+ROOM: hoAS – 112
+ROOM: k1 – 113
+ROOM: k10 – 114
+ROOM: k10K – 115
+ROOM: k11 – 116
+ROOM: k11K – 117
+ROOM: k12 – 118
+ROOM: k12K – 119
+ROOM: k13 – 120
+ROOM: k1K – 121
+ROOM: k2 – 122
+ROOM: k2K – 123
+ROOM: k3 – 124
+ROOM: k3K – 125
+ROOM: k4 – 126
+ROOM: k4K – 127
+ROOM: k5 – 128
+ROOM: k5K – 129
+ROOM: k6 – 130
+ROOM: k6K – 131
+ROOM: k7 – 132
+ROOM: k7K – 133
+ROOM: k8 – 134
+ROOM: k8K – 135
+ROOM: k9 – 136
+ROOM: k9K – 137
+ROOM: ku – 138
+ROOM: lk – 139
+ROOM: mM – 140
+ROOM: mOS – 141
+ROOM: or – 142
+ROOM: ph – 143
+ROOM: r – 144
+ROOM: sp – 145
+ROOM: st – 146
+ROOM: wb – 147
+ROOM: wk2 – 148
+ROOM: wk1 – 149
+ROOM: zf – 150
+ROOM: zf2 – 151
+ROOM: !001 – {[143 144] []}
+ROOM: !002 – {[136 143 103 116 134 115 119 137 118 117 114] []}
+ROOM: !003 – {[147 149] []}
+ROOM: !004 – {[147 148] []}
+ROOM: !005 – {[111 108 149] []}
+ROOM: !006 – {[134 135 151] []}
+ROOM: !007 – {[111 149] []}
+ROOM: !008 – {[122 123 112] []}
+ROOM: !009 – {[113 121 112] []}
+ROOM: !010 – {[133 112 132] []}
+ROOM: !011 – {[116 151 117] []}
+ROOM: !012 – {[125 124] []}
+ROOM: !013 – {[131 130] []}
+ROOM: !014 – {[142 106 105] []}
+ROOM: !015 – {[129 128] []}
+ROOM: !016 – {[126 127] []}
+ROOM: !017 – {[142 141 140] []}
+ROOM: !018 – {[115 151 114] []}
+ROOM: !019 – {[136 137 151] []}
+ROOM: !020 – {[142 106 140] []}
+ROOM: !021 – {[103 116 102 138 146] []}
+ROOM: !022 – {[108 109 149] []}
+Activity fixed room, 64: 145
+Activity fixed room, 234: 138
+Activity fixed room, 295: 149
+Activity fixed room, 308: 126
+Activity fixed room, 392: 114
+Activity fixed room, 34: 106
+Activity fixed room, 169: 120
+Activity fixed room, 170: 120
+Activity fixed room, 199: 130
+Activity fixed room, 212: 113
+Activity fixed room, 213: 113
+Activity fixed room, 214: 113
+Activity fixed room, 215: 113
+Activity fixed room, 383: 108
+Activity fixed room, 127: 133
+Activity fixed room, 128: 133
+Activity fixed room, 129: 133
+Activity fixed room, 130: 133
+Activity fixed room, 131: 133
+Activity fixed room, 33: 110
+Activity fixed room, 196: 111
+Activity fixed room, 197: 111
+Activity fixed room, 277: 138
+Activity fixed room, 146: 106
+Activity fixed room, 94: 145
+Activity fixed room, 342: 132
+Activity fixed room, 343: 132
+Activity fixed room, 344: 132
+Activity fixed room, 345: 132
+Activity fixed room, 346: 132
+Activity fixed room, 354: [143 144]
+Activity fixed room, 367: 145
+Activity fixed room, 442: 114
+Activity fixed room, 443: 114
+Activity fixed room, 444: 114
+Activity fixed room, 39: 117
+Activity fixed room, 40: 117
+Activity fixed room, 41: 117
+Activity fixed room, 174: 126
+Activity fixed room, 106: 106
+Activity fixed room, 76: 139
+Activity fixed room, 120: 111
+Activity fixed room, 121: 111
+Activity fixed room, 122: 130
+Activity fixed room, 257: [136 143 103 116 134 115 119 137 118 117 114]
+Activity fixed room, 258: [136 143 103 116 134 115 119 137 118 117 114]
+Activity fixed room, 259: [136 143 103 116 134 115 119 137 118 117 114]
+Activity fixed room, 260: [136 143 103 116 134 115 119 137 118 117 114]
+Activity fixed room, 261: [136 143 103 116 134 115 119 137 118 117 114]
+Activity fixed room, 117: 138
+Activity fixed room, 95: 145
+Activity fixed room, 278: 105
+Activity fixed room, 279: 105
+Activity fixed room, 435: 106
+Activity fixed room, 24: 141
+Activity fixed room, 96: 114
+Activity fixed room, 97: 114
+Activity fixed room, 98: 114
+Activity fixed room, 161: 128
+Activity fixed room, 162: 128
+Activity fixed room, 87: 141
+Activity fixed room, 112: 121
+Activity fixed room, 224: 105
+Activity fixed room, 225: 105
+Activity fixed room, 309: 128
+Activity fixed room, 310: 128
+Activity fixed room, 77: 145
+Activity fixed room, 81: 130
+Activity fixed room, 82: 130
+Activity fixed room, 83: 130
+Activity fixed room, 84: 130
+Activity fixed room, 186: 117
+Activity fixed room, 217: 145
+Activity fixed room, 355: 145
+Activity fixed room, 356: 145
+Activity fixed room, 360: 103
+Activity fixed room, 429: 137
+Activity fixed room, 430: 137
+Activity fixed room, 440: 110
+Activity fixed room, 441: 110
+Activity fixed room, 2: 105
+Activity fixed room, 3: 105
+Activity fixed room, 118: [147 149]
+Activity fixed room, 132: 120
+Activity fixed room, 133: 120
+Activity fixed room, 252: 127
+Activity fixed room, 253: 127
+Activity fixed room, 254: 127
+Activity fixed room, 255: 127
+Activity fixed room, 256: 127
+Activity fixed room, 286: 129
+Activity fixed room, 287: 129
+Activity fixed room, 288: 129
+Activity fixed room, 289: 129
+Activity fixed room, 290: 129
+Activity fixed room, 366: 150
+Activity fixed room, 53: 131
+Activity fixed room, 54: 131
+Activity fixed room, 55: 131
+Activity fixed room, 56: 131
+Activity fixed room, 57: 131
+Activity fixed room, 528: 116
+Activity fixed room, 163: 137
+Activity fixed room, 164: 137
+Activity fixed room, 327: 138
+Activity fixed room, 523: 126
+Activity fixed room, 105: 129
+Activity fixed room, 107: 136
+Activity fixed room, 108: 136
+Activity fixed room, 109: 136
+Activity fixed room, 200: 140
+Activity fixed room, 231: 108
+Activity fixed room, 236: 105
+Activity fixed room, 237: 105
+Activity fixed room, 388: 140
+Activity fixed room, 59: 120
+Activity fixed room, 60: 120
+Activity fixed room, 114: 113
+Activity fixed room, 115: 113
+Activity fixed room, 116: 113
+Activity fixed room, 156: 133
+Activity fixed room, 157: 133
+Activity fixed room, 158: 133
+Activity fixed room, 167: 135
+Activity fixed room, 171: 118
+Activity fixed room, 302: 129
+Activity fixed room, 303: 129
+Activity fixed room, 304: 129
+Activity fixed room, 305: 136
+Activity fixed room, 306: 136
+Activity fixed room, 307: 136
+Activity fixed room, 5: 136
+Activity fixed room, 6: 136
+Activity fixed room, 7: 136
+Activity fixed room, 102: 127
+Activity fixed room, 119: 113
+Activity fixed room, 140: 111
+Activity fixed room, 141: 111
+Activity fixed room, 341: 136
+Activity fixed room, 365: 126
+Activity fixed room, 534: 141
+Activity fixed room, 535: 141
+Activity fixed room, 47: 138
+Activity fixed room, 297: 134
+Activity fixed room, 329: 115
+Activity fixed room, 330: 115
+Activity fixed room, 508: 126
+Activity fixed room, 509: 126
+Activity fixed room, 510: 126
+Activity fixed room, 511: 126
+Activity fixed room, 512: 126
+Activity fixed room, 525: 125
+Activity fixed room, 526: 125
+Activity fixed room, 527: 125
+Activity fixed room, 181: 122
+Activity fixed room, 182: 122
+Activity fixed room, 183: 122
+Activity fixed room, 184: 122
+Activity fixed room, 185: 122
+Activity fixed room, 226: 125
+Activity fixed room, 227: 125
+Activity fixed room, 228: 125
+Activity fixed room, 229: 125
+Activity fixed room, 230: 125
+Activity fixed room, 391: 136
+Activity fixed room, 193: 140
+Activity fixed room, 464: [147 148]
+Activity fixed room, 468: 123
+Activity fixed room, 347: [111 108 149]
+Activity fixed room, 348: [111 108 149]
+Activity fixed room, 349: [111 108 149]
+Activity fixed room, 123: 128
+Activity fixed room, 124: 128
+Activity fixed room, 201: 124
+Activity fixed room, 202: 124
+Activity fixed room, 203: 124
+Activity fixed room, 357: 105
+Activity fixed room, 358: 105
+Activity fixed room, 484: 127
+Activity fixed room, 485: 127
+Activity fixed room, 71: 118
+Activity fixed room, 72: 118
+Activity fixed room, 352: 138
+Activity fixed room, 364: 115
+Activity fixed room, 501: 126
+Activity fixed room, 502: 126
+Activity fixed room, 44: 148
+Activity fixed room, 206: 105
+Activity fixed room, 359: 141
+Activity fixed room, 465: 116
+Activity fixed room, 466: 116
+Activity fixed room, 467: 116
+Activity fixed room, 103: 145
+Activity fixed room, 37: 117
+Activity fixed room, 38: 117
+Activity fixed room, 207: 108
+Activity fixed room, 396: [134 135 151]
+Activity fixed room, 23: 148
+Activity fixed room, 318: 123
+Activity fixed room, 319: 123
+Activity fixed room, 320: 123
+Activity fixed room, 321: 123
+Activity fixed room, 322: 123
+Activity fixed room, 377: 119
+Activity fixed room, 378: 119
+Activity fixed room, 379: 119
+Activity fixed room, 67: 119
+Activity fixed room, 68: 119
+Activity fixed room, 155: [111 149]
+Activity fixed room, 280: 127
+Activity fixed room, 296: 128
+Activity fixed room, 536: 110
+Activity fixed room, 28: [122 123 112]
+Activity fixed room, 75: 139
+Activity fixed room, 91: 131
+Activity fixed room, 92: 131
+Activity fixed room, 293: 110
+Activity fixed room, 294: 110
+Activity fixed room, 328: 109
+Activity fixed room, 459: 125
+Activity fixed room, 460: 125
+Activity fixed room, 461: 125
+Activity fixed room, 462: 125
+Activity fixed room, 29: 138
+Activity fixed room, 458: 128
+Activity fixed room, 269: 108
+Activity fixed room, 393: [113 121 112]
+Activity fixed room, 500: [133 112 132]
+Activity fixed room, 145: [116 151 117]
+Activity fixed room, 150: 140
+Activity fixed room, 447: 131
+Activity fixed room, 148: 145
+Activity fixed room, 149: 145
+Activity fixed room, 65: 105
+Activity fixed room, 66: 105
+Activity fixed room, 387: 127
+Activity fixed room, 368: 122
+Activity fixed room, 369: 122
+Activity fixed room, 370: 122
+Activity fixed room, 142: 114
+Activity fixed room, 331: 116
+Activity fixed room, 332: 116
+Activity fixed room, 333: 116
+Activity fixed room, 89: 135
+Activity fixed room, 90: 135
+Activity fixed room, 134: 123
+Activity fixed room, 135: 123
+Activity fixed room, 413: 109
+Activity fixed room, 414: 109
+Activity fixed room, 263: 132
+Activity fixed room, 264: 132
+Activity fixed room, 265: 132
+Activity fixed room, 266: 132
+Activity fixed room, 125: 105
+Activity fixed room, 126: 105
+Activity fixed room, 315: 120
+Activity fixed room, 316: 120
+Activity fixed room, 317: 120
+Activity fixed room, 494: 123
+Activity fixed room, 73: 134
+Activity fixed room, 74: 134
+Activity fixed room, 267: 122
+Activity fixed room, 268: 122
+Activity fixed room, 284: 110
+Activity fixed room, 416: 115
+Activity fixed room, 417: 115
+Activity fixed room, 418: 115
+Activity fixed room, 437: 120
+Activity fixed room, 438: 120
+Activity fixed room, 439: 120
+Activity fixed room, 93: 113
+Activity fixed room, 262: [125 124]
+Activity fixed room, 334: 119
+Activity fixed room, 408: 126
+Activity fixed room, 409: 126
+Activity fixed room, 9: 128
+Activity fixed room, 10: 128
+Activity fixed room, 11: 128
+Activity fixed room, 12: 128
+Activity fixed room, 13: 128
+Activity fixed room, 221: 141
+Activity fixed room, 431: 110
+Activity fixed room, 432: 110
+Activity fixed room, 507: [131 130]
+Activity fixed room, 481: 122
+Activity fixed room, 482: 122
+Activity fixed room, 483: 122
+Activity fixed room, 382: 126
+Activity fixed room, 270: 126
+Activity fixed room, 271: 126
+Activity fixed room, 272: 126
+Activity fixed room, 52: 145
+Activity fixed room, 198: 114
+Activity fixed room, 385: 119
+Activity fixed room, 152: 128
+Activity fixed room, 153: 128
+Activity fixed room, 19: 116
+Activity fixed room, 20: 116
+Activity fixed room, 70: 148
+Activity fixed room, 380: 110
+Activity fixed room, 381: 110
+Activity fixed room, 4: 138
+Activity fixed room, 136: 110
+Activity fixed room, 137: 143
+Activity fixed room, 138: 143
+Activity fixed room, 245: 109
+Activity fixed room, 246: 109
+Activity fixed room, 51: 150
+Activity fixed room, 27: 141
+Activity fixed room, 172: 117
+Activity fixed room, 173: 117
+Activity fixed room, 179: 148
+Activity fixed room, 191: [142 106 105]
+Activity fixed room, 238: 145
+Activity fixed room, 389: 142
+Activity fixed room, 390: 142
+Activity fixed room, 18: 106
+Activity fixed room, 480: 146
+Activity fixed room, 529: 126
+Activity fixed room, 470: 142
+Activity fixed room, 113: 133
+Activity fixed room, 445: 118
+Activity fixed room, 446: 118
+Activity fixed room, 488: 135
+Activity fixed room, 489: 135
+Activity fixed room, 490: 135
+Activity fixed room, 491: 135
+Activity fixed room, 492: 135
+Activity fixed room, 216: 106
+Activity fixed room, 250: 140
+Activity fixed room, 285: 145
+Activity fixed room, 298: 145
+Activity fixed room, 371: 130
+Activity fixed room, 372: 130
+Activity fixed room, 373: 130
+Activity fixed room, 374: 130
+Activity fixed room, 375: 130
+Activity fixed room, 110: 145
+Activity fixed room, 111: 145
+Activity fixed room, 495: [129 128]
+Activity fixed room, 517: 121
+Activity fixed room, 518: 121
+Activity fixed room, 519: 121
+Activity fixed room, 520: 121
+Activity fixed room, 521: 121
+Activity fixed room, 524: [126 127]
+Activity fixed room, 313: 128
+Activity fixed room, 314: 128
+Activity fixed room, 401: 113
+Activity fixed room, 402: 113
+Activity fixed room, 403: 113
+Activity fixed room, 404: 113
+Activity fixed room, 405: 113
+Activity fixed room, 406: 115
+Activity fixed room, 407: 115
+Activity fixed room, 159: 132
+Activity fixed room, 339: 136
+Activity fixed room, 426: 118
+Activity fixed room, 427: 118
+Activity fixed room, 85: 145
+Activity fixed room, 86: 145
+Activity fixed room, 88: 119
+Activity fixed room, 244: 116
+Activity fixed room, 251: [111 108 149]
+Activity fixed room, 340: 117
+Activity fixed room, 361: 135
+Activity fixed room, 362: 135
+Activity fixed room, 363: 135
+Activity fixed room, 386: 137
+Activity fixed room, 15: 127
+Activity fixed room, 16: 127
+Activity fixed room, 17: 127
+Activity fixed room, 36: [142 141 140]
+Activity fixed room, 101: 118
+Activity fixed room, 104: 136
+Activity fixed room, 175: [115 151 114]
+Activity fixed room, 180: 145
+Activity fixed room, 275: 149
+Activity fixed room, 532: 106
+Activity fixed room, 30: 148
+Activity fixed room, 204: 124
+Activity fixed room, 205: 124
+Activity fixed room, 336: 145
+Activity fixed room, 463: 106
+Activity fixed room, 80: 145
+Activity fixed room, 69: 106
+Activity fixed room, 25: 142
+Activity fixed room, 26: 142
+Activity fixed room, 189: 111
+Activity fixed room, 190: 111
+Activity fixed room, 436: 137
+Activity fixed room, 276: 116
+Activity fixed room, 291: 114
+Activity fixed room, 337: 137
+Activity fixed room, 338: 137
+Activity fixed room, 415: 110
+Activity fixed room, 165: 129
+Activity fixed room, 166: 129
+Activity fixed room, 168: [136 137 151]
+Activity fixed room, 474: 133
+Activity fixed room, 475: 133
+Activity fixed room, 476: 133
+Activity fixed room, 477: 133
+Activity fixed room, 513: 131
+Activity fixed room, 514: 131
+Activity fixed room, 515: 131
+Activity fixed room, 516: 131
+Activity fixed room, 154: 118
+Activity fixed room, 478: 119
+Activity fixed room, 479: 119
+Activity fixed room, 147: 114
+Activity fixed room, 239: 124
+Activity fixed room, 240: 124
+Activity fixed room, 241: 124
+Activity fixed room, 242: 124
+Activity fixed room, 243: 124
+Activity fixed room, 424: 141
+Activity fixed room, 425: 141
+Activity fixed room, 451: 145
+Activity fixed room, 452: 145
+Activity fixed room, 503: 145
+Activity fixed room, 35: 138
+Activity fixed room, 61: 114
+Activity fixed room, 62: 114
+Activity fixed room, 63: 114
+Activity fixed room, 192: 136
+Activity fixed room, 194: 141
+Activity fixed room, 195: 141
+Activity fixed room, 397: [142 106 140]
+Activity fixed room, 398: [142 106 140]
+Activity fixed room, 456: 105
+Activity fixed room, 457: 105
+Activity fixed room, 469: 108
+Activity fixed room, 1: 120
+Activity fixed room, 537: [103 116 102 138 146]
+Activity fixed room, 538: [103 116 102 138 146]
+Activity fixed room, 499: 142
+Activity fixed room, 99: 110
+Activity fixed room, 100: 110
+Activity fixed room, 176: [108 109 149]
+Activity fixed room, 177: [108 109 149]
+Activity fixed room, 178: [108 109 149]
+Activity fixed room, 232: 120
+Activity fixed room, 233: 120
+Activity fixed room, 235: 106
+Activity fixed room, 323: 113
+Activity fixed room, 324: 113
+Activity fixed room, 410: 142
+Activity fixed room, 8: 124
