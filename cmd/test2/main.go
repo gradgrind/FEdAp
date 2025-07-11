@@ -37,6 +37,7 @@ func main() {
 		tt_data.PrepareResources(fetdata)
 		tt_data.SetupActivities(fetdata)
 		tt_data.ResourceBlocking(fetdata)
+		tt_data.SetupDaysBetween(fetdata)
 
 		/*
 			db := cdata.Db()

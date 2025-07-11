@@ -3,6 +3,7 @@ package fet
 import (
 	"fedap/base"
 	"fmt"
+	"strconv"
 )
 
 /* It looks like Activity_Group_Ids won't play any significant role here.
@@ -15,11 +16,12 @@ import (
 type TimeSlot int
 
 type TtActivity struct {
-	Id          int
-	Placement   TimeSlot
-	Fixed       bool
-	Resources   []int
-	RoomChoices [][]int
+	Id                     int
+	Placement              TimeSlot
+	Fixed                  bool
+	Resources              []int
+	RoomChoices            [][]int
+	DaysBetweenConstraints []ConstraintDaysBetween
 }
 
 func (tt_data *TtData) SetupActivities(fetdata *fet) {
@@ -48,7 +50,7 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		tt_data.Activities = append(tt_data.Activities, activity)
 	}
 
-	//TODO: Need (at least) fixed rooms
+	// Need (at least) fixed rooms
 
 	for _, rc := range fetdata.Space_Constraints_List.
 		ConstraintActivityPreferredRooms {
@@ -115,4 +117,39 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 	}
 }
 
-//TODO: Blocked time-slots, different-days (and other constraints?)
+//TODO: other constraints?
+
+type ConstraintDaysBetween struct {
+	Activity int
+	Penalty  int
+	MinDays  int
+}
+
+func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
+	for _, rc := range fetdata.Time_Constraints_List.
+		ConstraintMinDaysBetweenActivities {
+		if !rc.Active {
+			continue
+		}
+		penalty := -1
+		wp, _ := strconv.ParseFloat(rc.Weight_Percentage, 64)
+		w := 100.0 - wp
+		if w >= 0.1 { // everything under 0.1% counts as "hard"
+			penalty = int(100.0 / w)
+		}
+		aixs := []int{}
+		for _, a := range rc.Activity_Id {
+			aixs = append(aixs, tt_data.MapActivity[a])
+		}
+		mindays := rc.MinDays
+		for _, aix0 := range aixs {
+			a := &tt_data.Activities[aix0]
+			for _, aix := range aixs {
+				if aix != aix0 {
+					a.DaysBetweenConstraints = append(a.DaysBetweenConstraints,
+						ConstraintDaysBetween{aix, penalty, mindays})
+				}
+			}
+		}
+	}
+}
