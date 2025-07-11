@@ -120,9 +120,11 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 //TODO: other constraints?
 
 type ConstraintDaysBetween struct {
-	Activity int
-	Penalty  int
-	MinDays  int
+	Activity           int
+	Penalty            int
+	MinDays            int
+	SameDayConsecutive bool // only relevant if penalty > 0:
+	// if true, it is a "hard" constraint
 }
 
 func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
@@ -147,7 +149,8 @@ func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 			for _, aix := range aixs {
 				if aix != aix0 {
 					a.DaysBetweenConstraints = append(a.DaysBetweenConstraints,
-						ConstraintDaysBetween{aix, penalty, mindays})
+						ConstraintDaysBetween{
+							aix, penalty, mindays, rc.Consecutive_If_Same_Day})
 				}
 			}
 		}
