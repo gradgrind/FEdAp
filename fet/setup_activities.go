@@ -15,21 +15,55 @@ import (
 
 type TimeSlot int
 
+type PreferredTime struct {
+	Slot    TimeSlot
+	Penalty int
+}
+
 type TtActivity struct {
 	Id                     int
-	Placement              TimeSlot
-	Fixed                  bool
+	Placement              TimeSlot //TODO?
+	Fixed                  bool     //TODO?
 	Resources              []int
 	RoomChoices            [][]int
 	DaysBetweenConstraints []ConstraintDaysBetween
+	PreferredTimes         []PreferredTime
 }
 
+func (a *TtActivity) setTime(t int) {
+	a.Placement = TimeSlot(t)
+}
+
+// Although FET activities are numbered contiguously from 1, a distinct indexing
+// is used here, which means that a translation, MapActivity, is needed. This
+// allows skipping of non-active activities, etc.
+// TODO: This maybe a bit short-sighted ... wouldn't it be better to use the FET
+// numbering, even with gaps?
 func (tt_data *TtData) SetupActivities(fetdata *fet) {
-	tt_data.MapActivity = map[int]int{}
+	// Find highest activity index
+	aix := 0
+	for _, a := range fetdata.Activities_List.Activity {
+		if a.Id > aix {
+			aix = a.Id
+		}
+	}
+
+	// Set up initial activity groups (from FET activity groups)
+	activity_groups := map[int][]int{}
+
+	tt_data.Activities = make([]TtActivity, aix+1)
 	for _, a := range fetdata.Activities_List.Activity {
 		if !a.Active {
 			continue
 		}
+
+		if a.Activity_Group_Id == 0 {
+			activity_groups[a.Id] = []int{a.Id}
+		} else {
+			activity_groups[a.Activity_Group_Id] = append(
+				activity_groups[a.Activity_Group_Id], a.Id)
+		}
+
 		activity := TtActivity{Id: a.Id}
 		for _, t := range a.Teacher {
 			tix, ok := tt_data.TeacherIndex[t]
@@ -46,9 +80,10 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 			activity.Resources = append(activity.Resources, tixs...)
 		}
 
-		tt_data.MapActivity[a.Id] = len(tt_data.Activities)
-		tt_data.Activities = append(tt_data.Activities, activity)
+		tt_data.Activities[a.Id] = activity
 	}
+
+	tt_data.fet_activity_groups = activity_groups
 
 	// Need (at least) fixed rooms
 
@@ -59,11 +94,7 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 			continue
 		}
 		if rc.Weight_Percentage == 100 && rc.Number_of_Preferred_Rooms == 1 {
-			aix, ok := tt_data.MapActivity[rc.Activity_Id]
-			if !ok {
-				base.Error.Fatalf("Unknown activity id: %d", rc.Activity_Id)
-			}
-			a := tt_data.Activities[aix]
+			a := tt_data.Activities[rc.Activity_Id]
 			rp := rc.Preferred_Room[0]
 			r, ok := tt_data.RoomIndex[rp]
 			if ok {
@@ -89,11 +120,7 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 			continue
 		}
 		if rc.Weight_Percentage == 100 {
-			aix, ok := tt_data.MapActivity[rc.Activity_Id]
-			if !ok {
-				base.Error.Fatalf("Unknown activity id: %d", rc.Activity_Id)
-			}
-			a := tt_data.Activities[aix]
+			a := tt_data.Activities[rc.Activity_Id]
 			if len(rc.Real_Room) == 0 {
 				// A single real room
 				r, ok := tt_data.RoomIndex[rc.Room]
@@ -117,7 +144,27 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 	}
 }
 
-//TODO: other constraints?
+func (tt_data *TtData) SetupFixedTimes(fetdata *fet) {
+	for _, rc := range fetdata.Time_Constraints_List.
+		ConstraintActivityPreferredStartingTime {
+		if !rc.Active {
+			continue
+		}
+		t := TimeSlot(tt_data.TimeSlotIndex(rc.Preferred_Day, rc.Preferred_Hour))
+		a := &tt_data.Activities[rc.Activity_Id]
+		wp, _ := strconv.ParseFloat(rc.Weight_Percentage, 64)
+		w := 100.0 - wp
+		if w >= 0.1 { // everything under 0.1% counts as "hard"
+			penalty := int(100.0 / w)
+			a.PreferredTimes = append(a.PreferredTimes,
+				PreferredTime{t, penalty})
+		} else {
+			a.Placement = t
+			//TODO?
+			a.Fixed = true
+		}
+	}
+}
 
 type ConstraintDaysBetween struct {
 	Activity           int
@@ -139,14 +186,10 @@ func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 		if w >= 0.1 { // everything under 0.1% counts as "hard"
 			penalty = int(100.0 / w)
 		}
-		aixs := []int{}
-		for _, a := range rc.Activity_Id {
-			aixs = append(aixs, tt_data.MapActivity[a])
-		}
 		mindays := rc.MinDays
-		for _, aix0 := range aixs {
+		for _, aix0 := range rc.Activity_Id {
 			a := &tt_data.Activities[aix0]
-			for _, aix := range aixs {
+			for _, aix := range rc.Activity_Id {
 				if aix != aix0 {
 					a.DaysBetweenConstraints = append(a.DaysBetweenConstraints,
 						ConstraintDaysBetween{

@@ -44,7 +44,7 @@ func addClassConstraints(fetinfo *fetInfo) {
 		n := cl.MinLessonsPerDay
 		if n >= 2 && n <= nhours {
 			cminlpd = append(cminlpd, minLessonsPerDay{
-				Weight_Percentage:   100,
+				Weight_Percentage:   "100",
 				Students:            cl.Tag,
 				Minimum_Hours_Daily: n,
 				Allow_Empty_Days:    true,
@@ -55,7 +55,7 @@ func addClassConstraints(fetinfo *fetInfo) {
 		n = cl.MaxLessonsPerDay
 		if n >= 0 && n < nhours {
 			cmaxlpd = append(cmaxlpd, maxLessonsPerDay{
-				Weight_Percentage:   100,
+				Weight_Percentage:   "100",
 				Students:            cl.Tag,
 				Maximum_Hours_Daily: n,
 				Active:              true,
@@ -66,7 +66,7 @@ func addClassConstraints(fetinfo *fetInfo) {
 		maxpm := cl.MaxAfternoons
 		if maxpm >= 0 && i > 0 {
 			cmaxaft = append(cmaxaft, maxDaysinIntervalPerWeek{
-				Weight_Percentage:   100,
+				Weight_Percentage:   "100",
 				Students:            cl.Tag,
 				Interval_Start_Hour: strconv.Itoa(i),
 				Interval_End_Hour:   "", // end of day
@@ -77,7 +77,7 @@ func addClassConstraints(fetinfo *fetInfo) {
 
 		if cl.ForceFirstHour {
 			cmaxls = append(cmaxls, maxLateStarts{
-				Weight_Percentage:             100,
+				Weight_Percentage:             "100",
 				Max_Beginnings_At_Second_Hour: 0,
 				Students:                      cl.Tag,
 				Active:                        true,
@@ -109,7 +109,7 @@ func addClassConstraints(fetinfo *fetInfo) {
 			if lbdays != 0 {
 				// Add a lunch-break constraint.
 				clblist = append(clblist, lunchBreak{
-					Weight_Percentage:   100,
+					Weight_Percentage:   "100",
 					Students:            cl.Tag,
 					Interval_Start_Hour: strconv.Itoa(mbhours[0]),
 					Interval_End_Hour:   strconv.Itoa(mbhours[0] + len(mbhours)),
@@ -134,7 +134,7 @@ func addClassConstraints(fetinfo *fetInfo) {
 		}
 		if mgpday >= 0 {
 			cmaxgpd = append(cmaxgpd, maxGapsPerDay{
-				Weight_Percentage: 100,
+				Weight_Percentage: "100",
 				Students:          cl.Tag,
 				Max_Gaps:          mgpday,
 				Active:            true,
@@ -143,7 +143,7 @@ func addClassConstraints(fetinfo *fetInfo) {
 
 		if mgpweek >= 0 {
 			cmaxgpw = append(cmaxgpw, maxGapsPerWeek{
-				Weight_Percentage: 100,
+				Weight_Percentage: "100",
 				Students:          cl.Tag,
 				Max_Gaps:          mgpweek,
 				Active:            true,

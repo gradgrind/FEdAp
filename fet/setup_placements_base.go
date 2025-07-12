@@ -22,7 +22,8 @@ type TtData struct {
 	RoomIndex     map[string]int
 	VirtualRooms  map[string]TtVirtualRoom
 	Activities    []TtActivity
-	MapActivity   map[int]int // translate activity id, FET -> internal
+
+	fet_activity_groups map[int][]int
 }
 
 type TtTeacher struct {

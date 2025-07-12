@@ -163,7 +163,7 @@ func addPlacementConstraints(fetinfo *fetInfo) {
 			tcl.ConstraintActivityPreferredStartingTime = append(
 				tcl.ConstraintActivityPreferredStartingTime,
 				startingTime{
-					Weight_Percentage:  100,
+					Weight_Percentage:  "100",
 					Activity_Id:        aid,
 					Preferred_Day:      strconv.Itoa(l.Day),
 					Preferred_Hour:     strconv.Itoa(l.Hour),

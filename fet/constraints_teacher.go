@@ -38,7 +38,7 @@ func addTeacherConstraints(fetinfo *fetInfo) {
 		n := t.MaxDays
 		if n >= 0 && n < ndays {
 			tmaxdpw = append(tmaxdpw, maxDaysT{
-				Weight_Percentage: 100,
+				Weight_Percentage: "100",
 				Teacher:           t.Tag,
 				Max_Days_Per_Week: n,
 				Active:            true,
@@ -48,7 +48,7 @@ func addTeacherConstraints(fetinfo *fetInfo) {
 		n = t.MinLessonsPerDay
 		if n >= 2 && n <= nhours {
 			tminlpd = append(tminlpd, minLessonsPerDayT{
-				Weight_Percentage:   100,
+				Weight_Percentage:   "100",
 				Teacher:             t.Tag,
 				Minimum_Hours_Daily: n,
 				Allow_Empty_Days:    true,
@@ -59,7 +59,7 @@ func addTeacherConstraints(fetinfo *fetInfo) {
 		n = t.MaxLessonsPerDay
 		if n >= 0 && n < nhours {
 			tmaxlpd = append(tmaxlpd, maxLessonsPerDayT{
-				Weight_Percentage:   100,
+				Weight_Percentage:   "100",
 				Teacher:             t.Tag,
 				Maximum_Hours_Daily: n,
 				Active:              true,
@@ -70,7 +70,7 @@ func addTeacherConstraints(fetinfo *fetInfo) {
 		maxpm := t.MaxAfternoons
 		if maxpm >= 0 && i > 0 {
 			tmaxaft = append(tmaxaft, maxDaysinIntervalPerWeekT{
-				Weight_Percentage:   100,
+				Weight_Percentage:   "100",
 				Teacher:             t.Tag,
 				Interval_Start_Hour: strconv.Itoa(i),
 				Interval_End_Hour:   "", // end of day
@@ -101,7 +101,7 @@ func addTeacherConstraints(fetinfo *fetInfo) {
 			if lbdays != 0 {
 				// Add a lunch-break constraint.
 				tlblist = append(tlblist, lunchBreakT{
-					Weight_Percentage:   100,
+					Weight_Percentage:   "100",
 					Teacher:             t.Tag,
 					Interval_Start_Hour: strconv.Itoa(mbhours[0]),
 					Interval_End_Hour:   strconv.Itoa(mbhours[0] + len(mbhours)),
@@ -123,7 +123,7 @@ func addTeacherConstraints(fetinfo *fetInfo) {
 
 		if mgpday >= 0 {
 			tmaxgpd = append(tmaxgpd, maxGapsPerDayT{
-				Weight_Percentage: 100,
+				Weight_Percentage: "100",
 				Teacher:           t.Tag,
 				Max_Gaps:          mgpday,
 				Active:            true,
@@ -132,7 +132,7 @@ func addTeacherConstraints(fetinfo *fetInfo) {
 
 		if mgpweek >= 0 {
 			tmaxgpw = append(tmaxgpw, maxGapsPerWeekT{
-				Weight_Percentage: 100,
+				Weight_Percentage: "100",
 				Teacher:           t.Tag,
 				Max_Gaps:          mgpweek,
 				Active:            true,

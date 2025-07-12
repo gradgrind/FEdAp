@@ -6,7 +6,7 @@ import (
 
 type startingTime struct {
 	XMLName            xml.Name `xml:"ConstraintActivityPreferredStartingTime"`
-	Weight_Percentage  int
+	Weight_Percentage  string
 	Activity_Id        int
 	Preferred_Day      string
 	Preferred_Hour     string
@@ -27,7 +27,7 @@ type minDaysBetweenActivities struct {
 // *** Teacher constraints
 type lunchBreakT struct {
 	XMLName             xml.Name `xml:"ConstraintTeacherMaxHoursDailyInInterval"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Teacher             string
 	Interval_Start_Hour string
 	Interval_End_Hour   string
@@ -37,7 +37,7 @@ type lunchBreakT struct {
 
 type maxGapsPerDayT struct {
 	XMLName           xml.Name `xml:"ConstraintTeacherMaxGapsPerDay"`
-	Weight_Percentage int
+	Weight_Percentage string
 	Teacher           string
 	Max_Gaps          int
 	Active            bool
@@ -45,7 +45,7 @@ type maxGapsPerDayT struct {
 
 type maxGapsPerWeekT struct {
 	XMLName           xml.Name `xml:"ConstraintTeacherMaxGapsPerWeek"`
-	Weight_Percentage int
+	Weight_Percentage string
 	Teacher           string
 	Max_Gaps          int
 	Active            bool
@@ -53,7 +53,7 @@ type maxGapsPerWeekT struct {
 
 type minLessonsPerDayT struct {
 	XMLName             xml.Name `xml:"ConstraintTeacherMinHoursDaily"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Teacher             string
 	Minimum_Hours_Daily int
 	Allow_Empty_Days    bool
@@ -62,7 +62,7 @@ type minLessonsPerDayT struct {
 
 type maxLessonsPerDayT struct {
 	XMLName             xml.Name `xml:"ConstraintTeacherMaxHoursDaily"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Teacher             string
 	Maximum_Hours_Daily int
 	Active              bool
@@ -70,7 +70,7 @@ type maxLessonsPerDayT struct {
 
 type maxDaysT struct {
 	XMLName           xml.Name `xml:"ConstraintTeacherMaxDaysPerWeek"`
-	Weight_Percentage int
+	Weight_Percentage string
 	Teacher           string
 	Max_Days_Per_Week int
 	Active            bool
@@ -79,7 +79,7 @@ type maxDaysT struct {
 // for MaxAfternoons
 type maxDaysinIntervalPerWeekT struct {
 	XMLName             xml.Name `xml:"ConstraintTeacherIntervalMaxDaysPerWeek"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Teacher             string
 	Interval_Start_Hour string
 	Interval_End_Hour   string
@@ -92,7 +92,7 @@ type maxDaysinIntervalPerWeekT struct {
 
 type lunchBreak struct {
 	XMLName             xml.Name `xml:"ConstraintStudentsSetMaxHoursDailyInInterval"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Students            string
 	Interval_Start_Hour string
 	Interval_End_Hour   string
@@ -102,7 +102,7 @@ type lunchBreak struct {
 
 type maxGapsPerDay struct {
 	XMLName           xml.Name `xml:"ConstraintStudentsSetMaxGapsPerDay"`
-	Weight_Percentage int
+	Weight_Percentage string
 	Max_Gaps          int
 	Students          string
 	Active            bool
@@ -110,7 +110,7 @@ type maxGapsPerDay struct {
 
 type maxGapsPerWeek struct {
 	XMLName           xml.Name `xml:"ConstraintStudentsSetMaxGapsPerWeek"`
-	Weight_Percentage int
+	Weight_Percentage string
 	Max_Gaps          int
 	Students          string
 	Active            bool
@@ -118,7 +118,7 @@ type maxGapsPerWeek struct {
 
 type minLessonsPerDay struct {
 	XMLName             xml.Name `xml:"ConstraintStudentsSetMinHoursDaily"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Minimum_Hours_Daily int
 	Students            string
 	Allow_Empty_Days    bool
@@ -127,7 +127,7 @@ type minLessonsPerDay struct {
 
 type maxLessonsPerDay struct {
 	XMLName             xml.Name `xml:"ConstraintStudentsSetMaxHoursDaily"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Maximum_Hours_Daily int
 	Students            string
 	Active              bool
@@ -136,7 +136,7 @@ type maxLessonsPerDay struct {
 // for MaxAfternoons
 type maxDaysinIntervalPerWeek struct {
 	XMLName             xml.Name `xml:"ConstraintStudentsSetIntervalMaxDaysPerWeek"`
-	Weight_Percentage   int
+	Weight_Percentage   string
 	Students            string
 	Interval_Start_Hour string
 	Interval_End_Hour   string
@@ -148,7 +148,7 @@ type maxDaysinIntervalPerWeek struct {
 // for ForceFirstHour
 type maxLateStarts struct {
 	XMLName                       xml.Name `xml:"ConstraintStudentsSetEarlyMaxBeginningsAtSecondHour"`
-	Weight_Percentage             int
+	Weight_Percentage             string
 	Max_Beginnings_At_Second_Hour int
 	Students                      string
 	Active                        bool
