@@ -1,6 +1,9 @@
 package fet
 
-//TODO: This stuff is just temporary ... experimenting ...
+//TODO: The stuff in files setup_... is just temporary, experimental.
+// If it turns out to be useful, it should be reworked to use the base DB structures
+// as source rather than FET files. It might be possible to read FET files into the
+// the DB structures, to some extent?
 
 import (
 	"fedap/base"
@@ -23,7 +26,15 @@ type TtData struct {
 	VirtualRooms  map[string]TtVirtualRoom
 	Activities    []TtActivity
 
-	fet_activity_groups map[int][]int
+	basic_activity_groups map[int]*BasicActivityGroup
+}
+
+// TODO--
+func (tt_data *TtData) PrintBags() {
+	for i, bag := range tt_data.basic_activity_groups {
+		fmt.Printf("BAG %d:\n", i)
+		fmt.Printf(" -- %v\n", bag)
+	}
 }
 
 type TtTeacher struct {

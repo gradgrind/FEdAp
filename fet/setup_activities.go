@@ -3,6 +3,7 @@ package fet
 import (
 	"fedap/base"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -15,6 +16,14 @@ import (
 
 type TimeSlot int
 
+func (tt_data *TtData) Day(t TimeSlot) int {
+	return int(t) / tt_data.NHours
+}
+
+func (tt_data *TtData) Hour(t TimeSlot) int {
+	return int(t) % tt_data.NHours
+}
+
 type PreferredTime struct {
 	Slot    TimeSlot
 	Penalty int
@@ -22,8 +31,10 @@ type PreferredTime struct {
 
 type TtActivity struct {
 	Id                     int
+	Duration               int
 	Placement              TimeSlot //TODO?
 	Fixed                  bool     //TODO?
+	BasicActivityGroup     *BasicActivityGroup
 	Resources              []int
 	RoomChoices            [][]int
 	DaysBetweenConstraints []ConstraintDaysBetween
@@ -34,11 +45,18 @@ func (a *TtActivity) setTime(t int) {
 	a.Placement = TimeSlot(t)
 }
 
-// Although FET activities are numbered contiguously from 1, a distinct indexing
-// is used here, which means that a translation, MapActivity, is needed. This
-// allows skipping of non-active activities, etc.
-// TODO: This maybe a bit short-sighted ... wouldn't it be better to use the FET
-// numbering, even with gaps?
+type BasicActivityGroup struct {
+	Activities           []int
+	BasicSlots           []TimeSlot
+	LinkedActivityGroups []*BasicActivityGroup
+	Duration             int
+	Processed            bool
+}
+
+// Although FET activities are numbered contiguously, there may be, effectively,
+// gaps caused by inactive activities. To keep things fairly transparent, however,
+// the FET Id numbers are retained, padding the activities slice with empty
+// entries.
 func (tt_data *TtData) SetupActivities(fetdata *fet) {
 	// Find highest activity index
 	aix := 0
@@ -48,8 +66,11 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		}
 	}
 
-	// Set up initial activity groups (from FET activity groups)
-	activity_groups := map[int][]int{}
+	// Set up initial activity groups (from FET activity groups). These are used
+	// later when building groups of activities to be placed simultaneously.
+	activity_groups := map[int][]*BasicActivityGroup{} // key is activity group id
+	// This maps the FET activity group to the basic local activity group
+	activity_bags := map[int]*BasicActivityGroup{} // key is activity id
 
 	tt_data.Activities = make([]TtActivity, aix+1)
 	for _, a := range fetdata.Activities_List.Activity {
@@ -58,13 +79,55 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		}
 
 		if a.Activity_Group_Id == 0 {
-			activity_groups[a.Id] = []int{a.Id}
-		} else {
-			activity_groups[a.Activity_Group_Id] = append(
-				activity_groups[a.Activity_Group_Id], a.Id)
+			activity_bags[a.Id] = &BasicActivityGroup{
+				Activities: []int{a.Id},
+				//BasicSlots
+				//LinkedActivityGroups
+				Duration:  a.Duration,
+				Processed: false,
+			}
+			continue
 		}
+		var bag *BasicActivityGroup
+		if a.Activity_Group_Id == a.Id {
+			bag = &BasicActivityGroup{
+				Activities: []int{a.Id},
+				//BasicSlots
+				//LinkedActivityGroups
+				Duration:  a.Duration,
+				Processed: false,
+			}
+			activity_groups[a.Id] = []*BasicActivityGroup{bag}
+		} else {
+			// Split FET activity group according to duration
+			i := 0
+			for _, bag = range activity_groups[a.Activity_Group_Id] {
+				if bag.Duration == a.Duration {
+					// Add to existing entry
+					bag.Activities = append(bag.Activities, a.Id)
+					goto done1
+				}
+				if bag.Duration < a.Duration {
+					// New entry before current one (longer duration first)
+					break
+				}
+				i++
+			}
+			// Insert or append new entry
+			bag = &BasicActivityGroup{
+				Activities: []int{a.Id},
+				//BasicSlots
+				//LinkedActivityGroups
+				Duration:  a.Duration,
+				Processed: false,
+			}
+			activity_groups[a.Activity_Group_Id] = slices.Insert(
+				activity_groups[a.Activity_Group_Id], i, bag)
+		done1:
+		}
+		activity_bags[a.Id] = bag
 
-		activity := TtActivity{Id: a.Id}
+		activity := TtActivity{Id: a.Id, Duration: a.Duration}
 		for _, t := range a.Teacher {
 			tix, ok := tt_data.TeacherIndex[t]
 			if !ok {
@@ -83,7 +146,7 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		tt_data.Activities[a.Id] = activity
 	}
 
-	tt_data.fet_activity_groups = activity_groups
+	tt_data.basic_activity_groups = activity_bags
 
 	// Need (at least) fixed rooms
 
@@ -164,6 +227,43 @@ func (tt_data *TtData) SetupFixedTimes(fetdata *fet) {
 			a.Fixed = true
 		}
 	}
+}
+
+// This asssumes that the target has been tested, so that the placement is valid.
+func (tt_data *TtData) PlaceBasic(activity int, t TimeSlot) {
+	a := tt_data.Activities[activity]
+	rmap := tt_data.ResourceWeeks
+	for range a.Duration {
+		for _, r := range a.Resources {
+			rmap[r][t] = activity
+		}
+		t++
+	}
+}
+
+func (tt_data *TtData) TestPlaceBasic(activity int, t TimeSlot) bool {
+	a := tt_data.Activities[activity]
+
+	//TODO: Note that this part of the test won't be necessary for pre-checked
+	// activities.
+	if a.Duration > 1 {
+		// Check that it fits in a day
+		if a.Duration+tt_data.Hour(t) > tt_data.NHours {
+			return false
+		}
+	}
+
+	// Check that all the slots are free for all the resources
+	rmap := tt_data.ResourceWeeks
+	for range a.Duration {
+		for _, r := range a.Resources {
+			if rmap[r][t] != 0 {
+				return false
+			}
+		}
+		t++
+	}
+	return true
 }
 
 type ConstraintDaysBetween struct {
