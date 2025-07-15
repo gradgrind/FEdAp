@@ -39,6 +39,7 @@ func main() {
 		tt_data.SetupFixedTimes(fetdata)
 		tt_data.SetupDaysBetween(fetdata)
 		tt_data.ResourceBlocking(fetdata)
+		tt_data.ConnectBags()
 
 		//TODO--
 		//tt_data.PrintBags()

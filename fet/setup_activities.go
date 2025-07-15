@@ -14,8 +14,6 @@ import (
  * with duration > 1 can be handled fairly transparently.
  */
 
-type TimeSlot int
-
 func (tt_data *TtData) Day(t TimeSlot) int {
 	return int(t) / tt_data.NHours
 }
@@ -66,8 +64,12 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		}
 	}
 
-	// Set up initial activity groups (from FET activity groups). These are used
-	// later when building groups of activities to be placed simultaneously.
+	// Set up initial activity groups (from FET activity groups), these are the
+	// BasicActivityGroups. They group activities with the same resources and
+	// durations. This can possibly be used to reduce the number of placement
+	// options. They are used later when building groups of activities to be
+	// placed simultaneously.
+
 	activity_groups := map[int][]*BasicActivityGroup{} // key is activity group id
 	// This maps the FET activity group to the basic local activity group
 	activity_bags := map[int]*BasicActivityGroup{} // key is activity id
@@ -235,7 +237,7 @@ func (tt_data *TtData) PlaceBasic(activity int, t TimeSlot) {
 	rmap := tt_data.ResourceWeeks
 	for range a.Duration {
 		for _, r := range a.Resources {
-			rmap[r][t] = activity
+			rmap[r][t] = ActivityIndex(activity)
 		}
 		t++
 	}
@@ -267,7 +269,7 @@ func (tt_data *TtData) TestPlaceBasic(activity int, t TimeSlot) bool {
 }
 
 type ConstraintDaysBetween struct {
-	Activity           int
+	Activity           ActivityIndex
 	Penalty            int
 	MinDays            int
 	SameDayConsecutive bool // only relevant if penalty > 0:
@@ -293,7 +295,9 @@ func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 				if aix != aix0 {
 					a.DaysBetweenConstraints = append(a.DaysBetweenConstraints,
 						ConstraintDaysBetween{
-							aix, penalty, mindays, rc.Consecutive_If_Same_Day})
+							ActivityIndex(aix),
+							penalty, mindays,
+							rc.Consecutive_If_Same_Day})
 				}
 			}
 		}

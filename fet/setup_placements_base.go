@@ -6,6 +6,7 @@ package fet
 // the DB structures, to some extent?
 
 import (
+	"cmp"
 	"fedap/base"
 	"fmt"
 	"maps"
@@ -13,18 +14,23 @@ import (
 	"strings"
 )
 
+type ActivityIndex int16
+type TimeSlot int16
+
 type TtData struct {
-	NDays         int
-	NHours        int
-	Resources     []any
-	ResourceWeeks [][]int
-	DayIndex      map[string]int
-	HourIndex     map[string]int
-	TeacherIndex  map[string]int
-	GroupIndexes  map[string][]int
-	RoomIndex     map[string]int
-	VirtualRooms  map[string]TtVirtualRoom
-	Activities    []TtActivity
+	NDays        int
+	NHours       int
+	Resources    []any
+	DayIndex     map[string]int
+	HourIndex    map[string]int
+	TeacherIndex map[string]int
+	GroupIndexes map[string][]int
+	RoomIndex    map[string]int
+	VirtualRooms map[string]TtVirtualRoom
+	Activities   []TtActivity
+
+	ActivitySlots []TimeSlot
+	ResourceWeeks [][]ActivityIndex
 
 	basic_activity_groups map[int]*BasicActivityGroup
 }
@@ -37,16 +43,75 @@ func (tt_data *TtData) PrintBags() {
 	}
 }
 
+/* A "placement state" is essentially defined by the placements of all the
+ * activities. As such a simple vector of these placements would suffice.
+ * However, also the blocked time-slots need to be considered.
+ * Further, there may well be room-choices. These could be stored in the
+ * activity nodes themselves.
+ * An alternative would be to use the resource-weeks vector, which should
+ * contain all the placement information, but is likely to be much larger.
+ * To minimize the save/restore times it could be sensible to prefer simple
+ * copying over regeneration, so it might be worth saving both vectors and,
+ * if possible, not saving changeable stuff in the activities.
+ *
+ * I need sets of "connected" BAGs ...
+ */
+
+func (tt_data *TtData) ConnectBags() {
+	bagmap := map[*BasicActivityGroup]*[]*BasicActivityGroup{}
+	for _, bag := range tt_data.basic_activity_groups {
+		baglist, ok := bagmap[bag]
+		if !ok {
+			baglist = &[]*BasicActivityGroup{bag}
+			bagmap[bag] = baglist
+		}
+		// Seek connected BAGs ...
+		for _, aix := range bag.Activities {
+			a := tt_data.Activities[aix]
+			for _, c := range a.DaysBetweenConstraints {
+				bag1, ok := tt_data.basic_activity_groups[int(c.Activity)]
+				if !ok {
+					panic("No basic-activity-group")
+				}
+				if _, ok := bagmap[bag1]; !ok {
+					*baglist = append(*baglist, bag1)
+					bagmap[bag1] = baglist
+				}
+			}
+			//TODO: other constraints?
+		}
+	}
+
+	//TODO: What to do with bagmap?
+	fmt.Println("\n *** BAGs ***")
+	done := map[*BasicActivityGroup]bool{}
+
+	sortFunc := func(a, b *BasicActivityGroup) int {
+		return cmp.Compare(a.Activities[0], b.Activities[0])
+	}
+	for _, bag := range slices.SortedFunc(maps.Keys(bagmap), sortFunc) {
+		if done[bag] {
+			continue
+		}
+		baglist := bagmap[bag]
+		fmt.Printf("\n+++ %+v: %d\n  --", bag.Activities, len(*baglist))
+		for _, bag1 := range *baglist {
+			fmt.Printf(" %+v", bag1.Activities)
+			done[bag1] = true
+		}
+	}
+}
+
 type TtTeacher struct {
 	Id            Ref
 	Tag           string
-	ResourceIndex int
+	ActivityIndex int
 }
 
 type TtRoom struct {
 	Id            Ref
 	Tag           string
-	ResourceIndex int
+	ActivityIndex int
 }
 
 type TtVirtualRoom struct {
@@ -57,7 +122,7 @@ type TtVirtualRoom struct {
 type TtAtomicGroup struct {
 	//Id            Ref
 	Tag           string
-	ResourceIndex int
+	ActivityIndex int
 }
 
 func (tt_data *TtData) TimeSlotIndex(day string, hour string) int {
@@ -92,7 +157,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 		tt_data.Resources = append(tt_data.Resources, item_p)
 		tt_data.TeacherIndex[t.Name] = tix
 		tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-			make([]int, slots_per_week))
+			make([]ActivityIndex, slots_per_week))
 	}
 	fmt.Printf("n teachers: %d\n", len(tt_data.TeacherIndex))
 
@@ -118,7 +183,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 			tt_data.GroupIndexes[c.Name] = []int{tix}
 			tt_data.Resources = append(tt_data.Resources, item_p)
 			tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-				make([]int, slots_per_week))
+				make([]ActivityIndex, slots_per_week))
 			fmt.Printf("§ %s - %d\n", c.Name, tix)
 
 		} else {
@@ -133,7 +198,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 					tt_data.GroupIndexes[g.Name] = []int{tix}
 					tt_data.Resources = append(tt_data.Resources, item_p)
 					tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-						make([]int, slots_per_week))
+						make([]ActivityIndex, slots_per_week))
 					fmt.Printf("§ %s - %d\n", g.Name, tix)
 
 				} else {
@@ -147,7 +212,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 							item_p := TtAtomicGroup{ag.Name, tix}
 							tt_data.Resources = append(tt_data.Resources, item_p)
 							tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-								make([]int, slots_per_week))
+								make([]ActivityIndex, slots_per_week))
 						}
 						aglist = append(aglist, tix)
 					}
@@ -214,7 +279,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 			tt_data.Resources = append(tt_data.Resources, item_p)
 			tt_data.RoomIndex[r.Name] = tix
 			tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-				make([]int, slots_per_week))
+				make([]ActivityIndex, slots_per_week))
 			fmt.Printf("ROOM: %s – %d\n", r.Name, tix)
 		}
 
