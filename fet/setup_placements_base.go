@@ -15,6 +15,7 @@ import (
 )
 
 type ActivityIndex int16
+type ResourceIndex = int
 type TimeSlot int16
 
 type TtData struct {
@@ -23,9 +24,9 @@ type TtData struct {
 	Resources    []any
 	DayIndex     map[string]int
 	HourIndex    map[string]int
-	TeacherIndex map[string]int
-	GroupIndexes map[string][]int
-	RoomIndex    map[string]int
+	TeacherIndex map[string]ResourceIndex
+	GroupIndexes map[string][]ResourceIndex
+	RoomIndex    map[string]ResourceIndex
 	VirtualRooms map[string]TtVirtualRoom
 	Activities   []TtActivity
 
@@ -43,9 +44,9 @@ func (tt_data *TtData) PrintBags() {
 	}
 }
 
-/* A "placement state" is essentially defined by the placements of all the
- * activities. As such a simple vector of these placements would suffice.
- * However, also the blocked time-slots need to be considered.
+/* TODO: A "placement state" is essentially defined by the placements of
+ * all the activities. As such a simple vector of these placements would
+ * suffice. However, also the blocked time-slots need to be considered.
  * Further, there may well be room-choices. These could be stored in the
  * activity nodes themselves.
  * An alternative would be to use the resource-weeks vector, which should
@@ -53,13 +54,31 @@ func (tt_data *TtData) PrintBags() {
  * To minimize the save/restore times it could be sensible to prefer simple
  * copying over regeneration, so it might be worth saving both vectors and,
  * if possible, not saving changeable stuff in the activities.
- *
- * I need sets of "connected" BAGs ...
  */
 
+// Collect basic-possible-slots for the BasicActivityGroups and sets of
+// connected BasicActivityGroups.
 func (tt_data *TtData) ConnectBags() {
+	slots_per_week := TimeSlot(tt_data.NDays * tt_data.NHours)
 	bagmap := map[*BasicActivityGroup]*[]*BasicActivityGroup{}
 	for _, bag := range tt_data.basic_activity_groups {
+		// Find all slots which are in principle possible for the activities
+		// in this BAG.
+
+		//TODO: Should this be before or after the placement of the fixed
+		// activities? If the latter, should it only be done for BAGs with at
+		// least one non-fixed activity?
+
+		aix := bag.Activities[0]
+		slots := []TimeSlot{}
+		for t := range slots_per_week {
+			if tt_data.TestPlaceBasic(aix, t) {
+				slots = append(slots, t)
+			}
+		}
+		bag.BasicSlots = slots
+
+		// Find connected BAGs
 		baglist, ok := bagmap[bag]
 		if !ok {
 			baglist = &[]*BasicActivityGroup{bag}
@@ -90,6 +109,8 @@ func (tt_data *TtData) ConnectBags() {
 		return cmp.Compare(a.Activities[0], b.Activities[0])
 	}
 	for _, bag := range slices.SortedFunc(maps.Keys(bagmap), sortFunc) {
+		fmt.Printf("\n$ BasicSlots: %+v\n", bag.BasicSlots)
+
 		if done[bag] {
 			continue
 		}
@@ -103,26 +124,26 @@ func (tt_data *TtData) ConnectBags() {
 }
 
 type TtTeacher struct {
-	Id            Ref
-	Tag           string
-	ActivityIndex int
+	Id       Ref
+	Tag      string
+	Resource ResourceIndex
 }
 
 type TtRoom struct {
-	Id            Ref
-	Tag           string
-	ActivityIndex int
+	Id       Ref
+	Tag      string
+	Resource ResourceIndex
 }
 
 type TtVirtualRoom struct {
-	RoomIndexes       []int
-	RoomChoiceIndexes [][]int
+	RoomIndexes       []ResourceIndex
+	RoomChoiceIndexes [][]ResourceIndex
 }
 
 type TtAtomicGroup struct {
 	//Id            Ref
-	Tag           string
-	ActivityIndex int
+	Tag      string
+	Resource ResourceIndex
 }
 
 func (tt_data *TtData) TimeSlotIndex(day string, hour string) int {
@@ -145,9 +166,9 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 	slots_per_week := tt_data.NDays * tt_data.NHours
 	fmt.Printf("n days = %d, n hours = %d\n", tt_data.NDays, tt_data.NHours)
 
-	tt_data.TeacherIndex = map[string]int{}
-	tt_data.GroupIndexes = map[string][]int{}
-	tt_data.RoomIndex = map[string]int{}
+	tt_data.TeacherIndex = map[string]ResourceIndex{}
+	tt_data.GroupIndexes = map[string][]ResourceIndex{}
+	tt_data.RoomIndex = map[string]ResourceIndex{}
 	tt_data.VirtualRooms = map[string]TtVirtualRoom{}
 
 	for _, t := range fetdata.Teachers_List.Teacher {
@@ -228,7 +249,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 		}
 	}
 
-	// Teachers and groups are referenced directly in the Activity nodes.
+	// Teachers and groups are referenced directly in the FET Activity nodes.
 	// Rooms are not, they are attached to the activities by constraints. The
 	// constraints specify a list of rooms from which one is to be chosen.
 	// To complicate matters, there are – in addition to the "real" rooms –
