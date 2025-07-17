@@ -36,9 +36,9 @@ func main() {
 		tt_data := &fet.TtData{}
 		tt_data.PrepareResources(fetdata)
 		tt_data.SetupActivities(fetdata)
+		tt_data.ResourceBlocking(fetdata)
 		tt_data.SetupFixedTimes(fetdata)
 		tt_data.SetupDaysBetween(fetdata)
-		tt_data.ResourceBlocking(fetdata)
 		tt_data.ConnectBags()
 
 		//TODO--

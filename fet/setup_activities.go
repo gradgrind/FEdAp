@@ -22,26 +22,27 @@ func (tt_data *TtData) Hour(t TimeSlot) int {
 	return int(t) % tt_data.NHours
 }
 
-type PreferredTime struct {
-	Slot    TimeSlot
-	Penalty int
-}
+//type PreferredTime struct {
+//	Slot    TimeSlot
+//	Penalty int
+//}
 
 type TtActivity struct {
-	Id                     int
-	Duration               int
-	Placement              TimeSlot //TODO?
-	Fixed                  bool     //TODO?
+	Id       int
+	Duration int
+	//Placement TimeSlot
+	//PlacementPenalty int
 	BasicActivityGroup     *BasicActivityGroup
 	Resources              []int
 	RoomChoices            [][]int
 	DaysBetweenConstraints []ConstraintDaysBetween
-	PreferredTimes         []PreferredTime
+	//PreferredTimes         []PreferredTime
+	Fixed bool
 }
 
-func (a *TtActivity) setTime(t int) {
-	a.Placement = TimeSlot(t)
-}
+//func (a *TtActivity) setTime(t int) {
+//	a.Placement = TimeSlot(t)
+//}
 
 type BasicActivityGroup struct {
 	Activities           []int
@@ -63,6 +64,9 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 			aix = a.Id
 		}
 	}
+
+	//TODO: THe BAGs should be set up AFTER the fixed activities, as the fixed
+	// activities should not be in BAGs!
 
 	// Set up initial activity groups (from FET activity groups), these are the
 	// BasicActivityGroups. They group activities with the same resources and
@@ -215,19 +219,17 @@ func (tt_data *TtData) SetupFixedTimes(fetdata *fet) {
 		if !rc.Active {
 			continue
 		}
+		// NOTE that the FET constraint allows weights of less than 100%, but here
+		// a hard constraint is assumed in all cases.
 		t := TimeSlot(tt_data.TimeSlotIndex(rc.Preferred_Day, rc.Preferred_Hour))
-		a := &tt_data.Activities[rc.Activity_Id]
-		wp, _ := strconv.ParseFloat(rc.Weight_Percentage, 64)
-		w := 100.0 - wp
-		if w >= 0.1 { // everything under 0.1% counts as "hard"
-			penalty := int(100.0 / w)
-			a.PreferredTimes = append(a.PreferredTimes,
-				PreferredTime{t, penalty})
-		} else {
-			a.Placement = t
-			//TODO?
-			a.Fixed = true
+		if !tt_data.TestPlaceBasic(rc.Activity_Id, t) {
+			base.Error.Fatalf(
+				"Fixed activity %d cannot be placed in time-slot %d\n",
+				rc.Activity_Id, t)
 		}
+		tt_data.PlaceBasic(rc.Activity_Id, t)
+		a := &tt_data.Activities[rc.Activity_Id]
+		a.Fixed = true
 	}
 }
 
