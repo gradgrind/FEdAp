@@ -65,18 +65,27 @@ func (tt_data *TtData) ConnectBags() {
 		// Find all slots which are in principle possible for the activities
 		// in this BAG.
 
-		//TODO: Should this be before or after the placement of the fixed
-		// activities? If the latter, should it only be done for BAGs with at
-		// least one non-fixed activity?
-
-		aix := bag.Activities[0]
-		slots := []TimeSlot{}
-		for t := range slots_per_week {
-			if tt_data.TestPlaceBasic(aix, t) {
-				slots = append(slots, t)
+		// This is after the placement of the fixed activities, so some BAGs may
+		// not have any activities which still need placing.
+		// However, they might still be needed for relative constraints!
+		aixs := []int{}
+		for _, aix := range bag.Activities {
+			a := tt_data.Activities[aix]
+			if !a.Fixed {
+				aixs = append(aixs, aix)
 			}
 		}
-		bag.BasicSlots = slots
+
+		if len(aixs) != 0 {
+			aix := bag.Activities[0]
+			slots := []TimeSlot{}
+			for t := range slots_per_week {
+				if tt_data.TestPlaceBasic(aix, t) {
+					slots = append(slots, TimeSlot(t))
+				}
+			}
+			bag.BasicSlots = SlotCombinations(slots, len(aixs))
+		}
 
 		// Find connected BAGs
 		baglist, ok := bagmap[bag]
@@ -304,5 +313,49 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 			fmt.Printf("ROOM: %s – %d\n", r.Name, tix)
 		}
 
+	}
+}
+
+func SlotCombinations(iterable []TimeSlot, r int) (rt [][]TimeSlot) {
+	pool := iterable
+	n := len(pool)
+
+	if r > n {
+		return
+	}
+
+	indices := make([]int, r)
+	for i := range indices {
+		indices[i] = i
+	}
+
+	result := make([]TimeSlot, r)
+	for i, el := range indices {
+		result[i] = pool[el]
+	}
+	s2 := make([]TimeSlot, r)
+	copy(s2, result)
+	rt = append(rt, s2)
+
+	for {
+		i := r - 1
+		for ; i >= 0 && indices[i] == i+n-r; i-- {
+		}
+
+		if i < 0 {
+			return
+		}
+
+		indices[i] += 1
+		for j := i + 1; j < r; j += 1 {
+			indices[j] = indices[j-1] + 1
+		}
+
+		for ; i < len(indices); i += 1 {
+			result[i] = pool[indices[i]]
+		}
+		s2 = make([]TimeSlot, r)
+		copy(s2, result)
+		rt = append(rt, s2)
 	}
 }

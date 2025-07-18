@@ -46,7 +46,7 @@ type TtActivity struct {
 
 type BasicActivityGroup struct {
 	Activities           []int
-	BasicSlots           []TimeSlot
+	BasicSlots           [][]TimeSlot
 	LinkedActivityGroups []*BasicActivityGroup
 	Duration             int
 	Processed            bool
