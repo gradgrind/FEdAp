@@ -235,17 +235,20 @@ func (tt_data *TtData) SetupFixedTimes(fetdata *fet) {
 
 // This asssumes that the target has been tested, so that the placement is valid.
 func (tt_data *TtData) PlaceBasic(activity int, t TimeSlot) {
+	slots_per_week := tt_data.HoursPerWeek
 	a := tt_data.Activities[activity]
 	rmap := tt_data.ResourceWeeks
 	for range a.Duration {
 		for _, r := range a.Resources {
-			rmap[r][t] = ActivityIndex(activity)
+			rmap[r*slots_per_week+int(t)] = ActivityIndex(activity)
 		}
 		t++
 	}
+	tt_data.ActivitySlots[activity] = t
 }
 
 func (tt_data *TtData) TestPlaceBasic(activity int, t TimeSlot) bool {
+	slots_per_week := tt_data.HoursPerWeek
 	a := tt_data.Activities[activity]
 
 	//TODO: Note that this part of the test won't be necessary for pre-checked
@@ -261,13 +264,37 @@ func (tt_data *TtData) TestPlaceBasic(activity int, t TimeSlot) bool {
 	rmap := tt_data.ResourceWeeks
 	for range a.Duration {
 		for _, r := range a.Resources {
-			if rmap[r][t] != 0 {
+			if rmap[r*slots_per_week+int(t)] != 0 {
 				return false
 			}
 		}
 		t++
 	}
 	return true
+}
+
+type tt_state struct {
+	ActivitySlots []TimeSlot
+	ResourceWeeks []ActivityIndex
+}
+
+func (tt_data *TtData) SaveState() tt_state {
+	a := append([]TimeSlot{}, tt_data.ActivitySlots...)
+	r := append([]ActivityIndex{}, tt_data.ResourceWeeks...)
+	return tt_state{a, r}
+}
+
+// Restore from a saved state. Subsequently the saved state should be regarded as
+// invalid, because the restoration doesn't clone it. Thus it is probable that
+// the "saved" state will be changed when the current state is changed.
+func (tt_data *TtData) RestoreStateMove(state tt_state) {
+	tt_data.ActivitySlots = state.ActivitySlots
+	tt_data.ResourceWeeks = state.ResourceWeeks
+}
+
+func (tt_data *TtData) RestoreStateClone(state tt_state) {
+	tt_data.ActivitySlots = append([]TimeSlot{}, state.ActivitySlots...)
+	tt_data.ResourceWeeks = append([]ActivityIndex{}, state.ResourceWeeks...)
 }
 
 type ConstraintDaysBetween struct {

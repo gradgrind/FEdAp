@@ -3,6 +3,7 @@ package fet
 import "fedap/base"
 
 func (tt_data *TtData) ResourceBlocking(fetdata *fet) {
+	slots_per_week := tt_data.HoursPerWeek
 	for _, rc := range fetdata.Time_Constraints_List.
 		ConstraintTeacherNotAvailableTimes {
 
@@ -11,9 +12,8 @@ func (tt_data *TtData) ResourceBlocking(fetdata *fet) {
 		if !ok {
 			base.Error.Fatalf("Unknown teacher: %s", tt)
 		}
-		week := tt_data.ResourceWeeks[t]
 		for _, dh := range rc.Not_Available_Time {
-			week[tt_data.TimeSlotIndex(dh.Day, dh.Hour)] = -1
+			tt_data.ResourceWeeks[t*slots_per_week+tt_data.TimeSlotIndex(dh.Day, dh.Hour)] = -1
 		}
 
 	}
@@ -29,8 +29,7 @@ func (tt_data *TtData) ResourceBlocking(fetdata *fet) {
 		for _, dh := range rc.Not_Available_Time {
 			slot := tt_data.TimeSlotIndex(dh.Day, dh.Hour)
 			for _, g := range gx {
-				week := tt_data.ResourceWeeks[g]
-				week[slot] = -1
+				tt_data.ResourceWeeks[g*slots_per_week+slot] = -1
 			}
 		}
 	}

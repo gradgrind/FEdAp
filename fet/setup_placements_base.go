@@ -18,9 +18,21 @@ type ActivityIndex int16
 type ResourceIndex = int
 type TimeSlot int16
 
+type TtRoom struct {
+	Id       Ref
+	Tag      string
+	Resource ResourceIndex
+}
+
+type TtVirtualRoom struct {
+	RoomIndexes       []ResourceIndex
+	RoomChoiceIndexes [][]ResourceIndex
+}
+
 type TtData struct {
 	NDays        int
 	NHours       int
+	HoursPerWeek int
 	Resources    []any
 	DayIndex     map[string]int
 	HourIndex    map[string]int
@@ -31,7 +43,7 @@ type TtData struct {
 	Activities   []TtActivity
 
 	ActivitySlots []TimeSlot
-	ResourceWeeks [][]ActivityIndex
+	ResourceWeeks []ActivityIndex
 
 	basic_activity_groups map[int]*BasicActivityGroup
 }
@@ -60,6 +72,7 @@ func (tt_data *TtData) PrintBags() {
 // connected BasicActivityGroups.
 func (tt_data *TtData) ConnectBags() {
 	slots_per_week := TimeSlot(tt_data.NDays * tt_data.NHours)
+	tt_data.HoursPerWeek = int(slots_per_week)
 	bagmap := map[*BasicActivityGroup]*[]*BasicActivityGroup{}
 	for _, bag := range tt_data.basic_activity_groups {
 		// Find all slots which are in principle possible for the activities
@@ -112,6 +125,33 @@ func (tt_data *TtData) ConnectBags() {
 
 	//TODO: What to do with bagmap?
 	fmt.Println("\n *** BAGs ***")
+
+	for _, baglist := range bagmap {
+		placements := [][]TimeSlot{}
+		stem := [][]TimeSlot{}
+		for _, bag := range *baglist {
+			for _, slots := range bag.BasicSlots {
+				state := tt_data.SaveState()
+				for i, aix := range bag.Activities {
+					slot := slots[i]
+					// Test and place the activity in the slot, also checking
+					// days-between, etc. and accumulating penalties
+					if tt_data.TestPlaceBasic(aix, slot) {
+						tt_data.PlaceBasic(aix, slot)
+					} else {
+						// This combination failed
+						goto next
+					}
+				}
+
+			next:
+				tt_data.RestoreStateMove(state)
+			}
+		}
+
+		//TODO: Assign placements to baglist
+	}
+
 	done := map[*BasicActivityGroup]bool{}
 
 	sortFunc := func(a, b *BasicActivityGroup) int {
@@ -132,21 +172,50 @@ func (tt_data *TtData) ConnectBags() {
 	}
 }
 
+func (tt_data *TtData) baglist_placements(
+	stem []TimeSlot,
+	baglist *[]*BasicActivityGroup,
+	bagli int,
+) [][]TimeSlot {
+	if bagli == len(*baglist) {
+		//TODO
+	}
+
+	placements := [][]TimeSlot{}
+
+	bag := (*baglist)[bagli]
+
+	for _, slots := range bag.BasicSlots {
+		state := tt_data.SaveState()
+		for i, aix := range bag.Activities {
+			slot := slots[i]
+			// Test and place the activity in the slot, also checking
+			// days-between, etc. and accumulating penalties
+			if tt_data.TestPlaceBasic(aix, slot) {
+				tt_data.PlaceBasic(aix, slot)
+			} else {
+				// This combination failed
+				goto next
+			}
+		}
+		// All placements OK, goto next bag
+		placements = append(placements, tt_data.baglist_placements(
+			append(append([]TimeSlot{}, stem...), slots...),
+			baglist,
+			bagli+1,
+		)...)
+
+	next:
+		tt_data.RestoreStateMove(state)
+	}
+
+	return placements
+}
+
 type TtTeacher struct {
 	Id       Ref
 	Tag      string
 	Resource ResourceIndex
-}
-
-type TtRoom struct {
-	Id       Ref
-	Tag      string
-	Resource ResourceIndex
-}
-
-type TtVirtualRoom struct {
-	RoomIndexes       []ResourceIndex
-	RoomChoiceIndexes [][]ResourceIndex
 }
 
 type TtAtomicGroup struct {
@@ -172,7 +241,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 	for i, h := range fetdata.Hours_List.Hour {
 		tt_data.HourIndex[h.Name] = i
 	}
-	slots_per_week := tt_data.NDays * tt_data.NHours
+	slots_per_week := tt_data.HoursPerWeek
 	fmt.Printf("n days = %d, n hours = %d\n", tt_data.NDays, tt_data.NHours)
 
 	tt_data.TeacherIndex = map[string]ResourceIndex{}
@@ -187,7 +256,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 		tt_data.Resources = append(tt_data.Resources, item_p)
 		tt_data.TeacherIndex[t.Name] = tix
 		tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-			make([]ActivityIndex, slots_per_week))
+			make([]ActivityIndex, slots_per_week)...)
 	}
 	fmt.Printf("n teachers: %d\n", len(tt_data.TeacherIndex))
 
@@ -213,7 +282,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 			tt_data.GroupIndexes[c.Name] = []int{tix}
 			tt_data.Resources = append(tt_data.Resources, item_p)
 			tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-				make([]ActivityIndex, slots_per_week))
+				make([]ActivityIndex, slots_per_week)...)
 			fmt.Printf("§ %s - %d\n", c.Name, tix)
 
 		} else {
@@ -228,7 +297,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 					tt_data.GroupIndexes[g.Name] = []int{tix}
 					tt_data.Resources = append(tt_data.Resources, item_p)
 					tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-						make([]ActivityIndex, slots_per_week))
+						make([]ActivityIndex, slots_per_week)...)
 					fmt.Printf("§ %s - %d\n", g.Name, tix)
 
 				} else {
@@ -242,7 +311,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 							item_p := TtAtomicGroup{ag.Name, tix}
 							tt_data.Resources = append(tt_data.Resources, item_p)
 							tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-								make([]ActivityIndex, slots_per_week))
+								make([]ActivityIndex, slots_per_week)...)
 						}
 						aglist = append(aglist, tix)
 					}
@@ -309,7 +378,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 			tt_data.Resources = append(tt_data.Resources, item_p)
 			tt_data.RoomIndex[r.Name] = tix
 			tt_data.ResourceWeeks = append(tt_data.ResourceWeeks,
-				make([]ActivityIndex, slots_per_week))
+				make([]ActivityIndex, slots_per_week)...)
 			fmt.Printf("ROOM: %s – %d\n", r.Name, tix)
 		}
 
