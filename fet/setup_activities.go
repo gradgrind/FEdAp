@@ -65,18 +65,21 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		}
 	}
 
-	//TODO: THe BAGs should be set up AFTER the fixed activities, as the fixed
+	//TODO: The BAGs should be set up AFTER the fixed activities, as the fixed
 	// activities should not be in BAGs!
 
 	// Set up initial activity groups (from FET activity groups), these are the
-	// BasicActivityGroups. They group activities with the same resources and
-	// durations. This can possibly be used to reduce the number of placement
+	// BasicActivityGroups (BAGs). They group activities with the same resources
+	// and durations. This can possibly be used to reduce the number of placement
 	// options. They are used later when building groups of activities to be
 	// placed simultaneously.
 
-	activity_groups := map[int][]*BasicActivityGroup{} // key is activity group id
-	// This maps the FET activity group to the basic local activity group
-	activity_bags := map[int]*BasicActivityGroup{} // key is activity id
+	// `activity_groups` maps each FET activity group id to a list of BAGs,
+	// sorted with longer durations first. If the FET activity group id is 0,
+	// there is only one entry, a BAG with a single activity.
+	activity_groups := map[int][]*BasicActivityGroup{}
+	// `activity_bags` maps the FET activity id to its BAG.
+	activity_bags := map[int]*BasicActivityGroup{}
 
 	tt_data.Activities = make([]TtActivity, aix+1)
 	for _, a := range fetdata.Activities_List.Activity {
@@ -87,10 +90,8 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		if a.Activity_Group_Id == 0 {
 			activity_bags[a.Id] = &BasicActivityGroup{
 				Activities: []int{a.Id},
-				//BasicSlots
-				//LinkedActivityGroups
-				Duration:  a.Duration,
-				Processed: false,
+				Duration:   a.Duration,
+				Processed:  false,
 			}
 			continue
 		}
@@ -98,10 +99,8 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 		if a.Activity_Group_Id == a.Id {
 			bag = &BasicActivityGroup{
 				Activities: []int{a.Id},
-				//BasicSlots
-				//LinkedActivityGroups
-				Duration:  a.Duration,
-				Processed: false,
+				Duration:   a.Duration,
+				Processed:  false,
 			}
 			activity_groups[a.Id] = []*BasicActivityGroup{bag}
 		} else {
@@ -122,10 +121,8 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 			// Insert or append new entry
 			bag = &BasicActivityGroup{
 				Activities: []int{a.Id},
-				//BasicSlots
-				//LinkedActivityGroups
-				Duration:  a.Duration,
-				Processed: false,
+				Duration:   a.Duration,
+				Processed:  false,
 			}
 			activity_groups[a.Activity_Group_Id] = slices.Insert(
 				activity_groups[a.Activity_Group_Id], i, bag)
@@ -247,8 +244,11 @@ func (tt_data *TtData) PlaceBasic(activity int, t TimeSlot) {
 	tt_data.ActivitySlots[activity] = t
 }
 
+// `TestPlaceBasic` tests not only for resource collisions but also that the
+// activity fits in a day. The latter is necessary only when building the
+// possible-time lists, not for the later, main placement tests – for those
+// use `TestPlace`.
 func (tt_data *TtData) TestPlaceBasic(activity int, t TimeSlot) bool {
-	slots_per_week := tt_data.HoursPerWeek
 	a := tt_data.Activities[activity]
 
 	//TODO: Note that this part of the test won't be necessary for pre-checked
@@ -259,7 +259,14 @@ func (tt_data *TtData) TestPlaceBasic(activity int, t TimeSlot) bool {
 			return false
 		}
 	}
+	return tt_data.TestPlace(activity, t)
+}
 
+// `TestPlace` checks that all the slots needed for the placement are free for
+// all the resources.
+func (tt_data *TtData) TestPlace(activity int, t TimeSlot) bool {
+	slots_per_week := tt_data.HoursPerWeek
+	a := tt_data.Activities[activity]
 	// Check that all the slots are free for all the resources
 	rmap := tt_data.ResourceWeeks
 	for range a.Duration {
@@ -298,36 +305,70 @@ func (tt_data *TtData) RestoreStateClone(state tt_state) {
 }
 
 type ConstraintDaysBetween struct {
-	Activity           ActivityIndex
+	Activities         []ActivityIndex
 	Penalty            int
 	MinDays            int
 	SameDayConsecutive bool // only relevant if penalty > 0:
 	// if true, it is a "hard" constraint
 }
 
+type BagCollection struct {
+	BagList                []*BasicActivityGroup
+	DaysBetweenConstraints []*ConstraintDaysBetween
+}
+
+// Connect BAGs referenced by the different-days constraints in tt_data.CollectedBags.
 func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 	for _, rc := range fetdata.Time_Constraints_List.
 		ConstraintMinDaysBetweenActivities {
 		if !rc.Active {
 			continue
 		}
+
+		// Construct constraint
 		penalty := -1
 		wp, _ := strconv.ParseFloat(rc.Weight_Percentage, 64)
 		w := 100.0 - wp
 		if w >= 0.1 { // everything under 0.1% counts as "hard"
 			penalty = int(100.0 / w)
 		}
-		mindays := rc.MinDays
+		constraint := &ConstraintDaysBetween{
+			MinDays:            rc.MinDays,
+			Penalty:            penalty,
+			SameDayConsecutive: rc.Consecutive_If_Same_Day,
+		}
+		for _, aix := range rc.Activity_Id {
+			constraint.Activities = append(constraint.Activities, ActivityIndex(aix))
+		}
+
+		// Join the related BAGs into a new BagCollection, adding the constraint.
+		new_collected_bags := &BagCollection{
+			DaysBetweenConstraints: []*ConstraintDaysBetween{constraint},
+		}
 		for _, aix0 := range rc.Activity_Id {
-			a := &tt_data.Activities[aix0]
-			for _, aix := range rc.Activity_Id {
-				if aix != aix0 {
-					a.DaysBetweenConstraints = append(a.DaysBetweenConstraints,
-						ConstraintDaysBetween{
-							ActivityIndex(aix),
-							penalty, mindays,
-							rc.Consecutive_If_Same_Day})
+
+			bag0, ok := tt_data.basic_activity_groups[aix0]
+			if !ok {
+				base.Error.Fatalf("No basic-activity-group for activity %d", aix0)
+			}
+
+			bagcollection, ok := tt_data.CollectedBags[bag0]
+			if ok {
+				if bagcollection != new_collected_bags {
+					// Copy existing BAGs to new list, replacing pointers to old list.
+					for _, bag := range bagcollection.BagList {
+						new_collected_bags.BagList = append(new_collected_bags.BagList, bag)
+						tt_data.CollectedBags[bag] = new_collected_bags
+					}
+					// Copy constraints.
+					for _, c := range bagcollection.DaysBetweenConstraints {
+						new_collected_bags.DaysBetweenConstraints = append(
+							new_collected_bags.DaysBetweenConstraints, c)
+					}
 				}
+			} else {
+				new_collected_bags.BagList = append(new_collected_bags.BagList, bag0)
+				tt_data.CollectedBags[bag0] = new_collected_bags
 			}
 		}
 	}

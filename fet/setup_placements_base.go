@@ -46,6 +46,7 @@ type TtData struct {
 	ResourceWeeks []ActivityIndex
 
 	basic_activity_groups map[int]*BasicActivityGroup
+	CollectedBags         map[*BasicActivityGroup]*BagCollection
 }
 
 // TODO--
@@ -126,6 +127,7 @@ func (tt_data *TtData) ConnectBags() {
 	//TODO: What to do with bagmap?
 	fmt.Println("\n *** BAGs ***")
 
+	//TODO: call baglist_placements() instead of doing the following
 	for _, baglist := range bagmap {
 		placements := [][]TimeSlot{}
 		stem := [][]TimeSlot{}
@@ -189,8 +191,7 @@ func (tt_data *TtData) baglist_placements(
 		state := tt_data.SaveState()
 		for i, aix := range bag.Activities {
 			slot := slots[i]
-			// Test and place the activity in the slot, also checking
-			// days-between, etc. and accumulating penalties
+			// Test and place the activity in the slot
 			if tt_data.TestPlaceBasic(aix, slot) {
 				tt_data.PlaceBasic(aix, slot)
 			} else {
@@ -210,6 +211,8 @@ func (tt_data *TtData) baglist_placements(
 	}
 
 	return placements
+
+	//TODO: also check days-between, etc. and accumulate penalties
 }
 
 type TtTeacher struct {
@@ -230,24 +233,28 @@ func (tt_data *TtData) TimeSlotIndex(day string, hour string) int {
 	return d*tt_data.NHours + h
 }
 
-func (tt_data *TtData) PrepareResources(fetdata *fet) {
-	tt_data.NDays = fetdata.Days_List.Number_of_Days
-	tt_data.DayIndex = map[string]int{}
+func PrepareResources(fetdata *fet) *TtData {
+	tt_data := &TtData{
+		NDays:                 fetdata.Days_List.Number_of_Days,
+		NHours:                fetdata.Hours_List.Number_of_Hours,
+		DayIndex:              map[string]int{},
+		HourIndex:             map[string]int{},
+		TeacherIndex:          map[string]ResourceIndex{},
+		GroupIndexes:          map[string][]ResourceIndex{},
+		RoomIndex:             map[string]ResourceIndex{},
+		VirtualRooms:          map[string]TtVirtualRoom{},
+		basic_activity_groups: map[int]*BasicActivityGroup{},
+		CollectedBags:         map[*BasicActivityGroup]*BagCollection{},
+	}
+
 	for i, d := range fetdata.Days_List.Day {
 		tt_data.DayIndex[d.Name] = i
 	}
-	tt_data.NHours = fetdata.Hours_List.Number_of_Hours
-	tt_data.HourIndex = map[string]int{}
 	for i, h := range fetdata.Hours_List.Hour {
 		tt_data.HourIndex[h.Name] = i
 	}
 	slots_per_week := tt_data.HoursPerWeek
 	fmt.Printf("n days = %d, n hours = %d\n", tt_data.NDays, tt_data.NHours)
-
-	tt_data.TeacherIndex = map[string]ResourceIndex{}
-	tt_data.GroupIndexes = map[string][]ResourceIndex{}
-	tt_data.RoomIndex = map[string]ResourceIndex{}
-	tt_data.VirtualRooms = map[string]TtVirtualRoom{}
 
 	for _, t := range fetdata.Teachers_List.Teacher {
 		tid := base.NewId()
@@ -383,6 +390,7 @@ func (tt_data *TtData) PrepareResources(fetdata *fet) {
 		}
 
 	}
+	return tt_data
 }
 
 func SlotCombinations(iterable []TimeSlot, r int) (rt [][]TimeSlot) {

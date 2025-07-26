@@ -33,8 +33,7 @@ func main() {
 		// Parse XML to FET structure
 		fetdata := fet.ReadFet(byteValue)
 
-		tt_data := &fet.TtData{}
-		tt_data.PrepareResources(fetdata)
+		tt_data := fet.PrepareResources(fetdata)
 		tt_data.SetupActivities(fetdata)
 		tt_data.ResourceBlocking(fetdata)
 		tt_data.SetupFixedTimes(fetdata)
