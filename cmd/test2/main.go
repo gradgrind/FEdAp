@@ -37,8 +37,16 @@ func main() {
 		tt_data.SetupActivities(fetdata)
 		tt_data.ResourceBlocking(fetdata)
 		tt_data.SetupFixedTimes(fetdata)
+		tt_data.BasicBagSlots()
 		tt_data.SetupDaysBetween(fetdata)
-		tt_data.ConnectBags()
+
+		fmt.Println("\n *** BAGs ***")
+		for _, bagcoll := range tt_data.CollectedBags {
+			fmt.Println("+++++")
+			for _, bag := range bagcoll.BagList {
+				fmt.Printf("  -- %v\n", bag.Activities)
+			}
+		}
 
 		//TODO--
 		//tt_data.PrintBags()

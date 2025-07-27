@@ -81,6 +81,7 @@ func (tt_data *TtData) SetupActivities(fetdata *fet) {
 	// `activity_bags` maps the FET activity id to its BAG.
 	activity_bags := map[int]*BasicActivityGroup{}
 
+	tt_data.ActivitySlots = make([]TimeSlot, aix+1)
 	tt_data.Activities = make([]TtActivity, aix+1)
 	for _, a := range fetdata.Activities_List.Activity {
 		if !a.Active {
@@ -361,10 +362,9 @@ func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 						tt_data.CollectedBags[bag] = new_collected_bags
 					}
 					// Copy constraints.
-					for _, c := range bagcollection.DaysBetweenConstraints {
-						new_collected_bags.DaysBetweenConstraints = append(
-							new_collected_bags.DaysBetweenConstraints, c)
-					}
+					new_collected_bags.DaysBetweenConstraints = append(
+						new_collected_bags.DaysBetweenConstraints,
+						bagcollection.DaysBetweenConstraints...)
 				}
 			} else {
 				new_collected_bags.BagList = append(new_collected_bags.BagList, bag0)

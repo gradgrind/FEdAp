@@ -6,7 +6,6 @@ package fet
 // the DB structures, to some extent?
 
 import (
-	"cmp"
 	"fedap/base"
 	"fmt"
 	"maps"
@@ -69,12 +68,11 @@ func (tt_data *TtData) PrintBags() {
  * if possible, not saving changeable stuff in the activities.
  */
 
-// Collect basic-possible-slots for the BasicActivityGroups and sets of
-// connected BasicActivityGroups.
-func (tt_data *TtData) ConnectBags() {
+// Collect basic-possible-slots for the BasicActivityGroups.
+func (tt_data *TtData) BasicBagSlots() {
 	slots_per_week := TimeSlot(tt_data.NDays * tt_data.NHours)
 	tt_data.HoursPerWeek = int(slots_per_week)
-	bagmap := map[*BasicActivityGroup]*[]*BasicActivityGroup{}
+	//bagmap := map[*BasicActivityGroup]*[]*BasicActivityGroup{}
 	for _, bag := range tt_data.basic_activity_groups {
 		// Find all slots which are in principle possible for the activities
 		// in this BAG.
@@ -100,34 +98,10 @@ func (tt_data *TtData) ConnectBags() {
 			}
 			bag.BasicSlots = SlotCombinations(slots, len(aixs))
 		}
-
-		// Find connected BAGs
-		baglist, ok := bagmap[bag]
-		if !ok {
-			baglist = &[]*BasicActivityGroup{bag}
-			bagmap[bag] = baglist
-		}
-		// Seek connected BAGs ...
-		for _, aix := range bag.Activities {
-			a := tt_data.Activities[aix]
-			for _, c := range a.DaysBetweenConstraints {
-				bag1, ok := tt_data.basic_activity_groups[int(c.Activity)]
-				if !ok {
-					panic("No basic-activity-group")
-				}
-				if _, ok := bagmap[bag1]; !ok {
-					*baglist = append(*baglist, bag1)
-					bagmap[bag1] = baglist
-				}
-			}
-			//TODO: other constraints?
-		}
 	}
 
 	//TODO: What to do with bagmap?
-	fmt.Println("\n *** BAGs ***")
-
-	//TODO: call baglist_placements() instead of doing the following
+	/* TODO: call baglist_placements() instead of doing the following
 	for _, baglist := range bagmap {
 		placements := [][]TimeSlot{}
 		stem := [][]TimeSlot{}
@@ -152,26 +126,28 @@ func (tt_data *TtData) ConnectBags() {
 		}
 
 		//TODO: Assign placements to baglist
-	}
+	} */
 
-	done := map[*BasicActivityGroup]bool{}
+	/*
+		done := map[*BasicActivityGroup]bool{}
 
-	sortFunc := func(a, b *BasicActivityGroup) int {
-		return cmp.Compare(a.Activities[0], b.Activities[0])
-	}
-	for _, bag := range slices.SortedFunc(maps.Keys(bagmap), sortFunc) {
-		fmt.Printf("\n$ BasicSlots: %+v\n", bag.BasicSlots)
-
-		if done[bag] {
-			continue
+		sortFunc := func(a, b *BasicActivityGroup) int {
+			return cmp.Compare(a.Activities[0], b.Activities[0])
 		}
-		baglist := bagmap[bag]
-		fmt.Printf("\n+++ %+v: %d\n  --", bag.Activities, len(*baglist))
-		for _, bag1 := range *baglist {
-			fmt.Printf(" %+v", bag1.Activities)
-			done[bag1] = true
+		for _, bag := range slices.SortedFunc(maps.Keys(bagmap), sortFunc) {
+			fmt.Printf("\n$ BasicSlots: %+v\n", bag.BasicSlots)
+
+			if done[bag] {
+				continue
+			}
+			baglist := bagmap[bag]
+			fmt.Printf("\n+++ %+v: %d\n  --", bag.Activities, len(*baglist))
+			for _, bag1 := range *baglist {
+				fmt.Printf(" %+v", bag1.Activities)
+				done[bag1] = true
+			}
 		}
-	}
+	*/
 }
 
 func (tt_data *TtData) baglist_placements(
@@ -253,7 +229,8 @@ func PrepareResources(fetdata *fet) *TtData {
 	for i, h := range fetdata.Hours_List.Hour {
 		tt_data.HourIndex[h.Name] = i
 	}
-	slots_per_week := tt_data.HoursPerWeek
+	slots_per_week := tt_data.NDays * tt_data.NHours
+	tt_data.HoursPerWeek = slots_per_week
 	fmt.Printf("n days = %d, n hours = %d\n", tt_data.NDays, tt_data.NHours)
 
 	for _, t := range fetdata.Teachers_List.Teacher {
