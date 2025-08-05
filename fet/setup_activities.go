@@ -305,6 +305,20 @@ func (tt_data *TtData) RestoreStateClone(state tt_state) {
 	tt_data.ResourceWeeks = append([]ActivityIndex{}, state.ResourceWeeks...)
 }
 
+type Placement struct {
+	Activity ActivityIndex
+	Slot     TimeSlot
+}
+
+type PlacementGroup struct {
+	Placements []Placement
+	Penalty    int
+}
+
+type PlacementGroupConstraint interface {
+	Apply(placement_group *PlacementGroup) bool
+}
+
 type ConstraintDaysBetween struct {
 	Activities         []ActivityIndex
 	Penalty            int
@@ -314,8 +328,15 @@ type ConstraintDaysBetween struct {
 }
 
 type BagCollection struct {
-	BagList                []*BasicActivityGroup
-	DaysBetweenConstraints []*ConstraintDaysBetween
+	BagList         []*BasicActivityGroup
+	PlacementGroups []*PlacementGroup
+	//DaysBetweenConstraints []*ConstraintDaysBetween
+	Constraints []PlacementGroupConstraint
+}
+
+func (constraint *ConstraintDaysBetween) Apply(placement_group *PlacementGroup) bool {
+	// TODO
+	return true
 }
 
 // Connect BAGs referenced by the different-days constraints in tt_data.CollectedBags.
@@ -344,7 +365,8 @@ func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 
 		// Join the related BAGs into a new BagCollection, adding the constraint.
 		new_collected_bags := &BagCollection{
-			DaysBetweenConstraints: []*ConstraintDaysBetween{constraint},
+			Constraints: []PlacementGroupConstraint{constraint},
+			//DaysBetweenConstraints: []*ConstraintDaysBetween{constraint},
 		}
 		for _, aix0 := range rc.Activity_Id {
 
@@ -362,9 +384,12 @@ func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 						tt_data.CollectedBags[bag] = new_collected_bags
 					}
 					// Copy constraints.
-					new_collected_bags.DaysBetweenConstraints = append(
-						new_collected_bags.DaysBetweenConstraints,
-						bagcollection.DaysBetweenConstraints...)
+					new_collected_bags.Constraints = append(
+						new_collected_bags.Constraints,
+						bagcollection.Constraints...)
+					//new_collected_bags.DaysBetweenConstraints = append(
+					//	new_collected_bags.DaysBetweenConstraints,
+					//	bagcollection.DaysBetweenConstraints...)
 				}
 			} else {
 				new_collected_bags.BagList = append(new_collected_bags.BagList, bag0)
@@ -372,4 +397,22 @@ func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 			}
 		}
 	}
+}
+
+// Apply the constraints on a BagCollection to finalize the PlacementGroups list.
+// TODO? After this, the bags and constraints are probably not needed anymore, so a
+// new structure could be made without these ...
+// ... so perhaps I wouldn't need the modified constraint structures?
+func (bagcoll *BagCollection) ProcessBagConstraints() {
+	newp := []*PlacementGroup{}
+	for _, p := range bagcoll.PlacementGroups {
+		for _, c := range bagcoll.Constraints {
+			if !c.Apply(p) {
+				goto skip
+			}
+		}
+		newp = append(newp, p)
+	skip:
+	}
+	bagcoll.PlacementGroups = newp
 }

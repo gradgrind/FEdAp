@@ -44,7 +44,7 @@ func main() {
 		for _, bagcoll := range tt_data.CollectedBags {
 			fmt.Println("+++++")
 			for _, bag := range bagcoll.BagList {
-				fmt.Printf("  -- %v\n", bag.Activities)
+				fmt.Printf("  -- %v // n: %d\n", bag.Activities, len(bag.BasicSlots))
 			}
 		}
 
