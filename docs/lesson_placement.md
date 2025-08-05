@@ -8,7 +8,7 @@ The activities arise in connection with the courses (see _Courses_ and _SuperCou
 
 ## Modelling the timetable
 
-The timetable is based on a grid of slots (days * slots-per-day). To handle the resources, each resource has such a grid. The entries are the indexes of the activities to which the resource is assigned at the respective times. Activity indexes start at 1, leaving index 0 free to be used for "no activity". There is also a special activity index (-1) indicating that the resource is blocked (not available) at this time.
+The timetable is based on a grid of slots (days * slots-per-day). There is such a grid for each resource. The entries are the indexes of the activities to which the resource is assigned at the respective times. Activity indexes start at 1, leaving index 0 free to be used for "no activity". There is also a special activity index (-1) indicating that the resource is blocked (not available) at this time.
 
 Each activity is to be assigned to one of the time slots (or consecutive slots if the activity has a duration greater than 1). To record the assignments there is an array in which each activity has an entry, its slot index. Slot indexes start at 0 (indicating the first time slot on the first day). Currently unplaced activities would have a special slot index (-1).
 
@@ -38,10 +38,20 @@ After this, all possible activity-slot combinations of each `timetable unit` are
 
 It is hoped that this stage can lead to a further significant reduction in the number of combinations to be tested by the main placement algorithm when this sort of constraint is present. There might however, be a problem with combinatorial explosion if there are enough of this type of constraint to cause large `timetable units` to be built. This would need to be investigated.
 
-The result of all this is a collection of `timetable units`, each of which has a list of "placements", each consisting of a list of pairs, (activity index, time slot), and a penalty (>=0). The binding constraints have already been subsumed into these "placements" and are thus no longer needed.
+The result of all this is a collection of `timetable units`, each of which has a list of "placements", each consisting of a list of pairs, (activity index, time slot), and a penalty (>=0). The binding constraints have already been subsumed into these "placements" and are no longer needed in this context. However, if manual placement of individual activities is to be supported, that might conflict with the data structures described here (see below, "Placement of individual activities").
 
-## Further constraints
+### Further constraints
 
 There may well be constraints that are best applied after a `timetable unit` has been placed in the timetable. There may be a way of attaching these to the `timetable units` in a way that can be processed efficiently. Alternatively, it may make sense to trigger these in connection with placements to particular resource slots.
 
-Then there are constraints, which only really make sense after all activities have been placed.
+Then there are constraints, which probably only make sense after all activities have been placed.
+
+## Placement of individual activities
+
+It could be a bit difficult to make the manual placement of individual activities compatible with the use of the `timetable units` for automatic placement. It is probably desirable to allow manual placement, so the best compromise might be to treat it as a separate stage, _after_ automatic placement. It would be based purely on the activities and independent of the `timetable units`, so the original constraints would need to be retained, and attached to the activities where relevant. Where they have already been subsumed into the `timetable units` they would be ignored during automatic processing.
+
+## Placement of `timetable units`
+
+A `timetable unit` has a list of potentially possible placements for its whole set of activities. **TODO?** These could be tested sequentially, "ticking off" the ones that have already been dealt with – if that is compatible with the placement algorithm. This "ticking off" might be handled simply by keeping an index of the "next possibility". It may well be sensible to sort the possibilities, presumably at random, weighting according to the penalty, so that each run will use a different sequence.
+
+The basic placement algorithm would perhaps simply try to place each of the `timetable units`, one after the other, backtracking if at some stage no possibility is found. Various tweaks may be necessary, e.g. bigger jumps when the process seems to be a bit stuck, but I haven't got that far yet. It might be helpful to sort the `timetable units` before starting, so that those with fewer possibilities are handled first.
