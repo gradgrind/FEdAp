@@ -339,6 +339,7 @@ func (constraint *ConstraintDaysBetween) Apply(placement_group *PlacementGroup) 
 	return true
 }
 
+// TODO: The constraints need to be attached to the activities in some convenient manner.
 // Connect BAGs referenced by the different-days constraints in tt_data.CollectedBags.
 func (tt_data *TtData) SetupDaysBetween(fetdata *fet) {
 	for _, rc := range fetdata.Time_Constraints_List.
