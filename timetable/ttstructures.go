@@ -1,10 +1,11 @@
 package timetable
 
 import (
+	"fedap/base"
 	"slices"
 )
 
-type NodeRef string // node reference (UUID)
+type NodeRef = base.Ref // node reference (UUID)
 
 type ActivityIndex int16
 type ResourceIndex = int
@@ -52,6 +53,14 @@ type TtData struct {
 	ActivitySlots []TimeSlot
 	ResourceWeeks []ActivityIndex
 
+	AtomicGroups   map[NodeRef][]*AtomicGroup
+	ClassDivisions map[NodeRef][][]NodeRef
+
+	// Set up by `GatherCourseInfo`
+	Activities      []*TtActivity
+	ActivityCourses []*CourseInfo
+	CourseInfo      map[NodeRef]*CourseInfo // key can be Course or SuperCourse
+
 	//???
 	Resources    []any
 	DayIndex     map[string]int
@@ -60,7 +69,6 @@ type TtData struct {
 	GroupIndexes map[string][]ResourceIndex
 	RoomIndex    map[string]ResourceIndex
 	VirtualRooms map[string]TtVirtualRoom
-	Activities   []TtActivity
 
 	basic_activity_groups map[int]*BasicActivityGroup
 	CollectedBags         map[*BasicActivityGroup]*BagCollection
