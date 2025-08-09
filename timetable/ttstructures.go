@@ -1,3 +1,6 @@
+// Package timetable deals with timetables. It uses its own data structures,
+// which are designed around the need to handle constraints and avoid
+// "collisions" (e.g. a teacher in two classes at the same time).
 package timetable
 
 import (
@@ -46,6 +49,7 @@ type TimetableUnit struct {
 	Next int
 }
 
+// A TtData is the top-level structure for the timetable data.
 type TtData struct {
 	NDays         int
 	NHours        int
@@ -58,8 +62,8 @@ type TtData struct {
 
 	// Set up by `GatherCourseInfo`
 	Activities      []*TtActivity
-	ActivityCourses []*CourseInfo
-	CourseInfo      map[NodeRef]*CourseInfo // key can be Course or SuperCourse
+	ActivityCourses []*TtCourseInfo
+	CourseInfo      map[NodeRef]*TtCourseInfo // key is Course or SuperCourse
 
 	//???
 	Resources    []any
@@ -74,18 +78,49 @@ type TtData struct {
 	CollectedBags         map[*BasicActivityGroup]*BagCollection
 }
 
-func BasicSetup(
-	days int,
-	hours int,
-	activities int,
-	resources int,
-) *TtData {
+// BasicSetup performs the initialization of a TtData structure, collecting
+// "resources" (teachers, student groups and rooms) and "activities".
+func BasicSetup(db *base.DbTopLevel) *TtData {
+	days := len(db.Days)
+	hours := len(db.Hours)
+
+	course_info := CollectCourses(db)
+	class_divisions := FilterDivisions(db, course_info)
+
+	// Atomic groups: an atomic group is an ordered list of single groups,
+	// one from each division.
+	atomicGroups, atomicGroupIndex := MakeAtomicGroups(db, class_divisions)
+
+	//TODO: What does this do? Could it be combined with MakeAtomicGroups?
+	ags := []*AtomicGroup{}
+	g2ags := map[NodeRef][]ResourceIndex{}
+	for _, cl := range db.Classes {
+		for _, ag := range atomicGroups[cl.ClassGroup] {
+			ags = append(ags, ag)
+			// Add to the Group -> index list map
+			g2ags[cl.ClassGroup] = append(g2ags[cl.ClassGroup], ag.Index)
+			for _, gref := range ag.Groups {
+				g2ags[gref] = append(g2ags[gref], ag.Index)
+			}
+		}
+	}
+	// Sort the AtomicGroups
+	slices.SortFunc(ags, func(a, b *AtomicGroup) int {
+		if a.Index < b.Index {
+			return -1
+		}
+		return 1
+	})
+	lg := len(ags)
+	lr := len(db.Rooms)
+	lt := len(db.Teachers)
+
 	ttdata := &TtData{
 		NDays:         days,
 		NHours:        hours,
 		HoursPerWeek:  days * hours,
 		ActivitySlots: slices.Repeat([]TimeSlot{-1}, activities+1),
-		ResourceWeeks: make([]ActivityIndex, resources*days*hours),
+		ResourceWeeks: make([]ActivityIndex, (lg+lr+lt)*days*hours),
 	}
 	return ttdata
 }
@@ -93,6 +128,99 @@ func BasicSetup(
 func (ttdata *TtData) BlockResource(resource ResourceIndex, slot TimeSlot) {
 	ttdata.ResourceWeeks[int(resource)*ttdata.HoursPerWeek+int(slot)] = -1
 }
+
+func (ttdata *TtData) PrepareRooms(db *base.DbTopLevel) {
+	lr := len(db.Rooms)
+	r2tt := map[NodeRef]ResourceIndex{}
+	for _, r := range db.Rooms {
+		r2tt[r.Id] = i
+		ttdata.Resources[i] = r
+		i++
+	}
+
+}
+
+func xxx() {
+	// Allocate a vector for pointers to all Resources: teachers, (atomic)
+	// student groups and (real) rooms.
+	// Allocate a vector for pointers to all Activities, keeping the first
+	// entry free (0 should be an invalid ActivityIndex).
+	// Allocate a vector for a week of time slots for each Resource. Each
+	// cell represents a timetable slot for a single resource. If it is
+	// occupied – by an ActivityIndex – that indicates which Activity is
+	// using the Resource at this time. A value of -1 indicates that the
+	// time slot is blocked for this Resource.
+
+	lt := len(db.Teachers)
+	lr := len(db.Rooms)
+
+	ags := []*AtomicGroup{}
+	g2ags := map[Ref][]ResourceIndex{}
+	for _, cl := range db.Classes {
+		for _, ag := range ttinfo.AtomicGroups[cl.ClassGroup] {
+			ags = append(ags, ag)
+			// Add to the Group -> index list map
+			g2ags[cl.ClassGroup] = append(g2ags[cl.ClassGroup], ag.Index)
+			for _, gref := range ag.Groups {
+				g2ags[gref] = append(g2ags[gref], ag.Index)
+			}
+		}
+	}
+
+	// Sort the AtomicGroups
+	slices.SortFunc(ags, func(a, b *AtomicGroup) int {
+		if a.Index < b.Index {
+			return -1
+		}
+		return 1
+	})
+
+	lg := len(ags)
+
+	// If using a single vector for all slots:
+	ttinfo.Resources = make([]any, lt+lr+lg)
+	ttinfo.TtSlots = make([]ActivityIndex, (lt+lr+lg)*ttinfo.SlotsPerWeek)
+
+	// The slice cells are initialized to 0 or nil, according to slice type.
+
+	// Copy the AtomicGroups to the beginning of the Resources slice.
+	i := 0
+	for _, ag := range ags {
+		if ag.Index != i {
+			base.Bug.Fatalf("Atomic group index != resource index:\n"+
+				"  -- %d: %+v\n", i, ag)
+		}
+		ttinfo.Resources[i] = ag
+		//fmt.Printf(" :: %+v\n", ag)
+		i++
+	}
+	ttinfo.NAtomicGroups = i
+
+	t2tt := map[Ref]ResourceIndex{}
+	for _, t := range db.Teachers {
+		t2tt[t.Id] = i
+		ttinfo.Resources[i] = t
+		i++
+	}
+	r2tt := map[Ref]ResourceIndex{}
+	for _, r := range db.Rooms {
+		r2tt[r.Id] = i
+		ttinfo.Resources[i] = r
+		i++
+	}
+
+	// Add the pseudo activities due to the NotAvailable lists
+	ttinfo.addBlockers(t2tt, r2tt)
+
+	// Get preliminary constraint info – needed for the call to addActivity
+	ttinfo.processConstraints()
+
+	// Add the remaining Activity information
+	ttinfo.addActivityInfo(t2tt, r2tt, g2ags)
+
+}
+
+//
 
 /* TODO: Split into components?
 func PrepareResources(fetdata *fet) *TtData {

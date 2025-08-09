@@ -7,22 +7,36 @@ import (
 	"strings"
 )
 
+// A CourseInfo is an intermediate representation of a course (Course or
+// SuperCourse) for the timetable.
 type CourseInfo struct {
-	Id       NodeRef
-	Subject  NodeRef
-	Groups   []NodeRef
-	Teachers []NodeRef
-	Room     TtVirtualRoom
-	Lessons  []ActivityIndex
+	Id         NodeRef
+	Subject    NodeRef
+	Groups     []NodeRef
+	Teachers   []NodeRef
+	Rooms      []NodeRef
+	Activities []NodeRef
 }
 
+/* TODO??
+type VirtualRoom struct {
+	Rooms       []NodeRef   // only ("real") Rooms
+	RoomChoices [][]NodeRef // list of ("real") Room lists
+}
+*/
+
+// GatherCourseInfo collects the course information which is relevant for
+// the timetable, building a TtCourseInfo structure for each course with
+// activities.
 func (ttdata *TtData) GatherCourseInfo(db *base.DbTopLevel) {
 	// Gather the Groups, Teachers and "rooms" for the Courses and
 	// SuperCourses with lessons/activities (only).
 	// Gather the Activities for these Courses and SuperCourses.
 	// Also, the SuperCourses (with lessons/activities) get a list of their
 	// SubCourses.
-	ttdata.CourseInfo = map[NodeRef]*CourseInfo{}
+
+	//ttdata.CourseInfo = map[NodeRef]*TtCourseInfo{}
+	courseInfo := map[NodeRef]*CourseInfo{}
 	ttdata.Activities = make([]*TtActivity, 1) // 1-based indexing, 0 is invalid
 
 	// Collect courses with lessons/activities.
@@ -150,15 +164,12 @@ func (ttinfo *TtInfo) checkAllocatedRooms(cinfo *CourseInfo) {
 	}
 }
 
-func (ttdata *TtData) collectCourses(db *base.DbTopLevel) map[NodeRef][]NodeRef {
-	// Collect Courses with Lessons.
-	roomData := map[NodeRef][]NodeRef{} // course -> []room (any sort of "room")
-
-	// Create the CourseInfos and Activities.
-	// Gather first the SuperCourses, then the Courses.
-
+// Collect courses (Course and SuperCourse) and their activities.
+// Build a list of CourseInfo structures.
+func CollectCourses(db *base.DbTopLevel) []*CourseInfo {
 	cinfo_list := []*CourseInfo{}
-	clessons := [][]NodeRef{}
+
+	// Gather the SuperCourses.
 	for _, spc := range db.SuperCourses {
 		cref := spc.Id
 		groups := []NodeRef{}
@@ -179,21 +190,21 @@ func (ttdata *TtData) collectCourses(db *base.DbTopLevel) map[NodeRef][]NodeRef 
 				rooms = append(rooms, sbc.Room)
 			}
 		}
-		// Eliminate duplicates by sorting and then compacting
+		// Eliminate duplicate resources by sorting and then compacting
 		slices.Sort(groups)
 		slices.Sort(teachers)
 		slices.Sort(rooms)
 		cinfo_list = append(cinfo_list, &CourseInfo{
-			Id:       cref,
-			Subject:  spc.Subject,
-			Groups:   slices.Compact(groups),
-			Teachers: slices.Compact(teachers),
-			//Room: filled later
-			Lessons: []ActivityIndex{},
+			Id:         cref,
+			Subject:    spc.Subject,
+			Groups:     slices.Compact(groups),
+			Teachers:   slices.Compact(teachers),
+			Rooms:      slices.Compact(rooms),
+			Activities: spc.Lessons,
 		})
-		clessons = append(clessons, spc.Lessons)
-		roomData[cref] = slices.Compact(rooms)
 	}
+
+	// Gather the plain Courses.
 	for _, c := range db.Courses {
 		cref := c.Id
 		rooms := []NodeRef{}
@@ -201,51 +212,46 @@ func (ttdata *TtData) collectCourses(db *base.DbTopLevel) map[NodeRef][]NodeRef 
 			rooms = append(rooms, c.Room)
 		}
 		cinfo_list = append(cinfo_list, &CourseInfo{
-			Id:       cref,
-			Subject:  c.Subject,
-			Groups:   c.Groups,
-			Teachers: c.Teachers,
-			//Room: filled later
-			Lessons: []ActivityIndex{},
+			Id:         cref,
+			Subject:    c.Subject,
+			Groups:     c.Groups,
+			Teachers:   c.Teachers,
+			Rooms:      rooms,
+			Activities: c.Lessons,
 		})
-		clessons = append(clessons, c.Lessons)
-		roomData[cref] = rooms
 	}
 
-	// Retain this ordered list of courses (with lessons)
-	ttdata.ActivityCourses = cinfo_list
-
-	for i, cinfo := range cinfo_list {
-		// Add lessons to CourseInfo
-		llist := clessons[i]
-		for _, lref := range llist {
-			l := db.Elements[lref].(*base.Lesson)
-			if slices.Contains(l.Flags, "SubstitutionService") {
-				cinfo.Groups = nil
-			}
-			// Index of new Activity:
-			ttlix := len(ttdata.Activities)
-			p := -1
-			if l.Day >= 0 {
-				p = l.Day*ttdata.NHours + l.Hour
-			}
-			ttl := &TtActivity{
-				Index:      ttlix,
-				Placement:  p,
-				Duration:   l.Duration,
-				Fixed:      l.Fixed,
-				Lesson:     l,
-				CourseInfo: cinfo,
-			}
-			ttdata.Activities = append(ttdata.Activities, ttl)
-			cinfo.Lessons = append(cinfo.Lessons, ttlix)
-		}
-
-		// Add to CourseInfo map
-		ttdata.CourseInfo[cinfo.Id] = cinfo
-	}
-	return roomData
+	return cinfo_list
 }
+
+/* TODO: make TtActivity structures
+for i, cinfo := range cinfo_list {
+	// Add lessons to CourseInfo
+	llist := clessons[i]
+	for _, lref := range llist {
+		l := db.Elements[lref].(*base.Lesson)
+		if slices.Contains(l.Flags, "SubstitutionService") {
+			cinfo.Groups = nil
+		}
+		// Index of new Activity:
+		ttlix := len(ttdata.Activities)
+		p := -1
+		if l.Day >= 0 {
+			p = l.Day*ttdata.NHours + l.Hour
+		}
+		ttl := &TtActivity{
+			Index:      ttlix,
+			Placement:  p,
+			Duration:   l.Duration,
+			Fixed:      l.Fixed,
+			Lesson:     l,
+			CourseInfo: cinfo,
+		}
+		ttdata.Activities = append(ttdata.Activities, ttl)
+		cinfo.Lessons = append(cinfo.Lessons, ttlix)
+	}
+}
+*/
 
 // Make a shortish string view of a CourseInfo – can be useful in tests
 func (ttinfo *TtInfo) View(cinfo *CourseInfo) string {
