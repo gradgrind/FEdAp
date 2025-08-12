@@ -57,7 +57,8 @@ type TtData struct {
 	ActivitySlots []TimeSlot
 	ResourceWeeks []ActivityIndex
 
-	AtomicGroups   map[NodeRef][]*AtomicGroup
+	Resources      []any
+	AtomicGroups   map[NodeRef][]ResourceIndex
 	ClassDivisions map[NodeRef][][]NodeRef
 
 	// Set up by `GatherCourseInfo`
@@ -66,7 +67,6 @@ type TtData struct {
 	CourseInfo      map[NodeRef]*TtCourseInfo // key is Course or SuperCourse
 
 	//???
-	Resources    []any
 	DayIndex     map[string]int
 	HourIndex    map[string]int
 	TeacherIndex map[string]ResourceIndex
@@ -83,46 +83,30 @@ type TtData struct {
 func BasicSetup(db *base.DbTopLevel) *TtData {
 	days := len(db.Days)
 	hours := len(db.Hours)
+	tt_data := &TtData{
+		NDays:        days,
+		NHours:       hours,
+		HoursPerWeek: days * hours,
+		//?? ActivitySlots: slices.Repeat([]TimeSlot{-1}, activities+1),
+	}
 
 	course_info := CollectCourses(db)
 	class_divisions := FilterDivisions(db, course_info)
 
-	// Atomic groups: an atomic group is an ordered list of single groups,
-	// one from each division.
-	atomicGroups, atomicGroupIndex := MakeAtomicGroups(db, class_divisions)
+	// Atomic groups: an atomic group is a "resource", it is an ordered list
+	// of single groups, one from each division.
+	// The atomic groups take the lowest resource indexes (starting at 0).
+	// `AtomicGroups` maps the classes and groups to a list of their resource
+	// indexes.
+	tt_data.MakeAtomicGroups(db, class_divisions)
 
-	//TODO: What does this do? Could it be combined with MakeAtomicGroups?
-	ags := []*AtomicGroup{}
-	g2ags := map[NodeRef][]ResourceIndex{}
-	for _, cl := range db.Classes {
-		for _, ag := range atomicGroups[cl.ClassGroup] {
-			ags = append(ags, ag)
-			// Add to the Group -> index list map
-			g2ags[cl.ClassGroup] = append(g2ags[cl.ClassGroup], ag.Index)
-			for _, gref := range ag.Groups {
-				g2ags[gref] = append(g2ags[gref], ag.Index)
-			}
-		}
-	}
-	// Sort the AtomicGroups
-	slices.SortFunc(ags, func(a, b *AtomicGroup) int {
-		if a.Index < b.Index {
-			return -1
-		}
-		return 1
-	})
-	lg := len(ags)
+	lg := len(tt_data.Resources)
 	lr := len(db.Rooms)
 	lt := len(db.Teachers)
 
-	ttdata := &TtData{
-		NDays:         days,
-		NHours:        hours,
-		HoursPerWeek:  days * hours,
-		ActivitySlots: slices.Repeat([]TimeSlot{-1}, activities+1),
-		ResourceWeeks: make([]ActivityIndex, (lg+lr+lt)*days*hours),
-	}
-	return ttdata
+	//TODO?? tt_data.ActivitySlots: slices.Repeat([]TimeSlot{-1}, activities+1),
+	tt_data.ResourceWeeks = make([]ActivityIndex, (lg+lr+lt)*days*hours)
+	return tt_data
 }
 
 func (ttdata *TtData) BlockResource(resource ResourceIndex, slot TimeSlot) {
