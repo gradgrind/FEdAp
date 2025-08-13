@@ -43,8 +43,9 @@ func FilterDivisions(
 	return cdivs
 }
 
+// TODO: Do I actually need the Index field?
 type AtomicGroup struct {
-	Index  ResourceIndex
+	//Index  ResourceIndex
 	Class  NodeRef
 	Groups []NodeRef
 	Tag    string // A constructed tag to represent the atomic group
@@ -66,7 +67,7 @@ func (tt_data *TtData) MakeAtomicGroups(
 			// Make an atomic group for the class
 			agix := len(tt_data.Resources)
 			ag := &AtomicGroup{
-				Index: agix,
+				//Index: agix,
 				Class: cl.Id,
 				Tag:   cl.Tag + ATOMIC_GROUP_SEP1,
 			}
@@ -106,7 +107,7 @@ func (tt_data *TtData) MakeAtomicGroups(
 			}
 			agix := len(tt_data.Resources)
 			ag := &AtomicGroup{
-				Index:  agix,
+				//Index:  agix,
 				Class:  cl.Id,
 				Groups: ag,
 				Tag: cl.Tag + ATOMIC_GROUP_SEP1 +
@@ -135,95 +136,6 @@ func (tt_data *TtData) MakeAtomicGroups(
 			count *= len(divGroups)
 		}
 	}
-}
-
-// TODO--?
-func MakeAtomicGroups0(
-	db *base.DbTopLevel,
-	class_divisions []ClassDivision,
-) (map[NodeRef][]*AtomicGroup, int) {
-	// An atomic group is an ordered list of single groups, one from each
-	// division.
-	atomicGroups := map[NodeRef][]*AtomicGroup{}
-	atomicGroupIndex := 0
-
-	// Go through the classes inspecting their Divisions.
-	// Build a list-basis for the atomic groups based on the Cartesian product.
-	for _, cdivs := range class_divisions {
-		cl := cdivs.Class
-		if len(cdivs.Divisions) == 0 {
-			// Make an atomic group for the class
-			cag := &AtomicGroup{
-				Index: atomicGroupIndex,
-				Class: cl.Id,
-				Tag:   cl.Tag + ATOMIC_GROUP_SEP1,
-			}
-			atomicGroupIndex++
-			atomicGroups[cl.ClassGroup] = []*AtomicGroup{cag}
-			continue
-		}
-
-		// The atomic groups will be built as a list of lists of Refs.
-		agrefs := [][]NodeRef{{}}
-		for _, dglist := range cdivs.Divisions {
-			// Add another division – increases underlying list lengths.
-			agrefsx := [][]NodeRef{}
-			for _, ag := range agrefs {
-				// Extend each of the old list items by appending each
-				// group of the new division in turn – multiplies the
-				// total number of atomic groups.
-				newlen := len(ag) + 1
-				for _, g := range dglist {
-					gx := make([]NodeRef, newlen)
-					copy(gx, append(ag, g))
-					agrefsx = append(agrefsx, gx)
-				}
-			}
-			agrefs = agrefsx
-		}
-		//fmt.Printf("  §§§ Divisions in %s: %+v\n", cl.Tag, divs)
-		//fmt.Printf("     --> %+v\n", agrefs)
-
-		// Make AtomicGroups
-		aglist := []*AtomicGroup{}
-		for _, ag := range agrefs {
-			glist := []string{}
-			for _, gref := range ag {
-				gtag := db.Elements[gref].(*base.Group).Tag
-				glist = append(glist, gtag)
-			}
-			ago := &AtomicGroup{
-				Index:  atomicGroupIndex,
-				Class:  cl.Id,
-				Groups: ag,
-				Tag: cl.Tag + ATOMIC_GROUP_SEP1 +
-					strings.Join(glist, ATOMIC_GROUP_SEP2),
-			}
-			atomicGroupIndex++
-			aglist = append(aglist, ago)
-		}
-
-		// Map the individual groups to their atomic groups.
-		count := 1
-		divIndex := len(cdivs.Divisions)
-		for divIndex > 0 {
-			divIndex--
-			divGroups := cdivs.Divisions[divIndex]
-			agi := 0 // ag index
-			for agi < len(aglist) {
-				for _, g := range divGroups {
-					for j := 0; j < count; j++ {
-						atomicGroups[g] = append(atomicGroups[g], aglist[agi])
-						agi++
-					}
-				}
-			}
-			count *= len(divGroups)
-		}
-
-		atomicGroups[cl.ClassGroup] = aglist
-	}
-	return atomicGroups, atomicGroupIndex
 }
 
 /*TODO

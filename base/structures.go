@@ -5,6 +5,15 @@ package base
 
 type Ref string // Element Id
 
+type BasicElement struct {
+	Id Ref
+}
+
+type TaggedElement struct {
+	BasicElement
+	Tag string
+}
+
 type TimeSlot struct {
 	Day  int
 	Hour int
@@ -23,23 +32,20 @@ type Info struct {
 }
 
 type Day struct {
-	Id   Ref
+	TaggedElement
 	Name string
-	Tag  string
 }
 
 type Hour struct {
-	Id    Ref
+	TaggedElement
 	Name  string
-	Tag   string
 	Start string
 	End   string
 }
 
 type Teacher struct {
-	Id               Ref
+	TaggedElement
 	Name             string
-	Tag              string
 	Firstname        string
 	NotAvailable     []TimeSlot
 	MinLessonsPerDay int // default = -1
@@ -52,15 +58,13 @@ type Teacher struct {
 }
 
 type Subject struct {
-	Id   Ref
+	TaggedElement
 	Name string
-	Tag  string
 }
 
 type Room struct {
-	Id           Ref
+	TaggedElement
 	Name         string
-	Tag          string
 	NotAvailable []TimeSlot
 }
 
@@ -69,9 +73,8 @@ func (r *Room) IsReal() bool {
 }
 
 type RoomGroup struct {
-	Id    Ref
+	TaggedElement
 	Name  string
-	Tag   string
 	Rooms []Ref
 }
 
@@ -80,9 +83,8 @@ func (r *RoomGroup) IsReal() bool {
 }
 
 type RoomChoiceGroup struct {
-	Id    Ref
+	TaggedElement
 	Name  string
-	Tag   string
 	Rooms []Ref
 }
 
@@ -91,9 +93,8 @@ func (r *RoomChoiceGroup) IsReal() bool {
 }
 
 type Class struct {
-	Id               Ref
+	TaggedElement
 	Name             string
-	Tag              string
 	Year             int
 	Letter           string
 	NotAvailable     []TimeSlot
@@ -109,14 +110,13 @@ type Class struct {
 }
 
 type Group struct {
-	Id  Ref
-	Tag string
+	TaggedElement
 	// These fields do not belong in the JSON object:
 	Class Ref `json:"-"`
 }
 
 type Course struct {
-	Id       Ref
+	BasicElement
 	Subject  Ref
 	Groups   []Ref
 	Teachers []Ref
@@ -134,7 +134,7 @@ func (c *Course) AddLesson(lref Ref) {
 }
 
 type SuperCourse struct {
-	Id      Ref
+	BasicElement
 	Subject Ref
 	// These fields do not belong in the JSON object:
 	SubCourses []Ref `json:"-"`
@@ -150,7 +150,7 @@ func (c *SuperCourse) AddLesson(lref Ref) {
 }
 
 type SubCourse struct {
-	Id           Ref
+	BasicElement
 	SuperCourses []Ref
 	Subject      Ref
 	Groups       []Ref
@@ -163,7 +163,7 @@ type GeneralRoom interface {
 }
 
 type Lesson struct {
-	Id         Ref
+	BasicElement
 	Course     Ref // Course or SuperCourse Elements
 	Duration   int
 	Day        int
@@ -213,4 +213,12 @@ type DbTopLevel struct {
 
 	// These fields do not belong in the JSON object:
 	Elements map[Ref]any `json:"-"`
+}
+
+func (db *DbTopLevel) Ref2Tag(ref Ref) string {
+	t, ok := db.Elements[ref].(TaggedElement)
+	if !ok {
+		Bug.Fatalf("No Ref2Tag for %s\n", ref)
+	}
+	return t.Tag
 }

@@ -4,13 +4,11 @@ import (
 	"fedap/base"
 	"fedap/mugui"
 	"fedap/readxml"
-	"fedap/ttbase"
+	"fedap/timetable"
 	"fmt"
 	"math/rand/v2"
-	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/gradgrind/gominion"
 )
@@ -134,18 +132,26 @@ func main() {
 
 		db := cdata.Db()
 		db.PrepareDb()
-		ttbase.MakeTtInfo(db)
-		ttinfo := ttbase.MakeTtInfo(db)
-		ttinfo.PrepareCoreData()
 
-		j := ttbase.TtInfoToJson(ttinfo)
-		jfp := filepath.Base(fxml)
-		jfp = strings.TrimSuffix(jfp, filepath.Ext(jfp)) + "_tt.json"
-		err := os.WriteFile(jfp, j, 0644)
-		if err != nil {
-			panic(err)
-		}
+		tt_data := timetable.BasicSetup(db)
+		fmt.Printf("Resources: %d\n", len(tt_data.Resources))
+		fmt.Printf("Activities: %d\n", len(tt_data.Activities))
 
-		//ttengine.PlaceLessons(ttinfo)
+		/*
+			ttbase.MakeTtInfo(db)
+			ttinfo := ttbase.MakeTtInfo(db)
+			ttinfo.PrepareCoreData()
+
+			j := ttbase.TtInfoToJson(ttinfo)
+			jfp := filepath.Base(fxml)
+			jfp = strings.TrimSuffix(jfp, filepath.Ext(jfp)) + "_tt.json"
+			err := os.WriteFile(jfp, j, 0644)
+			if err != nil {
+				panic(err)
+			}
+
+			//ttengine.PlaceLessons(ttinfo)
+
+		*/
 	}
 }
