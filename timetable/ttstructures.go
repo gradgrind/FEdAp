@@ -127,10 +127,11 @@ func BasicSetup(db *base.DbTopLevel) *TtData {
 		[]TimeSlot{-1},
 		len(tt_data.Activities))
 
-	/* TODO
-	// Add the pseudo activities due to the NotAvailable lists
-	ttinfo.addBlockers(t2tt, r2tt)
+	// Add the pseudo activities due to the NotAvailable lists of classes,
+	// teachers and rooms.
+	tt_data.BlockResources(db)
 
+	/* TODO
 	// Get preliminary constraint info – needed for the call to addActivity
 	ttinfo.processConstraints()
 
