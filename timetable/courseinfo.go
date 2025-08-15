@@ -7,15 +7,18 @@ import (
 	"strings"
 )
 
+// TODO: Activities should (already) be ordered, highest duration first,
+// and ActivityGroup should have the same order.
 // A CourseInfo is an intermediate representation of a course (Course or
 // SuperCourse) for the timetable.
 type CourseInfo struct {
-	Id         NodeRef
-	Subject    NodeRef
-	Groups     []NodeRef
-	Teachers   []NodeRef
-	Rooms      []NodeRef // entries can be Room, RoomGroup or RoomChoiceGroup
-	Activities []NodeRef
+	Id            NodeRef
+	Subject       NodeRef
+	Groups        []NodeRef
+	Teachers      []NodeRef
+	Rooms         []NodeRef // items can be Room, RoomGroup or RoomChoiceGroup
+	Activities    []NodeRef
+	ActivityGroup []ActivityIndex
 }
 
 // Make a shortish string view of a CourseInfo – can be useful in tests
@@ -166,20 +169,33 @@ func (tt_data *TtData) MakeActivities(db *base.DbTopLevel, cinfo_list []*CourseI
 			}
 		}
 
-		//TODO: What about collecting the BAGs (distinct durations) here?
-
-		// Build a TtActivity for each lesson
+		// Build a TtActivity for each lesson.
+		// First sort according to length.
+		activities := make([]*base.Lesson, 0, len(cinfo.Activities))
 		for _, lref := range cinfo.Activities {
 			l := db.Elements[lref].(*base.Lesson)
 			if slices.Contains(l.Flags, "SubstitutionService") {
 				cinfo.Groups = nil
 			}
+			d := l.Duration
+			var i int = 0
+			for _, a := range activities {
+				if a.Duration <= d {
+					break
+				}
+				i++
+			}
+			activities = slices.Insert(activities, i, l)
+		}
+
+		for _, l := range activities {
 			//p := -1
 			//if l.Day >= 0 {
 			//	p = l.Day*tt_data.NHours + l.Hour
 			//}
+			aix := ActivityIndex(len(tt_data.Activities))
 			ttl := &TtActivity{
-				Id: ActivityIndex(len(tt_data.Activities)),
+				Id: aix,
 				//Placement:  p,
 				Duration:    int16(l.Duration),
 				Fixed:       l.Fixed,
@@ -188,6 +204,7 @@ func (tt_data *TtData) MakeActivities(db *base.DbTopLevel, cinfo_list []*CourseI
 				//Lesson:     l,
 				//CourseInfo: cinfo,
 			}
+			cinfo.ActivityGroup = append(cinfo.ActivityGroup, aix)
 			tt_data.Activities = append(tt_data.Activities, ttl)
 		}
 	}

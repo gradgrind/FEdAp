@@ -115,6 +115,7 @@ type Group struct {
 	Class Ref `json:"-"`
 }
 
+// TODO: Lessons should be ordered, highest duration first
 type Course struct {
 	BasicElement
 	Subject  Ref
