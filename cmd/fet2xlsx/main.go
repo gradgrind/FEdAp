@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ncruces/zenity"
 
@@ -10,6 +11,8 @@ import (
 	"flag"
 	"path/filepath"
 )
+
+//TODO: Replace panic calls by something to show the message
 
 const defaultPath = ``
 
@@ -34,9 +37,9 @@ func main() {
 	//TODO: generate output
 	//fmt.Printf(" --->\n%v\n", fetdata)
 
-	//stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
-	fet2xlsx.GetActivityData(fetdata)
-	//fet2xlsx.TeachersActivities(fetdata)
+	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
+	activities := fet2xlsx.GetActivityData(fetdata)
+	fet2xlsx.TeachersActivities(fetdata, activities, stempath)
 }
 
 func maincli() {

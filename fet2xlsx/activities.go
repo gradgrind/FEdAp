@@ -22,7 +22,8 @@ type TimeSlot struct {
 	Hour int
 }
 
-func GetActivityData(fet *readfet.Fet) {
+func GetActivityData(fet *readfet.Fet) []*ActivityData {
+	adatalist := []*ActivityData{}
 	// Map student "groups" to their "year"
 	g2y := map[string]string{}
 	for _, s := range fet.Students_List.Year {
@@ -86,7 +87,10 @@ func GetActivityData(fet *readfet.Fet) {
 		}
 
 		fmt.Printf(" -- %v\n", adata)
+
+		adatalist = append(adatalist, adata)
 	}
+	return adatalist
 }
 
 func ActivityTimes(fet *readfet.Fet) map[int]TimeSlot {
