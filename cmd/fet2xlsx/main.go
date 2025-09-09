@@ -1,26 +1,57 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/ncruces/zenity"
+
 	"fedap/fet2xlsx"
 	"fedap/readfet"
 	"flag"
-	"log"
 	"path/filepath"
 )
 
+const defaultPath = ``
+
 func main() {
+	abspath, err := zenity.SelectFile(
+		zenity.Filename(defaultPath),
+		zenity.FileFilters{
+			{
+				Name:     "FET result files",
+				Patterns: []string{"*_data_and_timetable.fet"},
+				CaseFold: false,
+			},
+		})
+	if err == nil {
+		fmt.Printf("Reading %s\n", abspath)
+	} else {
+		panic(err)
+	}
+
+	fetdata := readfet.ReadFet(abspath)
+
+	//TODO: generate output
+	//fmt.Printf(" --->\n%v\n", fetdata)
+
+	//stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
+	fet2xlsx.GetActivityData(fetdata)
+	//fet2xlsx.TeachersActivities(fetdata)
+}
+
+func maincli() {
 
 	flag.Parse()
 	args := flag.Args()
 	if len(args) != 1 {
 		if len(args) == 0 {
-			log.Fatalln("ERROR* No input file")
+			panic("ERROR* No input file")
 		}
-		log.Fatalf("*ERROR* Too many command-line arguments:\n  %+v\n", args)
+		panic(fmt.Sprintf("*ERROR* Too many command-line arguments:\n  %+v\n", args))
 	}
 	abspath, err := filepath.Abs(args[0])
 	if err != nil {
-		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
+		panic(fmt.Sprintf("*ERROR* Couldn't resolve file path: %s\n", args[0]))
 	}
 
 	fetdata := readfet.ReadFet(abspath)
