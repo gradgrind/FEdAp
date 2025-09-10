@@ -6,11 +6,11 @@ import (
 	"os"
 )
 
-func ReadFet(fetpath string) *Fet {
+func ReadFet(fetpath string) (*Fet, error) {
 	// Open the  XML file
 	xmlFile, err := os.Open(fetpath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
@@ -21,5 +21,5 @@ func ReadFet(fetpath string) *Fet {
 	// Parse XML to FET structure
 	fetdata := &Fet{}
 	xml.Unmarshal(byteValue, fetdata)
-	return fetdata
+	return fetdata, nil
 }

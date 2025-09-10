@@ -28,7 +28,9 @@ func TeachersActivities(
 ) (string, error) {
 	nhours := len(fet.Hours_List.Hour)
 	f := excelize.NewFile()
-	overview_headers(fet, f, ALL_TEACHERS)
+	if err := overview_headers(fet, f, ALL_TEACHERS); err != nil {
+		return "", err
+	}
 	// Start rows of the detail tables
 	row0_students := 1
 	row0_subjects := row0_students + nhours + 1 + PERSONAL_TABLES_GAP
@@ -37,15 +39,21 @@ func TeachersActivities(
 		// Teacher row header in ALL_TEACHERS sheet
 		cr, err := excelize.CoordinatesToCellName(1, i+3)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		f.SetCellStr(ALL_TEACHERS, cr, n)
 		// Add personal sheet for teacher
 		f.NewSheet(n)
 		// Add headers for student group table
-		week_headers(fet, f, n, row0_students)
-		week_headers(fet, f, n, row0_subjects)
-		week_headers(fet, f, n, row0_rooms)
+		if err := week_headers(fet, f, n, row0_students); err != nil {
+			return "", err
+		}
+		if err := week_headers(fet, f, n, row0_subjects); err != nil {
+			return "", err
+		}
+		if err := week_headers(fet, f, n, row0_rooms); err != nil {
+			return "", err
+		}
 	}
 	// Get the data from the activities
 	for _, adata := range activities {
@@ -55,8 +63,7 @@ func TeachersActivities(
 		for _, t := range adata.Teachers {
 			tix, ok := TeacherIndex[t]
 			if !ok {
-				fmt.Printf("??? %v\n", TeacherIndex)
-				panic("Unknown teacher: " + t)
+				return "", fmt.Errorf("unknown teacher: %s", t)
 			}
 			if adata.Time.Day < 0 {
 				continue
@@ -75,26 +82,27 @@ func TeachersActivities(
 				// ALL_TEACHERS sheet
 				cr, err := excelize.CoordinatesToCellName(col, row)
 				if err != nil {
-					panic(fmt.Sprintf("Invalid time: %d.%d", adata.Time.Day, adata.Time.Hour))
+					return "", fmt.Errorf(
+						"invalid time: %d.%d", adata.Time.Day, adata.Time.Hour)
 				}
 				f.SetCellStr(ALL_TEACHERS, cr, slist)
 				// Individual teacher's sheet
 				//  - students
 				cr1, err := excelize.CoordinatesToCellName(adata.Time.Day+2, r1)
 				if err != nil {
-					panic(err)
+					return "", err
 				}
 				f.SetCellStr(t, cr1, slist)
 				//  - subjects
 				cr2, err := excelize.CoordinatesToCellName(adata.Time.Day+2, r2)
 				if err != nil {
-					panic(err)
+					return "", err
 				}
 				f.SetCellStr(t, cr2, sbj)
 				//  - rooms
 				cr3, err := excelize.CoordinatesToCellName(adata.Time.Day+2, r3)
 				if err != nil {
-					panic(err)
+					return "", err
 				}
 				f.SetCellStr(t, cr3, rlist)
 				l--

@@ -30,7 +30,13 @@ func main() {
 		panic(err)
 	}
 
-	fetdata := readfet.ReadFet(abspath)
+	fetdata, err := readfet.ReadFet(abspath)
+	if err != nil {
+		zenity.Error(err.Error(),
+			zenity.Title("Error"),
+			zenity.ErrorIcon)
+		return
+	}
 
 	// Generate output
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
@@ -74,8 +80,10 @@ func maincli() {
 		panic(fmt.Sprintf("*ERROR* Couldn't resolve file path: %s\n", args[0]))
 	}
 
-	fetdata := readfet.ReadFet(abspath)
-
+	fetdata, err := readfet.ReadFet(abspath)
+	if err != nil {
+		panic(err)
+	}
 	//TODO: generate output
 	//fmt.Printf(" --->\n%v\n", fetdata)
 
