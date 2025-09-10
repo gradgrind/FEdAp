@@ -8,37 +8,45 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+var (
+	StudentGroups     []string       // years and their groups
+	StudentGroupIndex map[string]int // map group to index
+)
+
+func GetStudentGroups(fet *readfet.Fet) {
+	StudentGroupIndex = map[string]int{}
+	i := 0
+	for _, y := range fet.Students_List.Year {
+		StudentGroups = append(StudentGroups, y.Name)
+		StudentGroupIndex[y.Name] = i
+		i++
+		for _, g := range y.Group {
+			StudentGroups = append(StudentGroups, g.Name)
+			StudentGroupIndex[g.Name] = i
+			i++
+		}
+	}
+}
+
 func StudentsActivities(
 	fet *readfet.Fet,
 	activities []*ActivityData,
 	stemfile string,
-) {
+) (string, error) {
 	nhours := len(fet.Hours_List.Hour)
 	f := excelize.NewFile()
 	overview_headers(fet, f, ALL_STUDENTS)
-	// Map student group to index
-	gmap := map[string]int{}
 	// Start rows of the detail tables
 	row0_subjects := 1
 	row0_teachers := row0_subjects + nhours + 1 + PERSONAL_TABLES_GAP
 	row0_rooms := row0_teachers + nhours + 1 + PERSONAL_TABLES_GAP
 	// Show student "Years" and "Groups"
-	glist := []string{}
-	i := 0
-	for _, y := range fet.Students_List.Year {
-		glist = append(glist, y.Name)
-		for _, g := range y.Group {
-			glist = append(glist, g.Name)
-		}
-	}
-	for _, n := range glist {
-		gmap[n] = i
+	for i, n := range StudentGroups {
 		// Group row header in ALL_STUDENTS sheet
 		cr, err := excelize.CoordinatesToCellName(1, i+3)
 		if err != nil {
 			panic(err)
 		}
-		i++
 		f.SetCellStr(ALL_STUDENTS, cr, n)
 		// Add personal sheet for group
 		f.NewSheet(n)
@@ -53,7 +61,7 @@ func StudentsActivities(
 		tlist := strings.Join(adata.Teachers, ",")
 		rlist := strings.Join(adata.Rooms, ",")
 		for _, g := range adata.Students {
-			gix, ok := gmap[g]
+			gix, ok := StudentGroupIndex[g]
 			if !ok {
 				panic("Unknown student group: " + g)
 			}
@@ -107,7 +115,9 @@ func StudentsActivities(
 			}
 		}
 	}
-	if err := f.SaveAs(stemfile + "_students.xlsx"); err != nil {
-		panic(err)
+	opath := stemfile + "_students.xlsx"
+	if err := f.SaveAs(opath); err != nil {
+		return "", err
 	}
+	return opath, nil
 }

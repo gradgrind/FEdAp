@@ -1,8 +1,8 @@
 package fet2xlsx
 
 import (
+	"cmp"
 	"fedap/readfet"
-	"fmt"
 	"maps"
 	"slices"
 )
@@ -76,8 +76,16 @@ func GetActivityData(fet *readfet.Fet) []*ActivityData {
 			Subject:  act.Subject,
 			Time:     t,
 			Duration: act.Duration,
-			Teachers: act.Teacher,
-			Students: slices.Sorted(maps.Keys(sset)),
+			Teachers: slices.SortedFunc(slices.Values(act.Teacher),
+				func(a, b string) int {
+					return cmp.Compare(
+						TeacherIndex[a], TeacherIndex[b])
+				}),
+			Students: slices.SortedFunc(maps.Keys(sset),
+				func(a, b string) int {
+					return cmp.Compare(
+						StudentGroupIndex[a], StudentGroupIndex[b])
+				}),
 		}
 
 		// The rooms
@@ -86,7 +94,7 @@ func GetActivityData(fet *readfet.Fet) []*ActivityData {
 			adata.Rooms = r
 		}
 
-		fmt.Printf(" -- %v\n", adata)
+		//fmt.Printf(" -- %v\n", adata)
 
 		adatalist = append(adatalist, adata)
 	}

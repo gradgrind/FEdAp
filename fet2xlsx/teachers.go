@@ -8,23 +8,32 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+var (
+	Teachers     []string       // years and their groups
+	TeacherIndex map[string]int // map group to index
+)
+
+func GetTeachers(fet *readfet.Fet) {
+	TeacherIndex = map[string]int{}
+	for i, t := range fet.Teachers_List.Teacher {
+		Teachers = append(Teachers, t.Name)
+		TeacherIndex[t.Name] = i
+	}
+}
+
 func TeachersActivities(
 	fet *readfet.Fet,
 	activities []*ActivityData,
 	stemfile string,
-) {
+) (string, error) {
 	nhours := len(fet.Hours_List.Hour)
 	f := excelize.NewFile()
 	overview_headers(fet, f, ALL_TEACHERS)
-	// Map teacher to index
-	tmap := map[string]int{}
 	// Start rows of the detail tables
 	row0_students := 1
 	row0_subjects := row0_students + nhours + 1 + PERSONAL_TABLES_GAP
 	row0_rooms := row0_subjects + nhours + 1 + PERSONAL_TABLES_GAP
-	for i, t := range fet.Teachers_List.Teacher {
-		n := t.Name
-		tmap[n] = i
+	for i, n := range Teachers {
 		// Teacher row header in ALL_TEACHERS sheet
 		cr, err := excelize.CoordinatesToCellName(1, i+3)
 		if err != nil {
@@ -44,8 +53,9 @@ func TeachersActivities(
 		slist := strings.Join(adata.Students, ",")
 		rlist := strings.Join(adata.Rooms, ",")
 		for _, t := range adata.Teachers {
-			tix, ok := tmap[t]
+			tix, ok := TeacherIndex[t]
 			if !ok {
+				fmt.Printf("??? %v\n", TeacherIndex)
 				panic("Unknown teacher: " + t)
 			}
 			if adata.Time.Day < 0 {
@@ -98,7 +108,9 @@ func TeachersActivities(
 			}
 		}
 	}
-	if err := f.SaveAs(stemfile + "_teachers.xlsx"); err != nil {
-		panic(err)
+	opath := stemfile + "_teachers.xlsx"
+	if err := f.SaveAs(opath); err != nil {
+		return "", err
 	}
+	return opath, nil
 }

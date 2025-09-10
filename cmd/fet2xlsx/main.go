@@ -18,7 +18,7 @@ const defaultPath = ``
 
 func main() {
 	abspath, err := zenity.SelectFile(
-		//zenity.Filename(defaultPath),
+		zenity.Filename(defaultPath),
 		zenity.FileFilters{
 			{
 				Name:     "FET result files",
@@ -26,21 +26,37 @@ func main() {
 				CaseFold: false,
 			},
 		})
-	if err == nil {
-		fmt.Printf("Reading %s\n", abspath)
-	} else {
+	if err != nil {
 		panic(err)
 	}
 
 	fetdata := readfet.ReadFet(abspath)
 
-	//TODO: generate output
-	//fmt.Printf(" --->\n%v\n", fetdata)
-
+	// Generate output
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
+	fet2xlsx.GetTeachers(fetdata)
+	fet2xlsx.GetStudentGroups(fetdata)
 	activities := fet2xlsx.GetActivityData(fetdata)
-	fet2xlsx.TeachersActivities(fetdata, activities, stempath)
-	fet2xlsx.StudentsActivities(fetdata, activities, stempath)
+	opath, err := fet2xlsx.TeachersActivities(fetdata, activities, stempath)
+	if err == nil {
+		zenity.Info("Generated: "+opath,
+			zenity.Title("Information"),
+			zenity.InfoIcon)
+	} else {
+		zenity.Error(err.Error(),
+			zenity.Title("Error"),
+			zenity.ErrorIcon)
+	}
+	opath, err = fet2xlsx.StudentsActivities(fetdata, activities, stempath)
+	if err == nil {
+		zenity.Info("Generated: "+opath,
+			zenity.Title("Information"),
+			zenity.InfoIcon)
+	} else {
+		zenity.Error(err.Error(),
+			zenity.Title("Error"),
+			zenity.ErrorIcon)
+	}
 }
 
 func maincli() {
