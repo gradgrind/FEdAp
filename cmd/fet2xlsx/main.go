@@ -18,7 +18,7 @@ const defaultPath = ``
 
 func main() {
 	abspath, err := zenity.SelectFile(
-		zenity.Filename(defaultPath),
+		//zenity.Filename(defaultPath),
 		zenity.FileFilters{
 			{
 				Name:     "FET result files",
@@ -40,6 +40,7 @@ func main() {
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
 	activities := fet2xlsx.GetActivityData(fetdata)
 	fet2xlsx.TeachersActivities(fetdata, activities, stempath)
+	fet2xlsx.StudentsActivities(fetdata, activities, stempath)
 }
 
 func maincli() {

@@ -8,56 +8,41 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-const (
-	ALL_TEACHERS string = "All teachers"
-)
-
 func TeachersActivities(
 	fet *readfet.Fet,
 	activities []*ActivityData,
 	stemfile string,
 ) {
+	nhours := len(fet.Hours_List.Hour)
 	f := excelize.NewFile()
-	err := f.SetSheetName("Sheet1", ALL_TEACHERS)
-	if err != nil {
-		panic(err)
-	}
-	col := 2
-	for _, d := range fet.Days_List.Day {
-		cr, err := excelize.CoordinatesToCellName(col, 1)
-		if err != nil {
-			panic(err)
-		}
-		f.SetCellStr(ALL_TEACHERS, cr, d.Name)
-		for _, h := range fet.Hours_List.Hour {
-			cr, err := excelize.CoordinatesToCellName(col, 2)
-			if err != nil {
-				panic(err)
-			}
-			f.SetCellStr(ALL_TEACHERS, cr, h.Name)
-			col++
-		}
-	}
+	overview_headers(fet, f, ALL_TEACHERS)
 	// Map teacher to index
 	tmap := map[string]int{}
+	// Start rows of the detail tables
+	row0_students := 1
+	row0_subjects := row0_students + nhours + 1 + PERSONAL_TABLES_GAP
+	row0_rooms := row0_subjects + nhours + 1 + PERSONAL_TABLES_GAP
 	for i, t := range fet.Teachers_List.Teacher {
 		n := t.Name
 		tmap[n] = i
+		// Teacher row header in ALL_TEACHERS sheet
 		cr, err := excelize.CoordinatesToCellName(1, i+3)
 		if err != nil {
 			panic(err)
 		}
 		f.SetCellStr(ALL_TEACHERS, cr, n)
+		// Add personal sheet for teacher
 		f.NewSheet(n)
-		cr, err = excelize.CoordinatesToCellName(1, 1)
-		if err != nil {
-			panic(err)
-		}
-		f.SetCellStr(n, cr, "hour\\day")
+		// Add headers for student group table
+		week_headers(fet, f, n, row0_students)
+		week_headers(fet, f, n, row0_subjects)
+		week_headers(fet, f, n, row0_rooms)
 	}
+	// Get the data from the activities
 	for _, adata := range activities {
-		//sbj := adata.Subject
+		sbj := adata.Subject
 		slist := strings.Join(adata.Students, ",")
+		rlist := strings.Join(adata.Rooms, ",")
 		for _, t := range adata.Teachers {
 			tix, ok := tmap[t]
 			if !ok {
@@ -67,44 +52,49 @@ func TeachersActivities(
 				continue
 			}
 			l := adata.Duration
+
+			// Coordinates in ALL_TEACHERS sheet
 			row := tix + 3
-			col := adata.Time.Day*len(fet.Hours_List.Hour) + adata.Time.Hour + 2
+			col := adata.Time.Day*nhours + adata.Time.Hour + 2
 
-			r1 := adata.Time.Hour + 2
-			{
-				for i, h := range fet.Hours_List.Hour {
-					cr, err := excelize.CoordinatesToCellName(1, i+2)
-					if err != nil {
-						panic(err)
-					}
-					f.SetCellStr(t, cr, h.Name)
-				}
-				for i, d := range fet.Days_List.Day {
-					cr, err := excelize.CoordinatesToCellName(i+2, 1)
-					if err != nil {
-						panic(err)
-					}
-					f.SetCellStr(t, cr, d.Name)
-				}
-			}
+			r1 := row0_students + adata.Time.Hour + 1
+			r2 := row0_subjects + adata.Time.Hour + 1
+			r3 := row0_rooms + adata.Time.Hour + 1
 
-			for {
+			for { // for each hour in duration
+				// ALL_TEACHERS sheet
 				cr, err := excelize.CoordinatesToCellName(col, row)
 				if err != nil {
 					panic(fmt.Sprintf("Invalid time: %d.%d", adata.Time.Day, adata.Time.Hour))
 				}
 				f.SetCellStr(ALL_TEACHERS, cr, slist)
+				// Individual teacher's sheet
+				//  - students
 				cr1, err := excelize.CoordinatesToCellName(adata.Time.Day+2, r1)
 				if err != nil {
 					panic(err)
 				}
 				f.SetCellStr(t, cr1, slist)
+				//  - subjects
+				cr2, err := excelize.CoordinatesToCellName(adata.Time.Day+2, r2)
+				if err != nil {
+					panic(err)
+				}
+				f.SetCellStr(t, cr2, sbj)
+				//  - rooms
+				cr3, err := excelize.CoordinatesToCellName(adata.Time.Day+2, r3)
+				if err != nil {
+					panic(err)
+				}
+				f.SetCellStr(t, cr3, rlist)
 				l--
 				if l <= 0 {
 					break
 				}
 				col++
 				r1++
+				r2++
+				r3++
 			}
 		}
 	}
